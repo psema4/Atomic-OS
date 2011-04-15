@@ -1,3 +1,5 @@
 #!/usr/bin/env bash
 
-cat src/* > ./system-all.js
+cat src/*.js > ./system-all.js
+
+./jsmin.py < system-all.js > system-all-min.js

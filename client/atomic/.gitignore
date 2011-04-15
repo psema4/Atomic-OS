@@ -1,4 +1,6 @@
-# ignore html documents
+# ignore combined js
+system-all*
 
+# ignore html and php documents
 *.html
 *.php
