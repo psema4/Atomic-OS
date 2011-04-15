@@ -34,3 +34,6 @@ Please see the Atomic OS Design Document at (under development)
 4. Support
 
 Please contact psema4@gmail.com
+
+A. 3rd Party Tools & Libraries
+  - jsmin.py (JSON License - http://www.json.org/license.html)
