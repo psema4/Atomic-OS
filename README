@@ -27,9 +27,11 @@ Atomic OS is a responsive Web 2.0 operating environment & development platform. 
               |
               `--
 
-3. Design Considerations
+3. Requirements
 
-Please see the Atomic OS Design Document at (under development)
+Building Atomic Client Documents requires perl, python, and bash
+
+Running the Atomic OS Daemon requires node.js
 
 4. Support
 
