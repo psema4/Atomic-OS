@@ -1,0 +1,4 @@
+# ignore html documents
+
+*.html
+*.php

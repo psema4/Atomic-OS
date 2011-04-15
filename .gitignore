@@ -1,0 +1,3 @@
+# ignore swp and backup files
+*.swp
+*~
