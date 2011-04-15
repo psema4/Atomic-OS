@@ -1,4 +1,36 @@
 Atomic OS README
 
+(C)2005-2011 Scott Elcomb
+Some Rights Reserved
+
+0. Legal
+
+Atomic OS is licensed under the LGPLv3 license.  For details, please see the LICENSE file.
+
+1. Summary
+
 Atomic OS is a responsive Web 2.0 operating environment & development platform. Based on AJAX techniques, it emulates/provides standard operating system features including a command-line shell, interpreter, filesystem, database access and GUI services.
 
+2. Project Layout
+
+  Figure 1: Layout of project files
+
+  Atomic-OS --,-- server --,-- cgi    --,-- perl
+              |            |            `-- php
+              |            |
+              |            `-- daemon --,-- node (node.js)
+              |                         `-- perl (mojolicious)
+              |
+              +-- client --,-- atomic
+              |            +-- perl-curses
+              |            `-- node-curses
+              |
+              `--
+
+3. Design Considerations
+
+Please see the Atomic OS Design Document at (under development)
+
+4. Support
+
+Please contact psema4@gmail.com
