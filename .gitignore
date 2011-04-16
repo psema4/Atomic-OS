@@ -1,3 +1,6 @@
 # ignore swp and backup files
 *.swp
+
+# ignore source media
+source-media/
 *~

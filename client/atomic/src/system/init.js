@@ -42,6 +42,10 @@ function System() {
             }
             window.wash = system.tasks[0];
 
+            system.tasks.push(new WindowManager());
+            window.wm = system.tasks[1];
+            wm.cm.initContext();
+
         } else {
             console.log("No system!");
         }
