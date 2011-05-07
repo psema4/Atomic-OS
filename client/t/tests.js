@@ -4,44 +4,48 @@ test("truthiness", function() {
     ok(! false, "false ok");
 });
 
+test("system tasks", function() {
+    if (system.tasks.length == 2) {
+        ok(true, "wash & wm tasks installed");
+
+    } else {
+        system.init();
+        ok(system.tasks.length == 2, "start wash & wm");
+    }
+    
+});
+
 module("libwash / vfs");
-test("pwd", function() {
-    equal(pwd(), "/", "pwd should return root folder");
-});
+test("basic folder ops", function() {
+    strictEqual(pwd(), "/", "pwd should return root folder");
 
-test("cd", function() {
-    ok(cd(parsePath('/bin')), "cd'd to /bin");
-});
+    strictEqual(cd('/bin'), "/bin", "cd'd to /bin");
 
-test("ls", function() {
     deepEqual(ls(), ["/bin/foo", "/bin/bar", "/bin/baz"], "/bin has foo, bar, & baz"); 
+
+    strictEqual(cd('/tmp'), "/tmp", "cd'd to /tmp");
+
+    var vfs_tmp_test = mkdir('test');
+    ok(vfs_tmp_test instanceof(Node), "mkdir /tmp/test should return a Node object");
+    strictEqual(vfs_tmp_test.filename, "test", '/tmp/test has filename === "test"');
 });
 
-test("mkdir", function() {
-    ok(cd('/tmp'), "cd'd to /tmp");
-    ok(mkdir('test') instanceof(Node), "mkdir /tmp/test should return a Node object");
+test("basic file ops", function() {
+    strictEqual(cd('/tmp/test'), "/tmp/test", "cd'd to /tmp/test");
+
+    var vfs_tmp_test_myfile = touch('myfile');
+    ok(vfs_tmp_test_myfile instanceof(Node), "touch myfile");
+
+    strictEqual(open('/tmp/test/myfile', 'w'), 'F_WRITE', "open /tmp/test/myfile for writing");
+    strictEqual(fprint('/tmp/test/myfile', 'foo'), 3, 'write "foo" to /tmp/test/myfile');
+    strictEqual(close('/tmp/test/myfile'), 1, "close /tmp/test/myfile");
+
+    strictEqual(cat('/tmp/test/myfile'), "foo", '/tmp/test/myfile contains "foo"');
 });
 
-test("open", function() {
-    ok(cd('test'), "cd'd to /tmp/test");
-    equal(open('myfile', 'w'), 'F_WRITE', "open /tmp/test/myfile for writing");
-});
-
-test("fprint", function() {
-    equal(fprint('myfile', 'foo'), 3, 'write "foo" to /tmp/test/myfile');
-});
-
-test("close", function() {
-    equal(close('myfile'), 1, "close /tmp/test/myfile");
-});
-
-test("cat", function() {
-    equal(cat('myfile'), "foo", '/tmp/test/myfile contains "foo"');
-});
-
-test("initrc & cat", function() {
+test("initrc", function() {
     initrc();
-    equal(cat('/bin/foo/barbaz'), 'hello, world!', "initrc: create file, cat returns the contents");
+    strictEqual(cat('/bin/foo/barbaz'), 'hello, world!', "initrc created text file");
 });
 
 

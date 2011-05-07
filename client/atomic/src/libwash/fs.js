@@ -25,7 +25,6 @@ function readme() {
 }
 
 function pwd() {
-    console.log(system.env.cwd);
     return system.env.cwd;
 }
 
@@ -33,7 +32,7 @@ function cd(node) {
     var retval = false;
     var cwd = parsePath(system.env.cwd);
 
-    if (typeof(node) !== 'object') {
+    if (typeof(node) === 'string') {
         if (node.match(/^\//)) {
             system.log('cd to absolute path');
             node = parsePath(node);
@@ -50,11 +49,14 @@ function cd(node) {
         }
     }
 
+    if (! node) return false;
+    if (! node instanceof(Node)) return false;
+
     var p = getPath(node);
     if (p) {
         system.log('cd set system.env.cwd');
         system.env.cwd = p;
-        retval = true;
+        retval = system.env.cwd;
     }
 
     return retval;
@@ -66,71 +68,84 @@ function mkdir(name) {
 }
 
 function fprint(node, data) {
-    if (typeof(node) !== 'object') {
-        node = parsePath(node);
-    }
+    if (! node) return false;
+    if (typeof(node) === 'string') node = parsePath(node);
+    if (! node instanceof(Node)) return false;
 
     if (data) return node.write(data);
 }
 
 function cat(node) {
-    if (typeof(node) !== 'object') {
-        node = parsePath(node);
-    }
+    if (! node) return false;
+    if (typeof(node) === 'string') node = parsePath(node);
+    if (! node instanceof(Node)) return false;
 
-    console.log(node.read());
+    system.log(node.read());
     return node.read();
 }
 
-function open(node, mode) {
-    mode = (mode) ? mode : 'r';
-    if (typeof(node) !== 'object') {
-        node = parsePath(node);
+function touch(path) {
+    var name = path;
+    if (name.match('/')) {
+        path = name.match(/(.*)\/(.*)$/)[0];
+        name = name.match(/(.*)\/(.*)$/)[1];
+    } else {
+        path = system.env.cwd;
     }
 
-    var msg = getPath(node) + ' opened for ';
+    var node = parsePath(path);
+    return node.addChild({filename: name});
+}
+
+function open(node, mode) {
+    if (! node) return false;
+    if (typeof(node) === 'string') node = parsePath(node); 
+    if (! node instanceof(Node)) return false;
+    mode = (mode) ? mode : 'r';
+
+    var p = getPath(node);
+    system.log('open ' + p + ' for ' + mode);
+    var msg = p + ' opened for ';
     var m = node.open(mode);
     msg += F_MODES[''+m];
-    console.log(msg);
+    system.log(msg);
     return F_MODES[''+m];
 }
 
 function close(node) {
-    if (typeof(node) !== 'object') {
-        node = parsePath(node);
-    }
+    if (! node) return false;
+    if (typeof(node) === 'string') node = parsePath(node);
+    if (! node instanceof(Node)) return false;
 
     return node.close();
 }
 
 function stat(node) {
-    if (typeof(node) !== 'object') {
-        node = parsePath(node);
-    }
-
     if (! node) return false;
+    if (typeof(node) === 'string') node = parsePath(node);
+    if (! node instanceof(Node)) return false;
 
-    console.log("         Filename: " + node.filename);
-    console.log("         Filesize: " + node.data.length);
-    console.log("             Mode: " + F_MODES[''+node.mode]);
-    console.log("       # Children: " + node.children.length);
+    system.log("         Filename: " + node.filename);
+    system.log("         Filesize: " + node.data.length);
+    system.log("             Mode: " + F_MODES[''+node.mode]);
+    system.log("       # Children: " + node.children.length);
 
     var parentNode = node.getParent();
     if (parentNode) {
         var siblings = node.parent.children.length;
         siblings--;
-        console.log("       # Siblings: " + siblings);
-        console.log("  Parent Filename: " + parentNode.filename);
+        system.log("       # Siblings: " + siblings);
+        system.log("  Parent Filename: " + parentNode.filename);
     }
 }
 
 function ls(node) {
     node = (node) ? node : parsePath(system.env.cwd);
-    if (typeof(node) !== 'object') {
-        node = parsePath(node);
-    }
+    if (! node) return false;
+    if (typeof(node) === 'string') node = parsePath(node);
+    if (! node instanceof(Node)) return false;
 
-    console.log('listing for ' + getPath(node) + ":\n");
+    system.log('listing for ' + getPath(node) + ":\n");
 
     var files = (node.children.length >= 0) ? node.lsChildren() : [];
     var output = '';

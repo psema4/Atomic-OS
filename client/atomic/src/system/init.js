@@ -5,6 +5,16 @@ function System() {
     this.vfs = new Node({ filename: '/' });
     this.tasks = new Array();
 
+    if (console && console.log) {
+        // ok, we've got a console
+    } else {
+        window.console = {
+            log: function(msg) {
+                alert(msg);
+            }
+        }
+    }
+
     this.log = function(msg) {
         if (this.debug) {
             console.log(msg);
