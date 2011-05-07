@@ -41,7 +41,7 @@ function Node(opts) {
 
     this.close = function() {
         if (this.onclose) this.onclose();
-        this.open();
+        return this.open();
     }
 
     this.read = function() {

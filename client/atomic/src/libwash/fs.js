@@ -26,6 +26,7 @@ function readme() {
 
 function pwd() {
     console.log(system.env.cwd);
+    return system.env.cwd;
 }
 
 function cd(node) {
@@ -61,7 +62,7 @@ function cd(node) {
 
 function mkdir(name) {
     var node = parsePath(system.env.cwd);
-    node.addChild({filename: name});
+    return node.addChild({filename: name});
 }
 
 function fprint(node, data) {
@@ -78,6 +79,7 @@ function cat(node) {
     }
 
     console.log(node.read());
+    return node.read();
 }
 
 function open(node, mode) {
@@ -90,6 +92,7 @@ function open(node, mode) {
     var m = node.open(mode);
     msg += F_MODES[''+m];
     console.log(msg);
+    return F_MODES[''+m];
 }
 
 function close(node) {
@@ -97,7 +100,7 @@ function close(node) {
         node = parsePath(node);
     }
 
-    node.close();
+    return node.close();
 }
 
 function stat(node) {
@@ -139,7 +142,8 @@ function ls(node) {
     }
 
     output = output.replace(/\n$/, '');
-    return output;
+    //return output;
+    return output.split("\n");
 }
 
 function getPath(node, path) {
