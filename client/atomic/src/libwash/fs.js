@@ -29,6 +29,7 @@ function pwd() {
 }
 
 function cd(node) {
+    var retval = false;
     var cwd = parsePath(system.env.cwd);
 
     if (typeof(node) !== 'object') {
@@ -49,7 +50,13 @@ function cd(node) {
     }
 
     var p = getPath(node);
-    if (p) { system.log('cd set system.env.cwd'); system.env.cwd = p; }
+    if (p) {
+        system.log('cd set system.env.cwd');
+        system.env.cwd = p;
+        retval = true;
+    }
+
+    return retval;
 }
 
 function mkdir(name) {
