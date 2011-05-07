@@ -28,6 +28,8 @@ function WindowManager(opts) {
         this.nextX += 10;
         this.nextY += 10;
         this.focus(winIndex);
+
+        return true;
     }
 
     this.focus = function(win) {
