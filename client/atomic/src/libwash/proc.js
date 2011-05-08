@@ -35,15 +35,28 @@ function ProcScanner(rate) {
 
                 var filemode, charCount = 0;
 
-                if (touch(procPath)) filemode = open(procPath, 'w');
+                var procDir = mkdir(procPath);
+                if (! procDir) {
+                    system.log('procScan(): ' + procPath + ' mkdir failed, aborting scan');
+                    return false;
+                }
 
-                if (filemode == F_MODES[F_WRITE])
-                    charCount = fprint(procPath, 'Class: ' + val + "\n")
+                var procClassPath = procPath + '/class';
+                var procPIDPath = procPath + '/pid';
 
+                if (touch(procClassPath)) filemode = open(procClassPath, 'w');
+                if (filemode == F_MODES[F_WRITE]) 
+                    charCount = fprint(procClassPath, val);
                 else
-                    system.log('file not writable');
+                    system.log('class file not writable');
+                system.log('wrote ' + charCount + ' characters to class file');
 
-                system.log('wrote: ' + charCount + ' characters');
+                if (touch(procPIDPath)) filemode = open(procPIDPath, 'w');
+                if (filemode == F_MODES[F_WRITE]) 
+                    charCount = fprint(procPIDPath, idx+'');
+                else
+                    system.log('pid file not writable');
+                system.log('wrote ' + charCount + ' characters to pid file');
             }
         });
 

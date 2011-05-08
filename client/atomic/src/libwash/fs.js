@@ -62,9 +62,23 @@ function cd(node) {
     return retval;
 }
 
-function mkdir(name) {
-    var node = parsePath(system.env.cwd);
-    return node.addChild({filename: name});
+function mkdir(path) {
+    var name = path;
+
+    if (name.match('/')) {
+        path = name.match(/(.*)\/(.*)$/)[1];
+        name = name.match(/(.*)\/(.*)$/)[2];
+
+    } else {
+        path = system.env.cwd;
+    }
+
+    system.log('mkdir "' + name + '" in ' + path);
+
+    var node = parsePath(path);
+    var fh = node.addChild({filename: name});
+
+    return (fh instanceof Node) ? fh : false;
 }
 
 function fprint(node, data) {

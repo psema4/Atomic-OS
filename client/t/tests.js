@@ -44,6 +44,13 @@ test("basic file ops", function() {
     strictEqual(cat('/tmp/test/myfile'), "foo", '/tmp/test/myfile contents === "foo"');
 });
 
+test("system tasks", function() {
+    deepEqual(ls('/proc'), ["/proc/0", "/proc/1", "/proc/2"], "ls /proc");
+    strictEqual(cat('/proc/0/pid') + ':' + cat('/proc/0/class'), "0:WASH", "WASH is pid 0");
+    strictEqual(cat('/proc/1/pid') + ':' + cat('/proc/1/class'), "1:WindowManager", "WindowManager is pid 1");
+    strictEqual(cat('/proc/2/pid') + ':' + cat('/proc/2/class'), "2:ProcScanner", "ProcScanner is pid 2");
+});
+
 test("initrc", function() {
     initrc();
     strictEqual(cat('/bin/foo/barbaz'), 'hello, world!', "initrc created a hello, world file?");
