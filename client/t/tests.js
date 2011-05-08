@@ -21,7 +21,7 @@ test("basic folder ops", function() {
     strictEqual(cd('/bin'), "/bin", "cd /bin (absolute cd)");
     deepEqual(ls(), ["/bin/foo", "/bin/bar", "/bin/baz"], "/bin populated correctly?"); 
 
-    strictEqual(cd('foo'), "/bin/foo", "cd /bin (relative cd)");
+    strictEqual(cd('foo'), "/bin/foo", "cd foo (relative cd)");
     deepEqual(ls(), ["/bin/foo/barbaz"], "/bin/foo populated correctly?");
 
     strictEqual(cd('/tmp'), "/tmp", "cd /tmp");
