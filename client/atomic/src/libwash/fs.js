@@ -71,7 +71,7 @@ function fprint(node, data) {
     if (! node) return false;
     if (typeof(node) === 'string') node = parsePath(node);
     if (! node instanceof(Node)) return false;
-
+system.log('node found, writing data: ' + data);
     if (data) return node.write(data);
 }
 
@@ -86,15 +86,21 @@ function cat(node) {
 
 function touch(path) {
     var name = path;
+
     if (name.match('/')) {
-        path = name.match(/(.*)\/(.*)$/)[0];
-        name = name.match(/(.*)\/(.*)$/)[1];
+        path = name.match(/(.*)\/(.*)$/)[1];
+        name = name.match(/(.*)\/(.*)$/)[2];
+
     } else {
         path = system.env.cwd;
     }
 
+    system.log('touching "' + name + '" in ' + path);
+
     var node = parsePath(path);
-    return node.addChild({filename: name});
+    var fh = node.addChild({filename: name});
+
+    return (fh instanceof Node) ? fh : false;
 }
 
 function open(node, mode) {

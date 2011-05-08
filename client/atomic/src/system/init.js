@@ -46,15 +46,21 @@ function System() {
             var stdin = devwash.addChild({filename: 'stdin'});
             var stdout = devwash.addChild({filename: 'stdout'});
 
-            system.tasks.push(new WASH());
-            stdin.onread = function() {
-                system.log('/dev/wash/stdin: onread called');
-            }
-            window.wash = system.tasks[0];
+            if (system.tasks.length == 0) {
+                system.tasks.push(new WASH());
+                stdin.onread = function() {
+                    system.log('/dev/wash/stdin: onread called');
+                }
+                window.wash = system.tasks[0];
 
-            system.tasks.push(new WindowManager());
-            window.wm = system.tasks[1];
-            wm.cm.initContext();
+                system.tasks.push(new WindowManager());
+                window.wm = system.tasks[1];
+                wm.cm.initContext();
+
+                system.tasks.push( new ProcScanner(system.env.procScanInterval) );
+                system.scanner = system.tasks[2];
+                system.scanner.scan();
+            }
 
         } else {
             console.log("No system!");

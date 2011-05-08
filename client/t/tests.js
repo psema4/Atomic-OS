@@ -8,8 +8,8 @@ test("truth", function() {
 });
 
 test("system tasks", function() {
-    if (system.tasks.length != 2) system.init();
-    deepEqual(ps(), ["WASH","WindowManager"], "task list from ps");
+    if (system.tasks.length == 0) system.init();
+    deepEqual(ps(), ["WASH","WindowManager","ProcScanner"], "task list from ps");
 });
 
 
