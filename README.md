@@ -1,14 +1,14 @@
-Atomic OS README
+= Atomic OS README
 
 (C)2005-2011 Scott Elcomb
 Some Rights Reserved
 
 
-0. Legal
+=== Legal
 
 Atomic OS is licensed under the LGPLv3 license.  For details, please see the LICENSE file.
 
-1. Summary
+=== Summary
 
 Atomic OS is a "live" OS-like environment and SPA library/template for web app development.
 
@@ -21,30 +21,6 @@ Atomic OS hopes to help ameliorate dependence on the cloud by allowing app data 
 Because Atomic OS is simply an html file, it is instantly a template, infinitely reusable and extremely easy to distribute.
 
 
-2. Project Layout
-
-  Figure 1: Layout of project files
-
-  Atomic-OS --,-- server --,-- cgi    --,-- perl
-              |            |            `-- php
-              |            |
-              |            `-- daemon --,-- node (node.js)
-              |                         `-- perl (mojolicious)
-              |
-              +-- client --,-- atomic
-              |            +-- perl-curses
-              |            +-- node-curses
-              |            `-- t                 (qunit)
-              `--
-
-3. Requirements
-  - Building Atomic Client Documents: perl, python, and bash
-  - Running the Atomic OS Daemon:     node.js
-
-4. Support
+=== Support
   - Issue Tracker: https://github.com/psema4/Atomic-OS/issues
   - Mailing List:  https://lists.sourceforge.net/lists/listinfo/atomos-discuss
-
-A. 3rd Party Tools & Libraries
-  - minifier: jsmin.py (JSON License - http://www.json.org/license.html)
-  - testing:  QUnit (dual MIT/GPL License)

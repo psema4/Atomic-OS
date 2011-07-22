@@ -1,3 +1,0 @@
-#!/usr/bin/env bash
-perl -pi -e's/\033\[0;32m//g' log.txt
-perl -pi -e's/\033\[0m//g' log.txt
