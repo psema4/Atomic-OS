@@ -1,14 +1,18 @@
-= Atomic OS README
+Atomic OS README
+================
 
 (C)2005-2011 Scott Elcomb
+
 Some Rights Reserved
 
 
-=== Legal
+Legal
+=====
 
 Atomic OS is licensed under the LGPLv3 license.  For details, please see the LICENSE file.
 
-=== Summary
+Summary
+=======
 
 Atomic OS is a "live" OS-like environment and SPA library/template for web app development.
 
@@ -21,6 +25,8 @@ Atomic OS hopes to help ameliorate dependence on the cloud by allowing app data 
 Because Atomic OS is simply an html file, it is instantly a template, infinitely reusable and extremely easy to distribute.
 
 
-=== Support
+Support
+=======
+
   - Issue Tracker: https://github.com/psema4/Atomic-OS/issues
   - Mailing List:  https://lists.sourceforge.net/lists/listinfo/atomos-discuss
