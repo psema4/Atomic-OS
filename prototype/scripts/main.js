@@ -1,20 +1,47 @@
-require([  "jquery",
-           "hx/mbus",
-           "hx/panel1",
-           "bin/interpreter",
-           "bin/mycommand"
-        ], function($) {
+$(document).ready(function() {
+    $('body').append('<div id="winroot"></div><div id="fileroot"></div>');
 
-            $(function() {
-                $('body').append("<b>foo</b>");
+    window.panels = [];
+    panels.push(new HxPanel({ mbus: HxBus }));
+    panels.push(new HxPanel({
+        mbus: HxBus,
+        css: {
+                   position: 'absolute',
+                        top: 100,
+                       left: 100,
+                      right: 100,
+                     bottom: 100,
+                     border: '2px outset #eee',
+            backgroundColor: '#ccc'
+        }
+    }));
+    panels.push(new HxPanel({
+        mbus: HxBus,
+        css: {
+                   position: 'absolute',
+                        top: 50,
+                       left: 250,
+                      width: 400,
+                     height: 200,
+                     border: '2px outset #eee',
+            backgroundColor: '#ccc'
+        }
+    }));
 
-                // mbus check
-                var panels = [];
-                panels.push(new HxPanel({ }));
+    var rootPanel = panels[0];
+    rootPanel.subscribe("rollcall", function() { console.log('RollCall: panel0'); });
+    panels[1].subscribe("rollcall", function() { console.log('RollCall: panel1'); });
+    panels[2].subscribe("rollcall", function() { console.log('RollCall: panel2'); });
 
-                window.rootPanel = panels[0];
+    rootPanel.publish("rollcall");
 
-                // wash check
-                Interpreter.execute("MyCommand foo bar baz"); 
-            });
+    window.files = [];
+    files.push(new HxFile({
+        name: 'test-sh',
+        data: 'Hello, World!'
+    }));
+
+    files[0].append(' [ ok ]');
+
+    wash.exec("wash.lib.cat test-sh");
 });

@@ -1,4 +1,4 @@
-var HxMBus = (function () {
+var HxBus = (function () {
     var channels = {
         "default": {
             subscriptions: {}
@@ -63,4 +63,4 @@ var HxMBus = (function () {
             }
         }
     }
-}) ( );
+})();

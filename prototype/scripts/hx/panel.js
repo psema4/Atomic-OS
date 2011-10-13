@@ -1,13 +1,12 @@
 function HxPanel(opts) {
-    var counter = 0;
     var toggleState = (opts && opts.toggled)  ? opts.toggled  : true;
-    var name        = (opts && opts.name)     ? opts.name     : 'hxpanel' + counter++;
+    var name        = (opts && opts.name)     ? opts.name     : HxGUID.next();
     var parentEl    = (opts && opts.parentEl) ? opts.parentEl : 'winroot';
     var mbus        = (opts && opts.mbus)     ? opts.mbus     : null;
 
     $('#' + parentEl).append('<div id="' + name + '" class="HxPanel">');
-
     var hxpanel = $('#' + name);
+
     if (opts && opts.class) { hxpanel.addClass(opts.class); }
     if (opts && opts.css)   { hxpanel.css(opts.css); }
 
@@ -43,10 +42,11 @@ function HxPanel(opts) {
 
         moveTo: function(x,y) { hxpanel.css({ top: y, left: x }); },
 
+        resizeTo: function(x2,y2) { hxpanel.css({ right: x2, bottom: y2 }); },
+
         toggle: function() {
             toggleState = (toggleState) ? false : true;
-
-            $('#' + name).fadeToggle();
+            hxpanel.fadeToggle();
 
             return toggleState;
         }

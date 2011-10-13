@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+cat "vendor/zepto.min.js"   \
+    "bin/wash.js"           \
+    "bin/cat.js"            \
+    "bin/echo.js"           \
+    "hx/bus.js"             \
+    "hx/file.js"            \
+    "hx/guid.js"            \
+    "hx/panel.js"           \
+    "main.js"               \
+  > "atomos.js"
