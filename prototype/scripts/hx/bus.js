@@ -10,11 +10,13 @@ var HxBus = (function () {
             ch = (ch) ? ch : "default";
 
             if (! channels.hasOwnProperty(ch)) {
-                throw new Error('PubSub.publish: "' + ch + '" is not a registered channel');
+                console.log('PubSub.publish: "' + ch + '" is not a registered channel');
+                return;
             }
 
             if (! channels[ch].subscriptions.hasOwnProperty(msg)) {
-                throw new Error('PubSub.publish: "' + msg + '" is not a registered message');
+                console.log('PubSub.publish: "' + msg + '" is not a registered message');
+                return;
             }
 
             args = (args) ? args : [];

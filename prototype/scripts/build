@@ -1,12 +1,18 @@
 #!/usr/bin/env bash
 
+#TODO zepto.eof.txt should not be required, check minifier & zepto issues on github
+
 cat "vendor/zepto.min.js"   \
+    "zepto.eof.txt"         \
+    "vendor/ejohn-class.js" \
     "bin/wash.js"           \
     "bin/cat.js"            \
     "bin/echo.js"           \
+    "hx/stream.js"          \
     "hx/bus.js"             \
     "hx/file.js"            \
     "hx/guid.js"            \
     "hx/panel.js"           \
+    "hx/test.js"            \
     "main.js"               \
   > "atomos.js"

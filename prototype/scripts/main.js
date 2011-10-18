@@ -44,4 +44,30 @@ $(document).ready(function() {
     files[0].append(' [ ok ]');
 
     wash.exec("wash.lib.cat test-sh");
+
+    window.streams = [],
+
+    streams.push(new HxStream({  buffer: 'test1' }));
+    HxBus.subscribe(streams[0].name + '/ondata', function() {
+        console.log(streams[0].name + ': stdin has data');
+    });
+
+    streams.push(new HxStream2({ buffer: 'test2' }));
+    HxBus.subscribe(streams[1].name + '/ondata', function() {
+        console.log(streams[1].name + ': stdout has data');
+    });
+
+    console.log('test group 1');
+    new HxTest([
+        "assert('read', '"  +          streams[0].read() +                 "', 'test1');",
+        "assert('read', '"  +          streams[1].read() +                 "', 'test2');",
+        "assert('write', '" +          streams[0].write('test 4').read() + "');",
+        "assert('write', '" +          streams[1].write('test 5').read() + "');"
+    ]).run();
+
+    console.log('test group 2');
+    new HxTest([
+        "assertNotEqual('reread', '" + streams[0].read() +                 "', 'test 6');",
+        "assertNotEqual('reread', '" + streams[1].read() +                 "', 'test 7');"
+    ]).run();
 });
