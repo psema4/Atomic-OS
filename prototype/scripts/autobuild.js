@@ -54,7 +54,7 @@ autobuilder = {
     "watchFiles": function() {
         var that = this;
 
-        child_process.exec('find . | grep "\.js$" | grep -v "atomos.js$"', function(error, stdout, stderr) {
+        child_process.exec('find . | grep "\.js$" | grep -v "atomos"', function(error, stdout, stderr) {
             var files = stdout.trim().split("\n");
 
             files.forEach(function(file) {

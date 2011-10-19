@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+cat "cat.js"            \
+    "cd.js"             \
+    "echo.js"           \
+    "ls.js"             \
+    "pwd.js"            \
+  > "atomos-bin.js"

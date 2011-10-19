@@ -100,7 +100,33 @@ var HxJSFS = HxStream.extend({
         return false;
     },
 
+    getFolder: function(path) {
+            if (path == '/') return system.fs;
+
+            path = path.replace(/\/$/, '');
+
+            var pathParts = path.split('/');
+
+            if (pathParts.length > 1) {
+                pathParts.shift();
+
+                var fspath = "system.fs";
+                var newpath = '';
+
+                for (var i=0; i<pathParts.length; i++) {
+                    newpath += '.tree.' + pathParts[i];
+                }
+            }
+
+            fspath += newpath;
+            var o = eval(fspath);
+
+            return o ? o : false;
+    },
+
     mount: function(path, fs) {
-        console.warn("system: sorry, mount not implemented yet");
+        var subtreeName = this.basename(fs.name);
+        var folder = this.getFolder(path);
+        folder.tree[subtreeName] = fs;
     }
 });

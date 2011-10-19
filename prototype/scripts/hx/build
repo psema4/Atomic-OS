@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+cat "class.js"           \
+    "assert.js"          \
+    "guid.js"            \
+    "bus.js"             \
+    "stream.js"          \
+    "file.js"            \
+    "jsfs.js"            \
+    "wash.js"            \
+    "panel.js"           \
+    "test.js"            \
+  > "atomos-hx.js"
