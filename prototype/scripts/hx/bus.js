@@ -10,12 +10,12 @@ var HxBus = (function () {
             ch = (ch) ? ch : "default";
 
             if (! channels.hasOwnProperty(ch)) {
-                console.log('PubSub.publish: "' + ch + '" is not a registered channel');
+                console.warn('system bus: publish: "' + ch + '" is not a registered channel');
                 return;
             }
 
             if (! channels[ch].subscriptions.hasOwnProperty(msg)) {
-                console.log('PubSub.publish: "' + msg + '" is not a registered message');
+                console.warn('system bus: publish: "' + msg + '" is not a registered message');
                 return;
             }
 
@@ -32,7 +32,7 @@ var HxBus = (function () {
 
         subscribe: function (msg, fn, ch) {
             if (typeof fn !== 'function') {
-                throw new Error('PubSub.subscribe: fn must be a function');
+                throw new Error('system bus: subscribe: fn must be a function');
             }
 
             ch = (ch) ? ch : "default";
@@ -52,7 +52,7 @@ var HxBus = (function () {
 
         unsubscribe: function (msg, fn, ch) {
             if (typeof fn !== 'function') {
-                throw new Error('PubSub.unsubscribe: fn must be a function');
+                throw new Error('system bus: unsubscribe: fn must be a function');
             }
 
             ch = (ch) ? ch : "default";

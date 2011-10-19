@@ -5,13 +5,19 @@
 cat "vendor/zepto.min.js"   \
     "zepto.eof.txt"         \
     "vendor/ejohn-class.js" \
-    "bin/wash.js"           \
     "bin/cat.js"            \
+    "bin/cd.js"             \
     "bin/echo.js"           \
-    "hx/stream.js"          \
-    "hx/bus.js"             \
-    "hx/file.js"            \
+    "bin/ls.js"             \
+    "bin/pwd.js"            \
+    "hx/class.js"           \
+    "hx/assert.js"          \
     "hx/guid.js"            \
+    "hx/bus.js"             \
+    "hx/stream.js"          \
+    "hx/file.js"            \
+    "hx/jsfs.js"            \
+    "hx/wash.js"            \
     "hx/panel.js"           \
     "hx/test.js"            \
     "main.js"               \

@@ -11,20 +11,20 @@ var HxTest = function(plan) {
 
     this.assert = function(caption, value, expected) {
         var header = ++this.assertCounter + '/' + this.plan.length + ' ';
-        header += !expected ? '[skip]' : (value == expected) ? '[pass]' : '[fail]';
+        header += !expected ? '[SKIP]' : (value == expected) ? '[PASS]' : '[FAIL]';
 
-        var msg = header + ' ' + caption + ': ' + value;
-        msg += (header.match(/\[fail\]/)) ? ', expected: ' + expected : '';
+        var msg = header + ' ' + caption + ': "' + value + '"';
+        msg += (header.match(/\[FAIL\]/)) ? ', expected: "' + expected + '"' : '';
 
         console.log(msg);
     };
 
     this.assertNotEqual = function(caption, value, expected) {
         var header = ++this.assertCounter + '/' + this.plan.length + ' ';
-        header += !expected ? '[skip]' : (value != expected) ? '[pass]' : '[fail]';
+        header += !expected ? '[SKIP]' : (value != expected) ? '[PASS]' : '[FAIL]';
 
-        var msg = header + ' ' + caption + ': ' + value;
-        msg += (header.match(/\[fail\]/)) ? ', expected: ' + expected : '';
+        var msg = header + ' ' + caption + ': "' + value + '"';
+        msg += (header.match(/\[FAIL\]/)) ? ', NOT expected: "' + expected + '"' : '';
 
         console.log(msg);
     };
