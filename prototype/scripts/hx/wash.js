@@ -20,9 +20,19 @@ var HxWash = HxProcess.extend({
         try {
             var cmdName = args.shift(),
                 basename = system.fs.basename(cmdName),
+                cmdObj = null;
+
+            if (system.bin[basename]) {
                 cmdObj = eval( system.bin[basename] );
 
-            cmdObj.exec.call(this, args);
+            } else {
+                var notFound = 'command not found';
+
+                this.fd[1].write(notFound);
+                console.warn(notFound);
+            }
+
+            if (cmdObj) cmdObj.exec.call(this, args);
 
         } catch(e) {
             console.warn("WASH Exception:");

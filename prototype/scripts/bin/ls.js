@@ -3,11 +3,17 @@ system.bin = system.bin || {};
 
 system.bin.ls = {
     exec: function(args) {
+        // 'this' is the calling process
+
+        var stdin  = (this.fd && this.fd.length > 0) ? this.fd[0] : false;
+        var stdout = (this.fd && this.fd.length > 1) ? this.fd[1] : false;
+        var stderr = (this.fd && this.fd.length > 2) ? this.fd[2] : false;
+
         try {
             var path = (args instanceof Array) ? args.shift() : args;
             if (! path && system.env && system.env.cwd) path = system.env.cwd;
 
-            console.log(path + ':');
+            var output = path + ':' + "\n";
 
             var fspath = system.fs.getFolder(path);
             if (fspath) {
@@ -18,10 +24,19 @@ system.bin.ls = {
                     var file = results[i].file;
 
                     var postfix = (file && file.tree) ? '/' : '';
-                    console.log( '  ' + result + postfix );
+                    output += '  ' + result + postfix + "\n";
                 }
+
+                output = output.replace(/\n$/, ''); // remove trailing newline
+
             } else {
-                console.warn("folder not found");
+                output = "folder not found";
+            }
+
+            if (stdout) {
+                stdout.write(output);
+            } else {
+                console.log(output);
             }
 
         } catch(e) {

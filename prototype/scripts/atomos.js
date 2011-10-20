@@ -83,9 +83,19 @@ system.bin = system.bin || {};
 
 system.bin.cat = {
     exec: function(args) {
+        var stdin  = (this.fd && this.fd.length > 0) ? this.fd[0] : false;
+        var stdout = (this.fd && this.fd.length > 1) ? this.fd[1] : false;
+        var stderr = (this.fd && this.fd.length > 2) ? this.fd[2] : false;
+
         try {
             var path = (args instanceof Array) ? args.shift() : args;
-            console.log(system.fs.readFile(path));
+            var buf = system.fs.readFile(path);
+
+            if (stdout) {
+                stdout.write(buf);
+            } else {
+                console.log(buf);
+            }
 
         } catch(e) {
             console.log('command exception:');
@@ -98,6 +108,10 @@ system.bin = system.bin || {};
 
 system.bin.cd = {
     exec: function(args) {
+        var stdin  = (this.fd && this.fd.length > 0) ? this.fd[0] : false;
+        var stdout = (this.fd && this.fd.length > 1) ? this.fd[1] : false;
+        var stderr = (this.fd && this.fd.length > 2) ? this.fd[2] : false;
+
         try {
             var path = (args instanceof Array) ? args.shift() : args;
 
@@ -111,7 +125,11 @@ system.bin.cd = {
                 system.env.cwd = path;
             }
 
-            console.log(system.env.cwd);
+            if (stdout) {
+                stdout.write(system.env.cwd);
+            } else {
+                console.log(system.env.cwd);
+            }
 
         } catch(e) {
             console.log('command exception:');
@@ -161,11 +179,17 @@ system.bin = system.bin || {};
 
 system.bin.ls = {
     exec: function(args) {
+        // 'this' is the calling process
+
+        var stdin  = (this.fd && this.fd.length > 0) ? this.fd[0] : false;
+        var stdout = (this.fd && this.fd.length > 1) ? this.fd[1] : false;
+        var stderr = (this.fd && this.fd.length > 2) ? this.fd[2] : false;
+
         try {
             var path = (args instanceof Array) ? args.shift() : args;
             if (! path && system.env && system.env.cwd) path = system.env.cwd;
 
-            console.log(path + ':');
+            var output = path + ':' + "\n";
 
             var fspath = system.fs.getFolder(path);
             if (fspath) {
@@ -176,10 +200,19 @@ system.bin.ls = {
                     var file = results[i].file;
 
                     var postfix = (file && file.tree) ? '/' : '';
-                    console.log( '  ' + result + postfix );
+                    output += '  ' + result + postfix + "\n";
                 }
+
+                output = output.replace(/\n$/, ''); // remove trailing newline
+
             } else {
-                console.warn("folder not found");
+                output = "folder not found";
+            }
+
+            if (stdout) {
+                stdout.write(output);
+            } else {
+                console.log(output);
             }
 
         } catch(e) {
@@ -193,8 +226,16 @@ system.bin = system.bin || {};
 
 system.bin.pwd = {
     exec: function(args) {
+        var stdin  = (this.fd && this.fd.length > 0) ? this.fd[0] : false;
+        var stdout = (this.fd && this.fd.length > 1) ? this.fd[1] : false;
+        var stderr = (this.fd && this.fd.length > 2) ? this.fd[2] : false;
+
         try {
-            console.log(system.env.cwd);
+            if (stdout) {
+                stdout.write(system.env.cwd);
+            } else {
+                console.log(system.env.cwd);
+            }
 
         } catch(e) {
             console.log('command exception:');
@@ -538,9 +579,19 @@ var HxWash = HxProcess.extend({
         try {
             var cmdName = args.shift(),
                 basename = system.fs.basename(cmdName),
+                cmdObj = null;
+
+            if (system.bin[basename]) {
                 cmdObj = eval( system.bin[basename] );
 
-            cmdObj.exec.call(this, args);
+            } else {
+                var notFound = 'command not found';
+
+                this.fd[1].write(notFound);
+                console.warn(notFound);
+            }
+
+            if (cmdObj) cmdObj.exec.call(this, args);
 
         } catch(e) {
             console.warn("WASH Exception:");
@@ -588,6 +639,7 @@ var HxPanel = HxJSFS.extend({
         this.name        = (opts && opts.name)     ? opts.name     : HxGUID.next();
         this.parentEl    = (opts && opts.parentEl) ? opts.parentEl : 'winroot';
         this.bus         = (opts && opts.bus)      ? opts.bus      : HxBus;
+        this.mountPoint  = (opts && opts.mount)    ? opts.mount    : null;
 
         //FIXME: convert this nodes name to something the DOM can use
         if (this.name.match(/\//)) {
@@ -603,6 +655,10 @@ var HxPanel = HxJSFS.extend({
 
         if (opts && opts.class) { this.hxpanel.addClass(opts.class); }
         if (opts && opts.css)   { this.hxpanel.css(opts.css); }
+
+        if (this.mountPoint) {
+            system.fs.mount(this.mountPoint, this);
+        }
     },
 
     get: function() { return this.hxpanel },
@@ -618,6 +674,111 @@ var HxPanel = HxJSFS.extend({
         this.hxpanel.fadeToggle();
 
         return toggleState;
+    }
+});
+
+var HxWindow = HxPanel.extend({
+    init: function(opts) {
+        opts = opts || {};
+
+        if (opts.defaultStyle) {
+            opts.css = opts.css || {};
+            opts.css.position = 'absolute';
+            opts.css.backgroundColor = '#ccc';
+            opts.css.border = '2px outset #eee';
+        }
+
+        this._super(opts);
+
+        this.title = opts.title || 'Window ' + this.name;
+
+        this.inputHandler  = opts.inputHandler  || function() {};
+        this.outputHandler = opts.outputHandler || function() {};
+        this.errorHandler  = opts.errorHandler  || function() {};
+
+        var ui = "<div id='" + this.name + "-titlebar' class='titlebar'>" + this.title + "</div><div id='" + this.name + "-content'></div>";
+
+        this.get().append(ui);
+    },
+
+    getTitlebar: function() {
+        return $('#' + this.name + '-titlebar');
+    },
+
+    getContent: function() {
+        return $('#' + this.name + '-content');
+    }
+});
+
+var HxCommandWindow = HxWindow.extend({
+    init: function(opts) {
+        opts = opts || {};
+        this._super(opts);
+
+        this.history = [];
+        this.historyPtr = this.history.length;
+
+        var output = "<textarea id='" + this.name + "-output' style='position: absolute; top: 30px; left: 0px; right: 0px; bottom: 32px;'>Welcome to WASH, the Web Application SHell\n</textarea>";
+
+        var input = "<br><input id='" + this.name + "-input' type='text' style='position: absolute; height: 20px; bottom: 5px; left: 0px; right: 80px;' />" +
+                    "<button id='" + this.name + "-btn' style='position: absolute; height: 20px; bottom: 5px; width: 60px; right: 10px;'>ENTER</button>";
+
+        var ui = output + input;
+        this.getContent().append(ui);
+
+        var self = this;
+
+        var btnExecute = $('#' + this.name + '-btn');
+        btnExecute.click(function() {
+            self.exec.call(self);
+        });
+
+        var txtInput = $('#' + this.name + '-input');
+        txtInput.keyup(function(evt) {
+
+            switch (evt.keyCode) {
+                case 13: // ENTER key
+                    $('#' + self.name + '-btn').trigger('click');
+                    break;
+
+                case 38: // UP key
+                    if (self.historyPtr > 0) self.historyPtr--;
+                    $('#' + self.name + '-input').val(self.history[self.historyPtr]);
+                    break;
+
+                case 40: // DOWN key
+                    var cmdString = '';
+
+                    if (self.historyPtr < self.history.length) {
+                        self.historyPtr++;
+                        cmdString = self.history[self.historyPtr];
+
+                    } else {
+                        cmdString = '';
+                    }
+
+                    $('#' + self.name + '-input').val(cmdString);
+                    break;
+
+                default:
+//                    console.log(evt.keyCode);
+            };
+        });
+
+        txtInput[0].focus();
+    },
+
+    exec: function(evt) {
+        var input = $('#' + this.name + '-input');
+        var cmdString = input.val();
+        input.val('');
+
+        this.history.push(cmdString);               // push onto command history
+        system.wash.fd[1].write("\n" + cmdString);  // echo to stdout
+        system.wash.fd[0].write(cmdString);         // write to stdin so global wash will execute it
+
+        input[0].focus();
+        this.historyPtr = this.history.length;
     }
 });
 
@@ -783,33 +944,33 @@ $(document).ready(function() {
 
     system.fs.mount("/mnt", desktopfs);
 
-    var panels = {
-        panel1: new HxPanel({
-            parentEl: 'desktop', // basename for /mnt/desktop (see FIXME note)
-            css: {
-                   position: 'absolute',
-                        top: 100,
-                       left: 100,
-                      right: 100,
-                     bottom: 100,
-                     border: '2px outset #eee',
-            backgroundColor: '#ccc'
-            }
-        }),
+    // prevent global wash from flushing stdout on read so we can mirror it to the command window's output
+    system.wash.fd[1].autoFlush = false;
 
-        panel2: new HxPanel({
-            parentEl: 'desktop', // basename for /mnt/desktop (see FIXME note)
-            css: {
-                   position: 'absolute',
-                        top: 50,
-                       left: 250,
-                      width: 400,
-                     height: 200,
-                     border: '2px outset #eee',
-            backgroundColor: '#ccc'
-            }
-        })
-    }
+    // window test - this needs to break out into a webtty process which should contain it's on HxWASH interpreter
+    window.cmdWindow = new HxCommandWindow({
+        parentEl: 'desktop',
+        mount: '/mnt/desktop',
+        title: 'Command Console',
+        defaultStyle: true, // use system chrome [absolute positioning, gray background & outset border: see HxWindow.init()]
+        css: { top: '10px', left: '10px', right: '10px', bottom: '10px' },
 
-    system.fs.tree.mnt.tree = panels;
+        inputHandler: function(buf) {
+            system.wash.fd[0].write(buf);
+        },
+
+        outputHandler: function() {
+            var buf = system.wash.fd[1].read() + "\n";
+            var output = $('#' + cmdWindow.name + '-output');
+            output.append(buf);
+            output[0].scrollTop = output[0].scrollHeight;
+        },
+
+        errorHandler: function() {
+        }
+    });
+
+    // tie global wash's stdout to cmdWindow output
+    var stdout = system.wash.fd[1];
+    stdout.bus.subscribe(stdout.name + ':ondata', cmdWindow.outputHandler);
 });

@@ -127,33 +127,33 @@ $(document).ready(function() {
 
     system.fs.mount("/mnt", desktopfs);
 
-    var panels = {
-        panel1: new HxPanel({
-            parentEl: 'desktop', // basename for /mnt/desktop (see FIXME note)
-            css: {
-                   position: 'absolute',
-                        top: 100,
-                       left: 100,
-                      right: 100,
-                     bottom: 100,
-                     border: '2px outset #eee',
-            backgroundColor: '#ccc'
-            }
-        }),
+    // prevent global wash from flushing stdout on read so we can mirror it to the command window's output
+    system.wash.fd[1].autoFlush = false;
 
-        panel2: new HxPanel({
-            parentEl: 'desktop', // basename for /mnt/desktop (see FIXME note)
-            css: {
-                   position: 'absolute',
-                        top: 50,
-                       left: 250,
-                      width: 400,
-                     height: 200,
-                     border: '2px outset #eee',
-            backgroundColor: '#ccc'
-            }
-        })
-    }
+    // window test - this needs to break out into a webtty process which should contain it's on HxWASH interpreter
+    window.cmdWindow = new HxCommandWindow({
+        parentEl: 'desktop',
+        mount: '/mnt/desktop',
+        title: 'Command Console',
+        defaultStyle: true, // use system chrome [absolute positioning, gray background & outset border: see HxWindow.init()]
+        css: { top: '10px', left: '10px', right: '10px', bottom: '10px' },
 
-    system.fs.tree.mnt.tree = panels;
+        inputHandler: function(buf) {
+            system.wash.fd[0].write(buf);
+        },
+
+        outputHandler: function() {
+            var buf = system.wash.fd[1].read() + "\n";
+            var output = $('#' + cmdWindow.name + '-output');
+            output.append(buf);
+            output[0].scrollTop = output[0].scrollHeight;
+        },
+
+        errorHandler: function() {
+        }
+    });
+
+    // tie global wash's stdout to cmdWindow output
+    var stdout = system.wash.fd[1];
+    stdout.bus.subscribe(stdout.name + ':ondata', cmdWindow.outputHandler);
 });

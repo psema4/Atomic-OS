@@ -6,6 +6,7 @@ var HxPanel = HxJSFS.extend({
         this.name        = (opts && opts.name)     ? opts.name     : HxGUID.next();
         this.parentEl    = (opts && opts.parentEl) ? opts.parentEl : 'winroot';
         this.bus         = (opts && opts.bus)      ? opts.bus      : HxBus;
+        this.mountPoint  = (opts && opts.mount)    ? opts.mount    : null;
 
         //FIXME: convert this nodes name to something the DOM can use
         if (this.name.match(/\//)) {
@@ -21,6 +22,10 @@ var HxPanel = HxJSFS.extend({
 
         if (opts && opts.class) { this.hxpanel.addClass(opts.class); }
         if (opts && opts.css)   { this.hxpanel.css(opts.css); }
+
+        if (this.mountPoint) {
+            system.fs.mount(this.mountPoint, this);
+        }
     },
 
     get: function() { return this.hxpanel },

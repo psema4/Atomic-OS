@@ -10,5 +10,7 @@ cat "class.js"           \
     "process.js"         \
     "wash.js"            \
     "panel.js"           \
+    "window.js"          \
+    "commandwindow.js"   \
     "test.js"            \
   > "atomos-hx.js"
