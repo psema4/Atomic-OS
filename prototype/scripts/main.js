@@ -16,7 +16,7 @@ $(document).ready(function() {
 
     // command interpreter setup (init process will load here instead of wash)
     system.wash = new HxWash();
-    window.wash = system.wash.exec;
+    window.wash = function(args) { system.wash.exec.call(system.wash, args); };
 
 
     // create filesystem
