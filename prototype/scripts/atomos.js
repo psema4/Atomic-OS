@@ -126,13 +126,27 @@ system.bin = system.bin || {};
 
 system.bin.echo = {
     exec: function(args) {
+        // 'this' is the calling process, eg:
+        // console.log('process ' + this.name + ' executing);
+        var stdin =  (this.fd) ? this.fd[0] : false;
+        var stdout = (this.fd && this.fd.length > 1) ? this.fd[1] : false;
+        var stderr = (this.fd && this.fd.length > 2) ? this.fd[2] : false;
+
         try {
             var message = (args instanceof Array) ? message = args.join(' ') : args;
-            console.log(message);
+            if (stdout) stdout.write(message);
+
+            // test stderr
+            throw new Error('fake error');
 
         } catch(e) {
-            console.log('command exception:');
-            console.dir(e);
+            if (stderr) {
+                stderr.write('command exception: ' + e);
+
+            } else {
+                console.log('command exception:');
+                console.dir(e);
+            }
         }
     }
 };
@@ -502,10 +516,14 @@ var HxWash = HxProcess.extend({
 
         this._super(opts);
 
-        var self  = this,
-            stdin = this.fd[0].name;
+        var self   = this,
+            stdin  = this.fd[0].name,
+            stdout = this.fd[1].name,
+            stderr = this.fd[2].name;
 
-        this.fd[0].bus.subscribe(stdin + ':ondata', this.onInput);
+        this.fd[0].bus.subscribe(stdin  + ':ondata', this.onInput);
+        this.fd[1].bus.subscribe(stdout + ':ondata', this.onOutput);
+        this.fd[2].bus.subscribe(stderr + ':ondata', this.onError);
     },
 
     exec: function(command) {
@@ -516,7 +534,7 @@ var HxWash = HxProcess.extend({
                 basename = system.fs.basename(cmdName),
                 cmdObj = eval( system.bin[basename] );
 
-            cmdObj.exec(args);
+            cmdObj.exec.call(this, args);
 
         } catch(e) {
             console.warn("WASH Exception:");
@@ -529,14 +547,30 @@ var HxWash = HxProcess.extend({
 
 //        this.exec( this.fd[0].read() );
 
-        //FIXME: How do we set the scope to *this* wash instance
-        //       (We don't want to reference system.wash)
-
-        console.log('HxWash.onInput(): this:');
-        console.dir(this); // this is an empty object
+        //FIXME: 'this' is an empty object
+        //
+        //       How do we set the scope to wash instance
+        //       (We don't want to reference system.wash...)
 
         var buf = system.wash.fd[0].read();
         system.wash.exec(buf);
+    },
+
+    onOutput: function(args) {
+        console.log('wash process sent data on stdout');
+
+        //FIXME: How do we set the scope to *this* wash instance
+        //       (...and want to route messages to linked processes)
+
+        var buf = system.wash.fd[1].read();
+        console.log('output: ' + buf);
+    },
+
+    onError: function(args) {
+        //FIXME: How do we set the scope to *this* wash instance
+
+        var buf = system.wash.fd[2].read();
+        console.log('error: ' + buf);
     }
 });
 
