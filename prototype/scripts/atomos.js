@@ -137,7 +137,7 @@ system.bin.echo = {
             if (stdout) stdout.write(message);
 
             // test stderr
-            throw new Error('fake error');
+            if (stderr) throw new Error('fake error');
 
         } catch(e) {
             if (stderr) {
