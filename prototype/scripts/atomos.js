@@ -127,10 +127,9 @@ system.bin = system.bin || {};
 system.bin.echo = {
     exec: function(args) {
         // 'this' is the calling process, eg:
-        // console.log('process ' + this.name + ' executing);
-        var stdin =  (this.fd) ? this.fd[0] : false;
-        var stdout = (this.fd && this.fd.length > 1) ? this.fd[1] : false;
-        var stderr = (this.fd && this.fd.length > 2) ? this.fd[2] : false;
+        var stdin  = this.fd ? this.fd[0] : false;
+        var stdout = this.fd ? this.fd[1] : false;
+        var stderr = this.fd ? this.fd[2] : false;
 
         try {
             var message = (args instanceof Array) ? message = args.join(' ') : args;
