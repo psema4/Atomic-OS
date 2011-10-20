@@ -1,25 +1,25 @@
 $(document).ready(function() {
     $('body').append('<div id="winroot"></div><div id="fileroot"></div>');
 
+
+    // system setup (use system.js to configure)
     window.system = window.system || {};
     if (! system.bus) system.bus = HxBus;
 
-    // stream tests
-    window.streams = [],
 
-    console.log('creating example stdin stream (autoFlush: true)');
-    streams.push(new HxStream({ name: 'stdin (test)', buffer: 'test 1' }));
-    HxBus.subscribe(streams[0].name + ':ondata', function() {
-        console.log('system: ' + streams[0].name + ' was modified');
-    });
+    // environment setup
+    system.env = {
+        cwd: '/',
+        pwd: '/'
+    };
 
-    console.log('creating example stdout stream (autoFlush: false)');
-    streams.push(new HxStream({ name: 'stdout (test)', buffer: 'test 2', autoFlush: false }));
-    HxBus.subscribe(streams[1].name + ':ondata', function() {
-        console.log('system: ' + streams[1].name + ' was modified');
-    });
 
-    // build default filesystem
+    // command interpreter setup (init process will load here instead of wash)
+    system.wash = new HxWash();
+    window.wash = system.wash.exec;
+
+
+    // create filesystem
     system.fs = new HxJSFS({
         name: '/',
         tree: {
@@ -65,23 +65,6 @@ $(document).ready(function() {
         }
     });
 
-    // add a /usr
-    var usrfs = new HxJSFS({
-        name: '/usr',
-        tree: {
-            local: new HxJSFS({
-                name: '/usr/local',
-                tree: {
-                    readme: new HxFile({
-                        name: '/usr/local/readme',
-                        buffer: "Lorem ipsum and all that jazz."
-                    })
-                }
-            })
-        }
-    });
-
-    system.fs.mount("/", usrfs);
 
     // build /bin from command objects
     var binfs = new HxJSFS({
@@ -98,6 +81,7 @@ $(document).ready(function() {
 
     system.fs.mount("/", binfs);
 
+
     // fs search test
     var nodeName = 'readme';
     console.log('searching for node "' + nodeName + '"');
@@ -106,23 +90,16 @@ $(document).ready(function() {
         console.log('  found: ' + results[i].path);
     }
 
-    // read/write fs test
+
+    // fs read/write test
     console.log('write test (with notification)');
     system.bus.subscribe('/etc/motd:ondata', function(len) {
         console.log('system: /etc/motd was modified (buffer size: ' + len +')');
     });
     system.fs.writeFile('/etc/motd', "This is the MOTD: We're close to a console now");
 
-    // environment
-    system.env = {
-        cwd: '/',
-        pwd: '/'
-    };
 
-    // command interpreter test
-    system.wash = new HxWash();
-    window.wash = system.wash.exec;
-
+    // command interpreter tests
     wash('echo [NOTE] Going to cat the message of the day...');
     wash('cat /etc/motd');
     wash('echo [NOTE] FS root:');
@@ -131,7 +108,8 @@ $(document).ready(function() {
     wash('cd /home/guest');
     wash('ls');
 
-    // add desktop, then attach panels
+
+    // add a desktop mount and attach panels
     //FIXME: need to improve name support, see panel.js
 
     var desktopfs = new HxPanel({
