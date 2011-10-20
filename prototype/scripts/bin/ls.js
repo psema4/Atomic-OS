@@ -11,14 +11,14 @@ system.bin.ls = {
 
             var fspath = system.fs.getFolder(path);
             if (fspath) {
-                var results = fspath.listFiles();
+                var results = fspath.listFiles(); // pre-sorted by listFiles()
 
                 for (var i=0; i<results.length; i++) {
                     var result = results[i].path;
                     var file = results[i].file;
 
-                    var postfix = (file) ? '/' : '';
-                    console.log( '  ' + result );
+                    var postfix = (file && file.tree) ? '/' : '';
+                    console.log( '  ' + result + postfix );
                 }
             } else {
                 console.warn("folder not found");

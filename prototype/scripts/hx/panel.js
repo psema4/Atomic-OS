@@ -1,4 +1,3 @@
-//var HxPanel = HxStream.extend({
 var HxPanel = HxJSFS.extend({
     init: function(opts) {
         this._super(opts);
@@ -14,6 +13,8 @@ var HxPanel = HxJSFS.extend({
         }
 
         var html = '<div id="' + this.name + '" class="HxPanel"></div>';
+
+        console.warn('attaching panel ' + this.name + ' to ' + this.parentEl);
 
         $('#' + this.parentEl).append(html);
         this.hxpanel = $('#' + this.name);

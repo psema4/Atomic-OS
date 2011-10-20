@@ -25,7 +25,7 @@ var HxBus = (function () {
                 if (scope) {
                     channels[ch].subscriptions[msg][i].call(scope, args);
                 } else {
-                    channels[ch].subscriptions[msg][i](args); // scope is the subscribed module
+                    channels[ch].subscriptions[msg][i](args);
                 }
             }
         },

@@ -66,7 +66,12 @@ var HxJSFS = HxStream.extend({
             acc.push({ path: child, file: node });
         }
 
-        return acc;
+        return acc.sort(function(a, b) {
+            var path1 = a.path.toLowerCase(), path2 = b.path.toLowerCase();
+            if (path1 < path2) return -1;
+            if (path1 > path2) return 1;
+            return 0;
+        });
     },
 
     readFile: function(path) {

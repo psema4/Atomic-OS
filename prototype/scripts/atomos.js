@@ -68,6 +68,16 @@
     return Class;
   };
 })();
+window.system = {
+    env: {
+    },
+
+    constant: {
+        STDIN: 0,
+        STDOUT: 1,
+        STDERR: 2
+    }
+}
 window.system = window.system || {};
 system.bin = system.bin || {};
 
@@ -139,14 +149,14 @@ system.bin.ls = {
 
             var fspath = system.fs.getFolder(path);
             if (fspath) {
-                var results = fspath.listFiles();
+                var results = fspath.listFiles(); // pre-sorted by listFiles()
 
                 for (var i=0; i<results.length; i++) {
                     var result = results[i].path;
                     var file = results[i].file;
 
-                    var postfix = (file) ? '/' : '';
-                    console.log( '  ' + result );
+                    var postfix = (file && file.tree) ? '/' : '';
+                    console.log( '  ' + result + postfix );
                 }
             } else {
                 console.warn("folder not found");
@@ -251,7 +261,7 @@ var HxBus = (function () {
                 if (scope) {
                     channels[ch].subscriptions[msg][i].call(scope, args);
                 } else {
-                    channels[ch].subscriptions[msg][i](args); // scope is the subscribed module
+                    channels[ch].subscriptions[msg][i](args);
                 }
             }
         },
@@ -314,13 +324,13 @@ var HxStream = HxClass.extend({
 
     write: function(buf) {
         this.buffer = buf;
-        this.bus.publish(this.name + ':ondata');
+        this.bus.publish(this.name + ':ondata', this.buffer.length);
         return this;
     },
 
     append: function(buf) {
         this.buffer += buf;
-        this.bus.publish(this.name + ':ondata');
+        this.bus.publish(this.name + ':ondata', this.buffer.length);
         return this;
     },
 
@@ -402,7 +412,12 @@ var HxJSFS = HxStream.extend({
             acc.push({ path: child, file: node });
         }
 
-        return acc;
+        return acc.sort(function(a, b) {
+            var path1 = a.path.toLowerCase(), path2 = b.path.toLowerCase();
+            if (path1 < path2) return -1;
+            if (path1 > path2) return 1;
+            return 0;
+        });
     },
 
     readFile: function(path) {
@@ -466,30 +481,65 @@ var HxJSFS = HxStream.extend({
         folder.tree[subtreeName] = fs;
     }
 });
-var HxWash = HxClass.extend({
+var HxProcess = HxClass.extend({
+    init: function(opts) {
+        opts = opts || {};
+        this.name = opts.name || HxGUID.next();
+
+        this._super(opts);
+
+        this.fd = [
+            new HxStream({}),
+            new HxStream({}),
+            new HxStream({})
+        ];
+    }
+});
+
+var HxWash = HxProcess.extend({
     init: function(opts) {
         opts = opts || {};
 
         this._super(opts);
+
+        var self  = this,
+            stdin = this.fd[0].name;
+
+        this.fd[0].bus.subscribe(stdin + ':ondata', this.onInput);
     },
 
     exec: function(command) {
-        var args = (command.match(' ')) ? command.split(' ') : [command];
+        var args = command.match(' ') ? command.split(' ') : [command];
 
         try {
-            var cmdName = args.shift();
-            var basename = system.fs.basename(cmdName);
-            var cmdObj = eval(system.bin[basename]);
+            var cmdName = args.shift(),
+                basename = system.fs.basename(cmdName),
+                cmdObj = eval( system.bin[basename] );
+
             cmdObj.exec(args);
 
         } catch(e) {
             console.warn("WASH Exception:");
             console.dir(e);
         }
+    },
+
+    onInput: function(args) {
+        console.log('wash process received data on stdin');
+
+//        this.exec( this.fd[0].read() );
+
+        //FIXME: How do we set the scope to *this* wash instance
+        //       (We don't want to reference system.wash)
+
+        console.log('HxWash.onInput(): this:');
+        console.dir(this); // this is an empty object
+
+        var buf = system.wash.fd[0].read();
+        system.wash.exec(buf);
     }
 });
 
-//var HxPanel = HxStream.extend({
 var HxPanel = HxJSFS.extend({
     init: function(opts) {
         this._super(opts);
@@ -505,6 +555,8 @@ var HxPanel = HxJSFS.extend({
         }
 
         var html = '<div id="' + this.name + '" class="HxPanel"></div>';
+
+        console.warn('attaching panel ' + this.name + ' to ' + this.parentEl);
 
         $('#' + this.parentEl).append(html);
         this.hxpanel = $('#' + this.name);
@@ -663,7 +715,7 @@ $(document).ready(function() {
     system.fs.mount("/", binfs);
 
     // fs search test
-    var nodeName = 'motd';
+    var nodeName = 'readme';
     console.log('searching for node "' + nodeName + '"');
     var results = system.fs.find(nodeName);
     for (var i=0; i < results.length; i++) {
@@ -672,8 +724,8 @@ $(document).ready(function() {
 
     // read/write fs test
     console.log('write test (with notification)');
-    system.bus.subscribe('/etc/motd:ondata', function() {
-        console.log('system: /etc/motd was modified');
+    system.bus.subscribe('/etc/motd:ondata', function(len) {
+        console.log('system: /etc/motd was modified (buffer size: ' + len +')');
     });
     system.fs.writeFile('/etc/motd', "This is the MOTD: We're close to a console now");
 
@@ -687,10 +739,17 @@ $(document).ready(function() {
     system.wash = new HxWash();
     window.wash = system.wash.exec;
 
-    wash('echo Going to cat the message of the day...');
+    wash('echo [NOTE] Going to cat the message of the day...');
     wash('cat /etc/motd');
+    wash('echo [NOTE] FS root:');
+    wash('ls');
+    wash('echo [NOTE] Change to home directory');
+    wash('cd /home/guest');
+    wash('ls');
 
-    // add some panels
+    // add desktop, then attach panels
+    //FIXME: need to improve name support, see panel.js
+
     var desktopfs = new HxPanel({
         name: '/mnt/desktop',
         css: {
@@ -701,33 +760,38 @@ $(document).ready(function() {
               bottom: 0
         },
 
-        tree: {
-            panel1: new HxPanel({
-                css: {
-                       position: 'absolute',
-                            top: 100,
-                           left: 100,
-                          right: 100,
-                         bottom: 100,
-                         border: '2px outset #eee',
-                backgroundColor: '#ccc'
-                }
-            }),
-
-            panel2: new HxPanel({
-                css: {
-                       position: 'absolute',
-                            top: 50,
-                           left: 250,
-                          width: 400,
-                         height: 200,
-                         border: '2px outset #eee',
-                backgroundColor: '#ccc'
-                }
-            })
-        }
+        tree: {}
     });
 
     system.fs.mount("/mnt", desktopfs);
-    //FIXME: need to improve name support, see panel.js
+
+    var panels = {
+        panel1: new HxPanel({
+            parentEl: 'desktop', // basename for /mnt/desktop (see FIXME note)
+            css: {
+                   position: 'absolute',
+                        top: 100,
+                       left: 100,
+                      right: 100,
+                     bottom: 100,
+                     border: '2px outset #eee',
+            backgroundColor: '#ccc'
+            }
+        }),
+
+        panel2: new HxPanel({
+            parentEl: 'desktop', // basename for /mnt/desktop (see FIXME note)
+            css: {
+                   position: 'absolute',
+                        top: 50,
+                       left: 250,
+                      width: 400,
+                     height: 200,
+                     border: '2px outset #eee',
+            backgroundColor: '#ccc'
+            }
+        })
+    }
+
+    system.fs.tree.mnt.tree = panels;
 });

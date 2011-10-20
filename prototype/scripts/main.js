@@ -99,7 +99,7 @@ $(document).ready(function() {
     system.fs.mount("/", binfs);
 
     // fs search test
-    var nodeName = 'motd';
+    var nodeName = 'readme';
     console.log('searching for node "' + nodeName + '"');
     var results = system.fs.find(nodeName);
     for (var i=0; i < results.length; i++) {
@@ -108,8 +108,8 @@ $(document).ready(function() {
 
     // read/write fs test
     console.log('write test (with notification)');
-    system.bus.subscribe('/etc/motd:ondata', function() {
-        console.log('system: /etc/motd was modified');
+    system.bus.subscribe('/etc/motd:ondata', function(len) {
+        console.log('system: /etc/motd was modified (buffer size: ' + len +')');
     });
     system.fs.writeFile('/etc/motd', "This is the MOTD: We're close to a console now");
 
@@ -123,10 +123,17 @@ $(document).ready(function() {
     system.wash = new HxWash();
     window.wash = system.wash.exec;
 
-    wash('echo Going to cat the message of the day...');
+    wash('echo [NOTE] Going to cat the message of the day...');
     wash('cat /etc/motd');
+    wash('echo [NOTE] FS root:');
+    wash('ls');
+    wash('echo [NOTE] Change to home directory');
+    wash('cd /home/guest');
+    wash('ls');
 
-    // add some panels
+    // add desktop, then attach panels
+    //FIXME: need to improve name support, see panel.js
+
     var desktopfs = new HxPanel({
         name: '/mnt/desktop',
         css: {
@@ -137,33 +144,38 @@ $(document).ready(function() {
               bottom: 0
         },
 
-        tree: {
-            panel1: new HxPanel({
-                css: {
-                       position: 'absolute',
-                            top: 100,
-                           left: 100,
-                          right: 100,
-                         bottom: 100,
-                         border: '2px outset #eee',
-                backgroundColor: '#ccc'
-                }
-            }),
-
-            panel2: new HxPanel({
-                css: {
-                       position: 'absolute',
-                            top: 50,
-                           left: 250,
-                          width: 400,
-                         height: 200,
-                         border: '2px outset #eee',
-                backgroundColor: '#ccc'
-                }
-            })
-        }
+        tree: {}
     });
 
     system.fs.mount("/mnt", desktopfs);
-    //FIXME: need to improve name support, see panel.js
+
+    var panels = {
+        panel1: new HxPanel({
+            parentEl: 'desktop', // basename for /mnt/desktop (see FIXME note)
+            css: {
+                   position: 'absolute',
+                        top: 100,
+                       left: 100,
+                      right: 100,
+                     bottom: 100,
+                     border: '2px outset #eee',
+            backgroundColor: '#ccc'
+            }
+        }),
+
+        panel2: new HxPanel({
+            parentEl: 'desktop', // basename for /mnt/desktop (see FIXME note)
+            css: {
+                   position: 'absolute',
+                        top: 50,
+                       left: 250,
+                      width: 400,
+                     height: 200,
+                     border: '2px outset #eee',
+            backgroundColor: '#ccc'
+            }
+        })
+    }
+
+    system.fs.tree.mnt.tree = panels;
 });

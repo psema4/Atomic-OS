@@ -20,13 +20,13 @@ var HxStream = HxClass.extend({
 
     write: function(buf) {
         this.buffer = buf;
-        this.bus.publish(this.name + ':ondata');
+        this.bus.publish(this.name + ':ondata', this.buffer.length);
         return this;
     },
 
     append: function(buf) {
         this.buffer += buf;
-        this.bus.publish(this.name + ':ondata');
+        this.bus.publish(this.name + ':ondata', this.buffer.length);
         return this;
     },
 
