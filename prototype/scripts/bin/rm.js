@@ -1,13 +1,12 @@
 window.system = window.system || {};
 system.bin = system.bin || {};
 
-system.bin.echo = {
+system.bin.rm = {
     help: function() {
-        return "Echo string to stdout\n\n  Usage: echo [string]";
+        return "Remove a file\n\n  Usage: rm [filename]\n\nNOTE: This command is currently limited to removing files in the current directory";
     },
 
     exec: function(args) {
-        var debug = false;
         // 'this' is the calling process
 
         var stdin  = (this.fd && this.fd.length > 0) ? this.fd[0] : false;
@@ -15,16 +14,14 @@ system.bin.echo = {
         var stderr = (this.fd && this.fd.length > 2) ? this.fd[2] : false;
 
         try {
-            var message = (args instanceof Array) ? message = args.join(' ') : args;
+            var result = false;
+            var filename = (args instanceof Array) ? args.shift() : args;
+            var currentFolder = system.fs.getFolder(system.env.cwd);
 
-            if (stdout) {
-                stdout.write(message);
-            } else {
-                console.log(message);
-            }
+            if (currentFolder) result = currentFolder.removeFile(filename);
 
-            // test stderr
-            if (debug && stderr) throw new Error('fake error');
+            var message = (result) ? "ok, removed " : "failed to remove ";
+            if (stdout) stdout.write(message + filename);
 
         } catch(e) {
             if (stderr) {

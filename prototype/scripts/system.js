@@ -1,4 +1,6 @@
 window.system = {
+    debug: true,
+
     env: {
     },
 

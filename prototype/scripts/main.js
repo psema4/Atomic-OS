@@ -1,7 +1,6 @@
 $(document).ready(function() {
     $('body').append('<div id="winroot"></div><div id="fileroot"></div>');
 
-
     // system setup (use system.js to configure)
     window.system = window.system || {};
     if (! system.bus) system.bus = HxBus;
@@ -9,8 +8,11 @@ $(document).ready(function() {
 
     // environment setup
     system.env = {
-        cwd: '/',
-        pwd: '/'
+        home:'/home/guest',
+        cwd: '/home/guest',
+        pwd: '/',
+        mobile: (navigator.userAgent.match(/mobile/i) ||
+                 navigator.userAgent.match(/fennec/i)) ? true : false
     };
 
 
@@ -82,31 +84,33 @@ $(document).ready(function() {
     system.fs.mount("/", binfs);
 
 
-    // fs search test
-    var nodeName = 'readme';
-    console.log('searching for node "' + nodeName + '"');
-    var results = system.fs.find(nodeName);
-    for (var i=0; i < results.length; i++) {
-        console.log('  found: ' + results[i].path);
+    // build /mnt/dom from dom objects
+    var domfs = new HxDOMFS({
+        name: '/mnt/dom',
+        tree: {}
+    });
+
+    var divList = $('.domfile');
+    
+    for (var div=0; div < divList.length; div++) {
+        var name = '/mnt/dom/';
+        var id = divList[div].id;
+            id = '/' + id.replace(/-/g, '/'); // make filepath
+        var basename = system.fs.basename(id);
+
+        if (id) {
+            name = id;
+        } else {
+            name += div;
+        }
+
+        domfs.tree[basename] = new HxFile({
+            name: name,
+            buffer: divList[div].textContent
+        });
     }
 
-
-    // fs read/write test
-    console.log('write test (with notification)');
-    system.bus.subscribe('/etc/motd:ondata', function(len) {
-        console.log('system: /etc/motd was modified (buffer size: ' + len +')');
-    });
-    system.fs.writeFile('/etc/motd', "This is the MOTD: We're close to a console now");
-
-
-    // command interpreter tests
-    wash('echo [NOTE] Going to cat the message of the day...');
-    wash('cat /etc/motd');
-    wash('echo [NOTE] FS root:');
-    wash('ls');
-    wash('echo [NOTE] Change to home directory');
-    wash('cd /home/guest');
-    wash('ls');
+    system.fs.mount("/mnt", domfs);
 
 
     // add a desktop mount and attach panels
@@ -115,11 +119,15 @@ $(document).ready(function() {
     var desktopfs = new HxPanel({
         name: '/mnt/desktop',
         css: {
-            position: 'absolute',
-                 top: 0,
-                left: 0,
-               right: 0,
-              bottom: 0
+               position: 'absolute',
+                    top: 0,
+                   left: 0,
+                  right: 0,
+                 bottom: 0,
+                 border: '0px solid #000',
+        backgroundColor: 'rgba(127,192,127,0.9)',
+           borderRadius: '0px',
+        mozBorderRadius: '0px'
         },
 
         tree: {}
@@ -127,16 +135,27 @@ $(document).ready(function() {
 
     system.fs.mount("/mnt", desktopfs);
 
+    $('#desktop').append('<div class="taskbar"></div>');
+
+
     // prevent global wash from flushing stdout on read so we can mirror it to the command window's output
     system.wash.fd[1].autoFlush = false;
 
     // window test - this needs to break out into a webtty process which should contain it's on HxWASH interpreter
+    var left = '1%',
+        width = '48%';
+
+    if (system.env.mobile) {
+        left = '1%';
+        width = '98%';
+    }
+
     window.cmdWindow = new HxCommandWindow({
         parentEl: 'desktop',
         mount: '/mnt/desktop',
         title: 'Command Console',
-        defaultStyle: true, // use system chrome [absolute positioning, gray background & outset border: see HxWindow.init()]
-        css: { top: '10px', left: '10px', right: '10px', bottom: '10px' },
+        defaultStyle: false, // use system chrome [absolute positioning, gray background & outset border: see HxWindow.init()]
+        css: { top: '40px', left: left, width: width, bottom: '3%', position: 'absolute', backgroundColor: '#fff', border: '2px outset #ddd' },
 
         inputHandler: function(buf) {
             system.wash.fd[0].write(buf);
@@ -156,4 +175,42 @@ $(document).ready(function() {
     // tie global wash's stdout to cmdWindow output
     var stdout = system.wash.fd[1];
     stdout.bus.subscribe(stdout.name + ':ondata', cmdWindow.outputHandler);
+
+    // add a taskbutton
+    $('.taskbar').append('<button id="cmdwin-taskbtn" class="ui-btn-pressed">Console</button>');
+    $('#cmdwin-taskbtn').click(function() {
+        $('#' + cmdWindow.name).toggle('hide');
+        this.className = (this.className.match(/ui-btn-pressed/)) ? 'ui-btn' : 'ui-btn-pressed';
+    });
+
+    var right = left; // mirror cmdWindow left position
+    window.editWindow = new HxEditWindow({
+        parentEl: 'desktop',
+        mount: '/mnt/desktop',
+        title: 'File Editor',
+        defaultStyle: true,
+        css: { top: '40px', right: right, width: width, bottom: '3%' },
+
+        intputHandler: function(buf) {
+        },
+
+        outputHandler: function() {
+        },
+
+        errorHandler: function() {
+        }
+    });
+
+    // add a taskbutton
+    $('.taskbar').append('<button id="editwin-taskbtn" class="ui-btn-pressed">Editor</button>');
+    $('#editwin-taskbtn').click(function() {
+        $('#' + editWindow.name).toggle('hide');
+        this.className = (this.className.match(/ui-btn-pressed/)) ? 'ui-btn' : 'ui-btn-pressed';
+    });
+
+    if (system.env.mobile) setTimeout(function() {
+        $('#editwin-taskbtn').click();
+    }, 250);
+
+    wash("cat /mnt/dom/motd");
 });

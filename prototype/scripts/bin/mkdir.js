@@ -1,13 +1,12 @@
 window.system = window.system || {};
 system.bin = system.bin || {};
 
-system.bin.echo = {
+system.bin.mkdir = {
     help: function() {
-        return "Echo string to stdout\n\n  Usage: echo [string]";
+        return "Make directory\n\n  Usage: mkdir [folder name]\n\nNOTE: This command is currently limited to creating folders in the current directory";
     },
 
     exec: function(args) {
-        var debug = false;
         // 'this' is the calling process
 
         var stdin  = (this.fd && this.fd.length > 0) ? this.fd[0] : false;
@@ -15,16 +14,14 @@ system.bin.echo = {
         var stderr = (this.fd && this.fd.length > 2) ? this.fd[2] : false;
 
         try {
-            var message = (args instanceof Array) ? message = args.join(' ') : args;
+            var result = false;
+            var folder = (args instanceof Array) ? args.shift() : args;
+            var currentFolder = system.fs.getFolder(system.env.cwd);
 
-            if (stdout) {
-                stdout.write(message);
-            } else {
-                console.log(message);
-            }
+            if (currentFolder) result = currentFolder.addChildFolder(folder);
 
-            // test stderr
-            if (debug && stderr) throw new Error('fake error');
+            var message = (result) ? "ok, created " : "failed to create ";
+            if (stdout) stdout.write(message + folder);
 
         } catch(e) {
             if (stderr) {

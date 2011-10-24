@@ -15,10 +15,10 @@ var HxWash = HxProcess.extend({
     },
 
     exec: function(command) {
-        var args = command.match(' ') ? command.split(' ') : [command];
+        var args = command.match(' ') ? command.split(' ') : command;
 
         try {
-            var cmdName = args.shift(),
+            var cmdName = args instanceof Array ? args.shift() : command
                 basename = system.fs.basename(cmdName),
                 cmdObj = null;
 
@@ -41,8 +41,6 @@ var HxWash = HxProcess.extend({
     },
 
     onInput: function(args) {
-        console.log('wash process received data on stdin');
-
 //        this.exec( this.fd[0].read() );
 
         //FIXME: 'this' is an empty object
@@ -55,20 +53,18 @@ var HxWash = HxProcess.extend({
     },
 
     onOutput: function(args) {
-        console.log('wash process sent data on stdout');
-
         //FIXME: How do we set the scope to *this* wash instance
         //       (...and want to route messages to linked processes)
 
         var buf = system.wash.fd[1].read();
-        console.log('output: ' + buf);
+        console.log(buf);
     },
 
     onError: function(args) {
         //FIXME: How do we set the scope to *this* wash instance
 
         var buf = system.wash.fd[2].read();
-        console.log('error: ' + buf);
+        console.warn(buf);
     }
 });
 

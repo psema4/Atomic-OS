@@ -55,7 +55,11 @@ var HxJSFS = HxStream.extend({
     },
 
     basename: function(path) {
-        return path.split('/').pop();
+        if (path.match(/\//)) {
+            return path.split('/').pop();
+        } else {
+            return path;
+        }
     },
 
     listFiles: function() {
@@ -84,7 +88,8 @@ var HxJSFS = HxStream.extend({
             }
         }
 
-        console.warn("file not found");
+        console.warn('file "' + path + '" not found');
+        return false;
     },
 
     writeFile: function(path, buf, append) {
@@ -97,6 +102,21 @@ var HxJSFS = HxStream.extend({
                     candidates[i].file.append(buf);
                 } else {
                     candidates[i].file.write(buf);
+
+                    try {
+                        // update system.bin if necessary
+                        if (path.match(/^\/bin\//)) {
+                            // FIXME: after saving updated command, running again causes exception SyntaxError: Unexpected token (
+                            var warning = 'saving to /bin not currently supported, but trying anyway...';
+                            system.wash.fd[1].write(warning);
+
+                            var binpath = 'system' + path.replace(/\//g, '.');
+                            var binobj = eval(binpath); // get the exectable object
+                            binobj.exec = eval(buf);    // evaluate text to create function object and assign it
+                        }
+                    } catch(e) {
+                        system.wash.fd[1].write("sorry, it didn't work");
+                    }
                 }
                 return true;
             }
@@ -108,30 +128,61 @@ var HxJSFS = HxStream.extend({
     getFolder: function(path) {
             if (path == '/') return system.fs;
 
-            path = path.replace(/\/$/, '');
+            path = path.replace(/\/$/, ''); // trim trailing slash
 
-            var pathParts = path.split('/');
+            var fspath = 'system.fs',
+                newpath = '',
+                pathParts = path.split('/');
 
+            // create a js path
             if (pathParts.length > 1) {
                 pathParts.shift();
-
-                var fspath = "system.fs";
-                var newpath = '';
 
                 for (var i=0; i<pathParts.length; i++) {
                     newpath += '.tree.' + pathParts[i];
                 }
             }
-
             fspath += newpath;
-            var o = eval(fspath);
 
-            return o ? o : false;
+            try {
+                var o = eval(fspath);
+                return o ? o : false;
+
+            } catch(e) {
+                console.warn('fs exception: fs object does not exist');
+                return false;
+            }
     },
 
     mount: function(path, fs) {
         var subtreeName = this.basename(fs.name);
         var folder = this.getFolder(path);
         folder.tree[subtreeName] = fs;
+    },
+
+    addChildFolder: function(name) {
+        this.tree[name] = new HxJSFS({});
+        return (this.tree[name] instanceof HxJSFS);
+    },
+
+    removeChildFolder: function(name) {
+        if (this.tree[name] && this.tree[name] instanceof HxJSFS) {
+            delete(this.tree[name]);
+            return (this.tree[name]) ? false : true;
+        }
+    },
+
+    addFile: function(name) {
+        this.tree[name] = new HxFile({
+            name: name
+        });
+        return (this.tree[name] instanceof HxFile);
+    },
+
+    removeFile: function(name) {
+        if (this.tree[name] && this.tree[name] instanceof HxFile) {
+            delete(this.tree[name]);
+            return (this.tree[name]) ? false : true;
+        }
     }
 });

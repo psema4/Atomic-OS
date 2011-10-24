@@ -1,13 +1,12 @@
 window.system = window.system || {};
 system.bin = system.bin || {};
 
-system.bin.echo = {
+system.bin.edit = {
     help: function() {
-        return "Echo string to stdout\n\n  Usage: echo [string]";
+        return "Edit file in File Editor\n\n  Usage: edit [filepath]\n\nNOTE: This command is currently tied to the temporary File Editor window.";
     },
 
     exec: function(args) {
-        var debug = false;
         // 'this' is the calling process
 
         var stdin  = (this.fd && this.fd.length > 0) ? this.fd[0] : false;
@@ -15,16 +14,11 @@ system.bin.echo = {
         var stderr = (this.fd && this.fd.length > 2) ? this.fd[2] : false;
 
         try {
-            var message = (args instanceof Array) ? message = args.join(' ') : args;
-
-            if (stdout) {
-                stdout.write(message);
-            } else {
-                console.log(message);
+            var filepath = args[0];
+            if (editWindow) {
+                $('#' + editWindow.name + '-filename').val(filepath);
+                editWindow.load(filepath);
             }
-
-            // test stderr
-            if (debug && stderr) throw new Error('fake error');
 
         } catch(e) {
             if (stderr) {

@@ -1,9 +1,9 @@
 window.system = window.system || {};
 system.bin = system.bin || {};
 
-system.bin.cat = {
+system.bin.clear = {
     help: function() {
-        return "Echo file contents to stdout\n\n  Usage: cat [filepath]";
+        return "Clear command console's output window\n\n  Usage: clear\n\nNote: the clear command is currently broken.  After running this command, the global wash stdout stream will no longer echo to the console window";
     },
 
     exec: function(args) {
@@ -12,17 +12,9 @@ system.bin.cat = {
         var stderr = (this.fd && this.fd.length > 2) ? this.fd[2] : false;
 
         try {
-            var path = (args instanceof Array) ? args.shift() : args;
-            path = (path.match(/^\//)) ? path : system.env.cwd + '/' + path;
-
-            var buf = system.fs.readFile(path);
-
-            if (buf) {
-                if (stdout) stdout.write(buf);
-
-            } else {
-                if (stdout) stdout.write('file "' +  path + '" not found');
-            }
+            // specific to the global test console cmdWindow, see main.js
+            // FIXME: the cls() method is broken, see commandwindow.js
+            if (cmdWindow && cmdWindow.cls) cmdWindow.cls();
 
         } catch(e) {
             console.log('command exception:');

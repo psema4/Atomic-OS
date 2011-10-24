@@ -69,6 +69,8 @@
   };
 })();
 window.system = {
+    debug: true,
+
     env: {
     },
 
@@ -82,6 +84,10 @@ window.system = window.system || {};
 system.bin = system.bin || {};
 
 system.bin.cat = {
+    help: function() {
+        return "Echo file contents to stdout\n\n  Usage: cat [filepath]";
+    },
+
     exec: function(args) {
         var stdin  = (this.fd && this.fd.length > 0) ? this.fd[0] : false;
         var stdout = (this.fd && this.fd.length > 1) ? this.fd[1] : false;
@@ -89,12 +95,15 @@ system.bin.cat = {
 
         try {
             var path = (args instanceof Array) ? args.shift() : args;
+            path = (path.match(/^\//)) ? path : system.env.cwd + '/' + path;
+
             var buf = system.fs.readFile(path);
 
-            if (stdout) {
-                stdout.write(buf);
+            if (buf) {
+                if (stdout) stdout.write(buf);
+
             } else {
-                console.log(buf);
+                if (stdout) stdout.write('file "' +  path + '" not found');
             }
 
         } catch(e) {
@@ -107,6 +116,10 @@ window.system = window.system || {};
 system.bin = system.bin || {};
 
 system.bin.cd = {
+    help: function() {
+        return "Change Directory\n\n  Usage: cd [path]";
+    },
+
     exec: function(args) {
         var stdin  = (this.fd && this.fd.length > 0) ? this.fd[0] : false;
         var stdout = (this.fd && this.fd.length > 1) ? this.fd[1] : false;
@@ -114,22 +127,71 @@ system.bin.cd = {
 
         try {
             var path = (args instanceof Array) ? args.shift() : args;
+            var handled = false;
 
-            if (path == '-') {
+            // preprocess path, handle 
+            if (path == '-') {               // swap current working directory with previous working directory
                 var tmp = system.env.pwd;
                 system.env.pwd = system.env.cwd;
                 system.env.cwd = tmp;
+                handled = true;
 
-            } else {
-                system.env.pwd = system.env.cwd || '/';
-                system.env.cwd = path;
+            } else if (path == '~') {
+                system.env.pwd = system.env.cwd;
+                system.env.cwd = system.env.home;
+                handled = true;
+
+            } else if (path.match(/\.\./)) { // path references parent container
+
+                if (system.debug) console.warn('..: original path: ' + path);
+
+                // start at the current working directory
+                var tmppath = system.env.cwd;
+                if (system.debug) console.warn('..: cwd: ' + tmppath);
+
+                // while path references a parent directory transform the path to it's parent
+                while (path.match(/\.\./)) {
+                    path = path.replace(/\.\./, '');
+                    var parts = tmppath.split('/');
+                    parts.pop(); //FIXME: .. may not always be at beginning of path
+                    tmppath = parts.join('/');
+                }
+
+                path = path.replace(/\/\//g, '/'); // if original path ends with a slash the transformed version may contain two in a row (eg ../../ => //)
+
+                if (system.debug) {
+                    console.warn('..: result: ' + tmppath);
+                    console.warn('..: transformed path: ' + path);
+                }
+
+                path = (tmppath) ? (path == '/')                                        // if there was a result and path is the root
+                                        ? tmppath                                       //    use the result
+                                        : (path.match(/^\//)) ? tmppath + path          //    else if the path is absolute add it to our result
+                                                              : tmppath + '/' + path    //                                 else use our result and make path absolute
+                                 : '/';                                                 // else use the root folder
+                ;
+
+                path = path.replace(/\/$/, ''); // to be sure
+                if (system.debug) console.warn('..: final path: ' + path);
             }
 
-            if (stdout) {
-                stdout.write(system.env.cwd);
-            } else {
-                console.log(system.env.cwd);
+            // if preprocessing hasn't handled the request
+            if (! handled) {
+                if (! path.match(/^\//)) {              // convert relative paths to absolute
+                    path = (system.env.cwd == '/') ? '/' + path : system.env.cwd + '/' + path;
+                }
+
+                if (system.fs.getFolder(path)) {        // confirm folder exists
+                    system.env.pwd = system.env.cwd || '/';
+                    system.env.cwd = path;
+
+                    handled = true;
+                }
             }
+
+            // write result message to stdout
+            var message = (handled) ? system.env.cwd : 'folder "' + path + '" not found';
+            if (stdout) stdout.write(message);
 
         } catch(e) {
             console.log('command exception:');
@@ -142,7 +204,65 @@ system.bin.cd = {
 window.system = window.system || {};
 system.bin = system.bin || {};
 
+system.bin.clear = {
+    help: function() {
+        return "Clear command console's output window\n\n  Usage: clear\n\nNote: the clear command is currently broken.  After running this command, the global wash stdout stream will no longer echo to the console window";
+    },
+
+    exec: function(args) {
+        var stdin  = (this.fd && this.fd.length > 0) ? this.fd[0] : false;
+        var stdout = (this.fd && this.fd.length > 1) ? this.fd[1] : false;
+        var stderr = (this.fd && this.fd.length > 2) ? this.fd[2] : false;
+
+        try {
+            // specific to the global test console cmdWindow, see main.js
+            // FIXME: the cls() method is broken, see commandwindow.js
+            if (cmdWindow && cmdWindow.cls) cmdWindow.cls();
+
+        } catch(e) {
+            console.log('command exception:');
+            console.dir(e);
+        }
+    }
+};
+window.system = window.system || {};
+system.bin = system.bin || {};
+
+system.bin.commands = {
+    help: function() {
+        return "List available commands from /bin to stdout\n\n  Usage: commands";
+    },
+
+    exec: function(args) {
+        // 'this' is the calling process
+
+        var stdin  = (this.fd && this.fd.length > 0) ? this.fd[0] : false;
+        var stdout = (this.fd && this.fd.length > 1) ? this.fd[1] : false;
+        var stderr = (this.fd && this.fd.length > 2) ? this.fd[2] : false;
+
+        try {
+
+            wash("ls /bin");
+
+        } catch(e) {
+            if (stderr) {
+                stderr.write('command exception: ' + e);
+
+            } else {
+                console.log('command exception:');
+                console.dir(e);
+            }
+        }
+    }
+};
+window.system = window.system || {};
+system.bin = system.bin || {};
+
 system.bin.echo = {
+    help: function() {
+        return "Echo string to stdout\n\n  Usage: echo [string]";
+    },
+
     exec: function(args) {
         var debug = false;
         // 'this' is the calling process
@@ -177,7 +297,11 @@ system.bin.echo = {
 window.system = window.system || {};
 system.bin = system.bin || {};
 
-system.bin.ls = {
+system.bin.edit = {
+    help: function() {
+        return "Edit file in File Editor\n\n  Usage: edit [filepath]\n\nNOTE: This command is currently tied to the temporary File Editor window.";
+    },
+
     exec: function(args) {
         // 'this' is the calling process
 
@@ -186,21 +310,132 @@ system.bin.ls = {
         var stderr = (this.fd && this.fd.length > 2) ? this.fd[2] : false;
 
         try {
-            var path = (args instanceof Array) ? args.shift() : args;
-            if (! path && system.env && system.env.cwd) path = system.env.cwd;
+            var filepath = args[0];
+            if (editWindow) {
+                $('#' + editWindow.name + '-filename').val(filepath);
+                editWindow.load(filepath);
+            }
+
+        } catch(e) {
+            if (stderr) {
+                stderr.write('command exception: ' + e);
+
+            } else {
+                console.log('command exception:');
+                console.dir(e);
+            }
+        }
+    }
+};
+window.system = window.system || {};
+system.bin = system.bin || {};
+
+system.bin.help = {
+    help: function() {
+        return "Simple help utility\n\n  Usage: help [command name]";
+    },
+
+    exec: function(args) {
+        // 'this' is the calling process
+
+        var stdin  = (this.fd && this.fd.length > 0) ? this.fd[0] : false;
+        var stdout = (this.fd && this.fd.length > 1) ? this.fd[1] : false;
+        var stderr = (this.fd && this.fd.length > 2) ? this.fd[2] : false;
+
+        try {
+            var cmd = args instanceof Array ? args[0] : 'help';
+
+            if (system.bin[cmd]) {
+                var message = 'Help not available for command "' + cmd + '"';
+
+                if (system.bin[cmd].help) message = system.bin[cmd].help();
+                if (stdout) stdout.write(message);
+            }
+
+        } catch(e) {
+            if (stderr) {
+                stderr.write('command exception: ' + e);
+
+            } else {
+                console.log('command exception:');
+                console.dir(e);
+            }
+        }
+    }
+};
+window.system = window.system || {};
+system.bin = system.bin || {};
+
+system.bin.ls = {
+    help: function() {
+        return "List files\n\n  Usage: ls [-l] [path]\n\nWithout a path, lists the current working directory.\nWith -l, lists files in a single column.";
+    },
+
+    exec: function(args) {
+        // 'this' is the calling process
+
+        var stdin  = (this.fd && this.fd.length > 0) ? this.fd[0] : false;
+        var stdout = (this.fd && this.fd.length > 1) ? this.fd[1] : false;
+        var stderr = (this.fd && this.fd.length > 2) ? this.fd[2] : false;
+
+        var formatStr = function(str, len) {
+            var result = str;
+            while (result.length < len) {
+                result += " ";
+            }
+            return result;
+        };
+
+        try {
+
+            var displayType = 'wide',
+                path = system.env.cwd;
+
+            if (args instanceof Array) {
+                path = args.shift();
+
+                if (path.match(/^-l/)) {
+                    displayType = 'single';
+                    path = args.shift();
+                    if (! path) path = system.env.cwd;
+                }
+            }
 
             var output = path + ':' + "\n";
+            if (displayType == 'wide') output += "\n";
 
             var fspath = system.fs.getFolder(path);
             if (fspath) {
                 var results = fspath.listFiles(); // pre-sorted by listFiles()
 
+                // figure out the longest entry
+                var len = 0;
+                for (var i=0; i<results.length; i++) {
+                    if (results[i].path.length > len) len = results[i].path.length;
+                };
+
+                var lineLength = 0;
                 for (var i=0; i<results.length; i++) {
                     var result = results[i].path;
                     var file = results[i].file;
 
                     var postfix = (file && file.tree) ? '/' : '';
-                    output += '  ' + result + postfix + "\n";
+
+                    switch(displayType) {
+                        case 'single':
+                            output += '  ' + result + postfix + "\n";
+                            break;
+
+                        case 'wide':
+                        default:
+                            var segment = formatStr(result + postfix, len+1) + "  ";
+                            if (lineLength > 60) {
+                                output += "\n";
+                                lineLength = 0;
+                            }
+                            lineLength += segment.length;
+                            output += segment;
+                    }
                 }
 
                 output = output.replace(/\n$/, ''); // remove trailing newline
@@ -224,7 +459,47 @@ system.bin.ls = {
 window.system = window.system || {};
 system.bin = system.bin || {};
 
+system.bin.mkdir = {
+    help: function() {
+        return "Make directory\n\n  Usage: mkdir [folder name]\n\nNOTE: This command is currently limited to creating folders in the current directory";
+    },
+
+    exec: function(args) {
+        // 'this' is the calling process
+
+        var stdin  = (this.fd && this.fd.length > 0) ? this.fd[0] : false;
+        var stdout = (this.fd && this.fd.length > 1) ? this.fd[1] : false;
+        var stderr = (this.fd && this.fd.length > 2) ? this.fd[2] : false;
+
+        try {
+            var result = false;
+            var folder = (args instanceof Array) ? args.shift() : args;
+            var currentFolder = system.fs.getFolder(system.env.cwd);
+
+            if (currentFolder) result = currentFolder.addChildFolder(folder);
+
+            var message = (result) ? "ok, created " : "failed to create ";
+            if (stdout) stdout.write(message + folder);
+
+        } catch(e) {
+            if (stderr) {
+                stderr.write('command exception: ' + e);
+
+            } else {
+                console.log('command exception:');
+                console.dir(e);
+            }
+        }
+    }
+};
+window.system = window.system || {};
+system.bin = system.bin || {};
+
 system.bin.pwd = {
+    help: function() {
+        return "Echo current working directory to stdout\n\n  Usage: pwd";
+    },
+
     exec: function(args) {
         var stdin  = (this.fd && this.fd.length > 0) ? this.fd[0] : false;
         var stdout = (this.fd && this.fd.length > 1) ? this.fd[1] : false;
@@ -240,6 +515,156 @@ system.bin.pwd = {
         } catch(e) {
             console.log('command exception:');
             console.dir(e);
+        }
+    }
+};
+window.system = window.system || {};
+system.bin = system.bin || {};
+
+system.bin.rm = {
+    help: function() {
+        return "Remove a file\n\n  Usage: rm [filename]\n\nNOTE: This command is currently limited to removing files in the current directory";
+    },
+
+    exec: function(args) {
+        // 'this' is the calling process
+
+        var stdin  = (this.fd && this.fd.length > 0) ? this.fd[0] : false;
+        var stdout = (this.fd && this.fd.length > 1) ? this.fd[1] : false;
+        var stderr = (this.fd && this.fd.length > 2) ? this.fd[2] : false;
+
+        try {
+            var result = false;
+            var filename = (args instanceof Array) ? args.shift() : args;
+            var currentFolder = system.fs.getFolder(system.env.cwd);
+
+            if (currentFolder) result = currentFolder.removeFile(filename);
+
+            var message = (result) ? "ok, removed " : "failed to remove ";
+            if (stdout) stdout.write(message + filename);
+
+        } catch(e) {
+            if (stderr) {
+                stderr.write('command exception: ' + e);
+
+            } else {
+                console.log('command exception:');
+                console.dir(e);
+            }
+        }
+    }
+};
+window.system = window.system || {};
+system.bin = system.bin || {};
+
+system.bin.rmdir = {
+    help: function() {
+        return "Remove a directory\n\n  Usage: rmdir [folder name]\n\nNOTE: This command is currently limited to removing folders in the current directory";
+    },
+
+    exec: function(args) {
+        // 'this' is the calling process
+
+        var stdin  = (this.fd && this.fd.length > 0) ? this.fd[0] : false;
+        var stdout = (this.fd && this.fd.length > 1) ? this.fd[1] : false;
+        var stderr = (this.fd && this.fd.length > 2) ? this.fd[2] : false;
+
+        try {
+            var result = false;
+            var folder = (args instanceof Array) ? args.shift() : args;
+            var currentFolder = system.fs.getFolder(system.env.cwd);
+
+            if (currentFolder) result = currentFolder.removeChildFolder(folder);
+
+            var message = (result) ? "ok, removed " : "failed to remove ";
+            if (stdout) stdout.write(message + folder);
+
+        } catch(e) {
+            if (stderr) {
+                stderr.write('command exception: ' + e);
+
+            } else {
+                console.log('command exception:');
+                console.dir(e);
+            }
+        }
+    }
+};
+window.system = window.system || {};
+system.bin = system.bin || {};
+
+system.bin.touch = {
+    help: function() {
+        return "Create empty file\n\n  Usage: touch [file name]\n\nNOTE: This command is currently limited to creating files in the current directory";
+    },
+
+    exec: function(args) {
+        // 'this' is the calling process
+
+        var stdin  = (this.fd && this.fd.length > 0) ? this.fd[0] : false;
+        var stdout = (this.fd && this.fd.length > 1) ? this.fd[1] : false;
+        var stderr = (this.fd && this.fd.length > 2) ? this.fd[2] : false;
+
+        try {
+            var result = false;
+            var filename = (args instanceof Array) ? args.shift() : args;
+            var folder = system.env.cwd;
+
+            if (filename.match(/^\//)) {
+                folder = filename;
+                filename = system.fs.basename(folder);
+            }
+
+            var currentFolder = system.fs.getFolder(folder);
+            if (currentFolder) result = currentFolder.addFile(filename);
+
+            var message = (result) ? "ok, created " : "failed to create ";
+            if (stdout) stdout.write(message + 'file "' + filename + '"');
+
+        } catch(e) {
+            if (stderr) {
+                stderr.write('command exception: ' + e);
+
+            } else {
+                console.log('command exception:');
+                console.dir(e);
+            }
+        }
+    }
+};
+window.system = window.system || {};
+system.bin = system.bin || {};
+
+system.bin.wallpaper = {
+    help: function() {
+        return "Sets the desktop wallpaper\n\n  Usage: wallpaper\n\nThis command can currently only add/remove one graphic [css class=\"bg-tile\"]";
+    },
+
+    exec: function(args) {
+        // 'this' is the calling process
+
+        var stdin  = (this.fd && this.fd.length > 0) ? this.fd[0] : false;
+        var stdout = (this.fd && this.fd.length > 1) ? this.fd[1] : false;
+        var stderr = (this.fd && this.fd.length > 2) ? this.fd[2] : false;
+
+        try {
+            dObj   = system.fs.tree.mnt.tree.desktop;
+            dName  = dObj.name;
+            dEl = $('#' + dName);
+            if (dEl.hasClass('bg-tile')) {
+                dEl.removeClass('bg-tile');
+            } else {
+                dEl.addClass('bg-tile');
+            }
+
+        } catch(e) {
+            if (stderr) {
+                stderr.write('command exception: ' + e);
+
+            } else {
+                console.log('command exception:');
+                console.dir(e);
+            }
         }
     }
 };
@@ -462,7 +887,11 @@ var HxJSFS = HxStream.extend({
     },
 
     basename: function(path) {
-        return path.split('/').pop();
+        if (path.match(/\//)) {
+            return path.split('/').pop();
+        } else {
+            return path;
+        }
     },
 
     listFiles: function() {
@@ -491,7 +920,8 @@ var HxJSFS = HxStream.extend({
             }
         }
 
-        console.warn("file not found");
+        console.warn('file "' + path + '" not found');
+        return false;
     },
 
     writeFile: function(path, buf, append) {
@@ -504,6 +934,21 @@ var HxJSFS = HxStream.extend({
                     candidates[i].file.append(buf);
                 } else {
                     candidates[i].file.write(buf);
+
+                    try {
+                        // update system.bin if necessary
+                        if (path.match(/^\/bin\//)) {
+                            // FIXME: after saving updated command, running again causes exception SyntaxError: Unexpected token (
+                            var warning = 'saving to /bin not currently supported, but trying anyway...';
+                            system.wash.fd[1].write(warning);
+
+                            var binpath = 'system' + path.replace(/\//g, '.');
+                            var binobj = eval(binpath); // get the exectable object
+                            binobj.exec = eval(buf);    // evaluate text to create function object and assign it
+                        }
+                    } catch(e) {
+                        system.wash.fd[1].write("sorry, it didn't work");
+                    }
                 }
                 return true;
             }
@@ -515,31 +960,81 @@ var HxJSFS = HxStream.extend({
     getFolder: function(path) {
             if (path == '/') return system.fs;
 
-            path = path.replace(/\/$/, '');
+            path = path.replace(/\/$/, ''); // trim trailing slash
 
-            var pathParts = path.split('/');
+            var fspath = 'system.fs',
+                newpath = '',
+                pathParts = path.split('/');
 
+            // create a js path
             if (pathParts.length > 1) {
                 pathParts.shift();
-
-                var fspath = "system.fs";
-                var newpath = '';
 
                 for (var i=0; i<pathParts.length; i++) {
                     newpath += '.tree.' + pathParts[i];
                 }
             }
-
             fspath += newpath;
-            var o = eval(fspath);
 
-            return o ? o : false;
+            try {
+                var o = eval(fspath);
+                return o ? o : false;
+
+            } catch(e) {
+                console.warn('fs exception: fs object does not exist');
+                return false;
+            }
     },
 
     mount: function(path, fs) {
         var subtreeName = this.basename(fs.name);
         var folder = this.getFolder(path);
         folder.tree[subtreeName] = fs;
+    },
+
+    addChildFolder: function(name) {
+        this.tree[name] = new HxJSFS({});
+        return (this.tree[name] instanceof HxJSFS);
+    },
+
+    removeChildFolder: function(name) {
+        if (this.tree[name] && this.tree[name] instanceof HxJSFS) {
+            delete(this.tree[name]);
+            return (this.tree[name]) ? false : true;
+        }
+    },
+
+    addFile: function(name) {
+        this.tree[name] = new HxFile({
+            name: name
+        });
+        return (this.tree[name] instanceof HxFile);
+    },
+
+    removeFile: function(name) {
+        if (this.tree[name] && this.tree[name] instanceof HxFile) {
+            delete(this.tree[name]);
+            return (this.tree[name]) ? false : true;
+        }
+    }
+});
+var HxDOMFS = HxJSFS.extend({
+    init: function(opts) {
+        this.tree = opts.tree || {};
+        this._super(opts);
+    },
+
+    addChildFolder: function(name) {
+        this.tree[name] = new HxDOMFS({});
+        return (this.tree[name] instanceof HxDOMFS);
+    },
+
+    addFile: function(name) {
+        $('#fileroot').append('<div class="domfile"></div>');
+        this.tree[name] = new HxFile({
+            name: name
+        });
+        return (this.tree[name] instanceof HxFile);
     }
 });
 var HxProcess = HxClass.extend({
@@ -574,10 +1069,10 @@ var HxWash = HxProcess.extend({
     },
 
     exec: function(command) {
-        var args = command.match(' ') ? command.split(' ') : [command];
+        var args = command.match(' ') ? command.split(' ') : command;
 
         try {
-            var cmdName = args.shift(),
+            var cmdName = args instanceof Array ? args.shift() : command
                 basename = system.fs.basename(cmdName),
                 cmdObj = null;
 
@@ -600,8 +1095,6 @@ var HxWash = HxProcess.extend({
     },
 
     onInput: function(args) {
-        console.log('wash process received data on stdin');
-
 //        this.exec( this.fd[0].read() );
 
         //FIXME: 'this' is an empty object
@@ -614,20 +1107,18 @@ var HxWash = HxProcess.extend({
     },
 
     onOutput: function(args) {
-        console.log('wash process sent data on stdout');
-
         //FIXME: How do we set the scope to *this* wash instance
         //       (...and want to route messages to linked processes)
 
         var buf = system.wash.fd[1].read();
-        console.log('output: ' + buf);
+        console.log(buf);
     },
 
     onError: function(args) {
         //FIXME: How do we set the scope to *this* wash instance
 
         var buf = system.wash.fd[2].read();
-        console.log('error: ' + buf);
+        console.warn(buf);
     }
 });
 
@@ -646,14 +1137,14 @@ var HxPanel = HxJSFS.extend({
             this.name = system.fs.basename(this.name); 
         }
 
-        var html = '<div id="' + this.name + '" class="HxPanel"></div>';
+        var html = '<div id="' + this.name + '" class="ui-panel"></div>';
 
-        console.warn('attaching panel ' + this.name + ' to ' + this.parentEl);
+//        console.warn('attaching panel ' + this.name + ' to ' + this.parentEl);
 
         $('#' + this.parentEl).append(html);
         this.hxpanel = $('#' + this.name);
 
-        if (opts && opts.class) { this.hxpanel.addClass(opts.class); }
+        if (opts && opts.className) { this.hxpanel.addClass(opts.className); }
         if (opts && opts.css)   { this.hxpanel.css(opts.css); }
 
         if (this.mountPoint) {
@@ -718,23 +1209,99 @@ var HxCommandWindow = HxWindow.extend({
         this.history = [];
         this.historyPtr = this.history.length;
 
-        var output = "<textarea id='" + this.name + "-output' style='position: absolute; top: 30px; left: 0px; right: 0px; bottom: 32px;'>Welcome to WASH, the Web Application SHell\n</textarea>";
+// note: text inputs and textareas positioned with top,left,right,bottom work fine in webkit, but won't show correctly in Firefox
+//       (eg. per docs: <https://developer.mozilla.org/en/CSS/position>)
+//
+//       fixed by enclosing in div's, positioning those and then expanding the text inputs/areas using %-based widths/heights
+//       see <http://snook.ca/archives/html_and_css/absolute-position-textarea> for more info
 
-        var input = "<br><input id='" + this.name + "-input' type='text' style='position: absolute; height: 20px; bottom: 5px; left: 0px; right: 80px;' />" +
-                    "<button id='" + this.name + "-btn' style='position: absolute; height: 20px; bottom: 5px; width: 60px; right: 10px;'>ENTER</button>";
+        var output = "<div id='" + this.name + "-h-output'><textarea id='" + this.name + "-output' class='rounded'>Welcome to WASH, the Web Application SHell\n</textarea></div>";
+
+        var input = "<span id='" + this.name + "-prompt'>" + system.env.cwd + " $ </span>" + 
+                    "<div id='" + this.name + "-h-input'><input id='" + this.name + "-input' type='text' /></div>" +
+                    "<button id='" + this.name + "-btn'>ENTER</button>";
 
         var ui = output + input;
         this.getContent().append(ui);
 
         var self = this;
 
+        var hOutput = $('#' + this.name + '-h-output');
+        var txtOutput = $('#' + this.name + '-output');
+        hOutput.css({
+            display: 'block',
+            position: 'absolute',
+            top: '30px',
+            left: '2px',
+            right: '2px',
+            bottom: '32px'
+        });
+        txtOutput.css({
+            width: '99%',
+            height: '99%',
+            color: '#888',
+            fontFamily: 'Courier',
+            fontSize: '15px'
+        });
+
+        var promptLabel = $('#' + this.name + '-prompt');
+        promptLabel.css({
+            display: 'inline-block',
+            position: 'absolute',
+            bottom: '5px',
+            left: '0px',
+            width: '20%',
+            textAlign: 'right',
+            overflow: 'hidden',
+            backgroundColor: '#fff',
+            height: '20px',
+            border: '0px solid #000'
+        });
+        promptLabel.click(function() {
+            $('#' + self.name + '-input').focus();
+        });
+
         var btnExecute = $('#' + this.name + '-btn');
+        btnExecute.css({
+            position: 'absolute',
+            bottom: '4px',
+            right: '10px'
+        }).addClass('ui-btn disabled');
+
         btnExecute.click(function() {
             self.exec.call(self);
         });
 
+        var hInput = $('#' + this.name + '-h-input');
         var txtInput = $('#' + this.name + '-input');
+        hInput.css({
+            position: 'absolute',
+            height: 20,
+            bottom: 5,
+            left: '20%',
+            right: 80,
+            margin: 0,
+            padding: 0
+        });
+        txtInput.css({
+            width: '99%',
+            height: 18,
+            outline: 'none',
+            border: '0px solid #000',
+            margin: '0px',
+            paddingLeft: '0.25em'
+        });
+
         txtInput.keyup(function(evt) {
+            //if ($('#' + self.name + '-btn').hasClass('disabled')) {
+            //$('#' + self.name + '-btn').removeClass('disabled')
+            //$('#' + self.name + '-btn').addClass('disabled')
+
+            if (this.value.length > 0) {
+                $('#' + self.name + '-btn').removeClass('disabled')
+            } else {
+                $('#' + self.name + '-btn').addClass('disabled')
+            }
 
             switch (evt.keyCode) {
                 case 13: // ENTER key
@@ -774,11 +1341,180 @@ var HxCommandWindow = HxWindow.extend({
         input.val('');
 
         this.history.push(cmdString);               // push onto command history
-        system.wash.fd[1].write("\n" + cmdString);  // echo to stdout
+        system.wash.fd[1].write("\n" + system.env.cwd + "$ " + cmdString);  // echo to stdout
         system.wash.fd[0].write(cmdString);         // write to stdin so global wash will execute it
 
         input[0].focus();
         this.historyPtr = this.history.length;
+
+        var promptStr = system.env.cwd + ' $';
+        $('#' + this.name + '-prompt').html(promptStr);
+    },
+
+    cls: function() {
+        $('#' + this.name + '-output').val('');     //FIXME after clearing, all output stops... why?
+    }
+});
+
+var HxEditWindow = HxWindow.extend({
+    init: function(opts) {
+        opts = opts || {};
+        this._super(opts);
+
+        this.history = [];
+        this.historyPtr = this.history.length;
+
+// note: text inputs and textareas positioned with top,left,right,bottom work fine in webkit, but won't show correctly in Firefox
+//       (eg. per docs: <https://developer.mozilla.org/en/CSS/position>)
+//
+//       fixed by enclosing in div's, positioning those and then expanding the text inputs/areas using %-based widths/heights
+//       see <http://snook.ca/archives/html_and_css/absolute-position-textarea> for more info
+
+        var output = "<div id='" + this.name + "-h-editor'><textarea id='" + this.name + "-editor' class='rounded'></textarea></div>" +
+                     "<span id='" + this.name + "-status' class='statusbar rounded'></span>";
+
+        var input = "<span style='position: absolute; top: 37px; left: 215px; font-size: 14px; font-family: verdana;'>Filename:</span><div id='" + this.name + "-h-filename'><input id='" + this.name + "-filename' type='text' /></div>" +
+                    "<button id='" + this.name + "-btnnew'  class='ui-btn' style='position: absolute; top: 35px; left: 10px;'>NEW</button>" +
+                    "<button id='" + this.name + "-btnload' class='ui-btn disabled' style='position: absolute; top: 35px; left: 80px;'>LOAD</button>" + 
+                    "<button id='" + this.name + "-btnsave' class='ui-btn disabled' style='position: absolute; top: 35px; left: 150px;'>SAVE</button>";
+
+        var ui = output + input;
+        this.getContent().append(ui);
+
+        var self = this;
+
+        var hEditor = $('#' + this.name + '-h-editor').css({
+            position: 'absolute',
+            top: 65,
+            left: 2,
+            right: 0,
+            bottom: 32
+        });
+        var txtEditor = $('#' + this.name + '-editor').css({
+            width: '99%',
+            height: '99%'
+        });
+
+        var btnNew = $('#' + this.name + '-btnnew');
+        btnNew.click(function() {
+            $('#' + self.name + '-filename').val('');
+            $('#' + self.name + '-editor').val('');
+            $('#' + self.name + '-btnload').addClass('disabled');
+            $('#' + self.name + '-btnsave').addClass('disabled');
+            self.notify('File buffer cleared.');
+        });
+
+        var btnLoad = $('#' + this.name + '-btnload');
+        btnLoad.click(function() {
+            self.load();
+        });
+
+        var btnSave = $('#' + this.name + '-btnsave');
+        btnSave.click(function() {
+            self.save();
+        });
+
+        var hFilename = $('#' + this.name + '-h-filename');
+        hFilename.css({
+            position: 'absolute',
+            height: 20,
+            top: 35,
+            left: 290,
+            right: 5
+        });
+
+        var txtFilename = $('#' + this.name + '-filename');
+        txtFilename.css({
+            width: '99%'
+        }).addClass('rounded');
+
+        txtFilename.keyup(function(evt) {
+            if (this.value.length > 0) {
+                $('#' + self.name + '-btnload').removeClass('disabled');
+                $('#' + self.name + '-btnsave').removeClass('disabled');
+            } else {
+                $('#' + self.name + '-btnload').addClass('disabled');
+                $('#' + self.name + '-btnsave').addClass('disabled');
+            }
+
+            switch (evt.keyCode) {
+                case 13: // ENTER key
+                    if (! $('#' + self.name + '-btnsave').hasClass('disabled')) {
+                        $('#' + self.name + '-btnload').trigger('click');
+                        $('#' + self.name + '-editor').focus();
+                    }
+                    break;
+
+                case 38: // UP key
+                    if (self.historyPtr > 0) self.historyPtr--;
+                    $('#' + self.name + '-filename').val(self.history[self.historyPtr]);
+                    break;
+
+                case 40: // DOWN key
+                    var cmdString = '';
+
+                    if (self.historyPtr < self.history.length) {
+                        self.historyPtr++;
+                        cmdString = self.history[self.historyPtr];
+
+                    } else {
+                        cmdString = '';
+                    }
+
+                    $('#' + self.name + '-filename').val(cmdString);
+                    break;
+
+                default:
+//                    console.log(evt.keyCode);
+            };
+        });
+    },
+
+    load: function() {
+        var input = $('#' + this.name + '-filename');
+        var filename = input.val();
+
+        this.history.push(filename);
+        var buf = system.fs.readFile(filename);
+
+        if (buf) {
+            $('#' + this.name + '-editor').val(buf);
+            $('#' + this.name + '-btnsave').removeClass('disabled');
+            input[0].focus();
+            this.historyPtr = this.history.length;
+            this.notify('File "' + filename + '" loaded.');
+
+        } else {
+            this.notify('File "' + filename + '" not found.');
+        }
+
+
+    },
+
+    save: function() {
+        var input = $('#' + this.name + '-filename');
+        var filename = input.val();
+
+        var buf = $('#' + this.name + '-editor').val();
+        system.fs.writeFile(filename, buf);
+
+        var verify = system.fs.readFile(filename);
+        if (buf == verify) {
+            this.notify('File "' + filename + '" saved.');
+        }
+    },
+
+    cls: function() {
+        $('#' + this.name + '-editor').val('');
+    },
+
+    notify: function(msg) {
+        var statusbar = $('#' + this.name + '-status');
+        statusbar.html(msg);
+
+        setTimeout(function() {
+            statusbar.html('');
+        }, 2000);
     }
 });
 
@@ -818,7 +1554,6 @@ var HxTest = function(plan) {
 $(document).ready(function() {
     $('body').append('<div id="winroot"></div><div id="fileroot"></div>');
 
-
     // system setup (use system.js to configure)
     window.system = window.system || {};
     if (! system.bus) system.bus = HxBus;
@@ -826,8 +1561,11 @@ $(document).ready(function() {
 
     // environment setup
     system.env = {
-        cwd: '/',
-        pwd: '/'
+        home:'/home/guest',
+        cwd: '/home/guest',
+        pwd: '/',
+        mobile: (navigator.userAgent.match(/mobile/i) ||
+                 navigator.userAgent.match(/fennec/i)) ? true : false
     };
 
 
@@ -899,31 +1637,33 @@ $(document).ready(function() {
     system.fs.mount("/", binfs);
 
 
-    // fs search test
-    var nodeName = 'readme';
-    console.log('searching for node "' + nodeName + '"');
-    var results = system.fs.find(nodeName);
-    for (var i=0; i < results.length; i++) {
-        console.log('  found: ' + results[i].path);
+    // build /mnt/dom from dom objects
+    var domfs = new HxDOMFS({
+        name: '/mnt/dom',
+        tree: {}
+    });
+
+    var divList = $('.domfile');
+    
+    for (var div=0; div < divList.length; div++) {
+        var name = '/mnt/dom/';
+        var id = divList[div].id;
+            id = '/' + id.replace(/-/g, '/'); // make filepath
+        var basename = system.fs.basename(id);
+
+        if (id) {
+            name = id;
+        } else {
+            name += div;
+        }
+
+        domfs.tree[basename] = new HxFile({
+            name: name,
+            buffer: divList[div].textContent
+        });
     }
 
-
-    // fs read/write test
-    console.log('write test (with notification)');
-    system.bus.subscribe('/etc/motd:ondata', function(len) {
-        console.log('system: /etc/motd was modified (buffer size: ' + len +')');
-    });
-    system.fs.writeFile('/etc/motd', "This is the MOTD: We're close to a console now");
-
-
-    // command interpreter tests
-    wash('echo [NOTE] Going to cat the message of the day...');
-    wash('cat /etc/motd');
-    wash('echo [NOTE] FS root:');
-    wash('ls');
-    wash('echo [NOTE] Change to home directory');
-    wash('cd /home/guest');
-    wash('ls');
+    system.fs.mount("/mnt", domfs);
 
 
     // add a desktop mount and attach panels
@@ -932,11 +1672,15 @@ $(document).ready(function() {
     var desktopfs = new HxPanel({
         name: '/mnt/desktop',
         css: {
-            position: 'absolute',
-                 top: 0,
-                left: 0,
-               right: 0,
-              bottom: 0
+               position: 'absolute',
+                    top: 0,
+                   left: 0,
+                  right: 0,
+                 bottom: 0,
+                 border: '0px solid #000',
+        backgroundColor: 'rgba(127,192,127,0.9)',
+           borderRadius: '0px',
+        mozBorderRadius: '0px'
         },
 
         tree: {}
@@ -944,16 +1688,27 @@ $(document).ready(function() {
 
     system.fs.mount("/mnt", desktopfs);
 
+    $('#desktop').append('<div class="taskbar"></div>');
+
+
     // prevent global wash from flushing stdout on read so we can mirror it to the command window's output
     system.wash.fd[1].autoFlush = false;
 
     // window test - this needs to break out into a webtty process which should contain it's on HxWASH interpreter
+    var left = '1%',
+        width = '48%';
+
+    if (system.env.mobile) {
+        left = '1%';
+        width = '98%';
+    }
+
     window.cmdWindow = new HxCommandWindow({
         parentEl: 'desktop',
         mount: '/mnt/desktop',
         title: 'Command Console',
-        defaultStyle: true, // use system chrome [absolute positioning, gray background & outset border: see HxWindow.init()]
-        css: { top: '10px', left: '10px', right: '10px', bottom: '10px' },
+        defaultStyle: false, // use system chrome [absolute positioning, gray background & outset border: see HxWindow.init()]
+        css: { top: '40px', left: left, width: width, bottom: '3%', position: 'absolute', backgroundColor: '#fff', border: '2px outset #ddd' },
 
         inputHandler: function(buf) {
             system.wash.fd[0].write(buf);
@@ -973,4 +1728,42 @@ $(document).ready(function() {
     // tie global wash's stdout to cmdWindow output
     var stdout = system.wash.fd[1];
     stdout.bus.subscribe(stdout.name + ':ondata', cmdWindow.outputHandler);
+
+    // add a taskbutton
+    $('.taskbar').append('<button id="cmdwin-taskbtn" class="ui-btn-pressed">Console</button>');
+    $('#cmdwin-taskbtn').click(function() {
+        $('#' + cmdWindow.name).toggle('hide');
+        this.className = (this.className.match(/ui-btn-pressed/)) ? 'ui-btn' : 'ui-btn-pressed';
+    });
+
+    var right = left; // mirror cmdWindow left position
+    window.editWindow = new HxEditWindow({
+        parentEl: 'desktop',
+        mount: '/mnt/desktop',
+        title: 'File Editor',
+        defaultStyle: true,
+        css: { top: '40px', right: right, width: width, bottom: '3%' },
+
+        intputHandler: function(buf) {
+        },
+
+        outputHandler: function() {
+        },
+
+        errorHandler: function() {
+        }
+    });
+
+    // add a taskbutton
+    $('.taskbar').append('<button id="editwin-taskbtn" class="ui-btn-pressed">Editor</button>');
+    $('#editwin-taskbtn').click(function() {
+        $('#' + editWindow.name).toggle('hide');
+        this.className = (this.className.match(/ui-btn-pressed/)) ? 'ui-btn' : 'ui-btn-pressed';
+    });
+
+    if (system.env.mobile) setTimeout(function() {
+        $('#editwin-taskbtn').click();
+    }, 250);
+
+    wash("cat /mnt/dom/motd");
 });

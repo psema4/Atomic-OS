@@ -13,14 +13,14 @@ var HxPanel = HxJSFS.extend({
             this.name = system.fs.basename(this.name); 
         }
 
-        var html = '<div id="' + this.name + '" class="HxPanel"></div>';
+        var html = '<div id="' + this.name + '" class="ui-panel"></div>';
 
-        console.warn('attaching panel ' + this.name + ' to ' + this.parentEl);
+//        console.warn('attaching panel ' + this.name + ' to ' + this.parentEl);
 
         $('#' + this.parentEl).append(html);
         this.hxpanel = $('#' + this.name);
 
-        if (opts && opts.class) { this.hxpanel.addClass(opts.class); }
+        if (opts && opts.className) { this.hxpanel.addClass(opts.className); }
         if (opts && opts.css)   { this.hxpanel.css(opts.css); }
 
         if (this.mountPoint) {

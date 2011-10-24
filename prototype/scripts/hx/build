@@ -7,10 +7,12 @@ cat "class.js"           \
     "stream.js"          \
     "file.js"            \
     "jsfs.js"            \
+    "domfs.js"           \
     "process.js"         \
     "wash.js"            \
     "panel.js"           \
     "window.js"          \
     "commandwindow.js"   \
+    "editwindow.js"      \
     "test.js"            \
   > "atomos-hx.js"

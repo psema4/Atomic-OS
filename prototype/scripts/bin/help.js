@@ -1,13 +1,12 @@
 window.system = window.system || {};
 system.bin = system.bin || {};
 
-system.bin.echo = {
+system.bin.help = {
     help: function() {
-        return "Echo string to stdout\n\n  Usage: echo [string]";
+        return "Simple help utility\n\n  Usage: help [command name]";
     },
 
     exec: function(args) {
-        var debug = false;
         // 'this' is the calling process
 
         var stdin  = (this.fd && this.fd.length > 0) ? this.fd[0] : false;
@@ -15,16 +14,14 @@ system.bin.echo = {
         var stderr = (this.fd && this.fd.length > 2) ? this.fd[2] : false;
 
         try {
-            var message = (args instanceof Array) ? message = args.join(' ') : args;
+            var cmd = args instanceof Array ? args[0] : 'help';
 
-            if (stdout) {
-                stdout.write(message);
-            } else {
-                console.log(message);
+            if (system.bin[cmd]) {
+                var message = 'Help not available for command "' + cmd + '"';
+
+                if (system.bin[cmd].help) message = system.bin[cmd].help();
+                if (stdout) stdout.write(message);
             }
-
-            // test stderr
-            if (debug && stderr) throw new Error('fake error');
 
         } catch(e) {
             if (stderr) {
