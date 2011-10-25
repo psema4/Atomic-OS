@@ -1,0 +1,771 @@
+<!DOCTYPE html><html lang="en"><head><title>jsfs.js</title><script src="http://alexgorbatchev.com/pub/sh/current/scripts/shCore.js" type="text/javascript"></script><script src="http://alexgorbatchev.com/pub/sh/current/scripts/shBrushJScript.js" type="text/javascript"></script><link href="http://alexgorbatchev.com/pub/sh/current/styles/shCore.css" rel="stylesheet" type="text/css"><link href="http://alexgorbatchev.com/pub/sh/current/styles/shThemeDefault.css" rel="stylesheet" type="text/css"><script src="http://code.jquery.com/jquery-1.6.1.min.js" type="text/javascript"></script><script src="http://code.jquery.com/qunit/git/qunit.js" type="text/javascript"></script><link href="http://code.jquery.com/qunit/git/qunit.css" rel="stylesheet" type="text/css"><style type="text/css">#jsdog-logo                 { position: absolute; bottom: 10px; right: 20px; z-index: 1000 !important; opacity: 0.25; filter:alpha(opacity=25); }
+#ctx-container              { position: absolute; top: 0px; left: 0px; right: 0px; height: 32px; background-color: #eee; border: 1px dotted #ddd; text-align: right; }
+#ctx-container button       { height: 30px; padding-top: 1px; padding-bottom: 1px; }
+#ctx-container a, a:active, a:visited { color: #00f; text-decoration: none; }
+#ctx-container a:hover      { color: #00f; text-decoration: underline; }
+img#logo                    { width: 80px; height: 24px; float: left; margin-top: 2px; margin-left: 2px; border: 1px solid #000; background-color: #fff; }
+#doc-container              { position: absolute; top: 32px; left: 0px; right: 0px; bottom: 0px; overflow: auto; }
+div.block                   { border-bottom: 1px solid #aaa; margin-left: 1em; margin-right: 1em; padding-top: 1em; padding-bottom: 1em; }
+#block0                     { margin-bottom: 1em; border-bottom: 3px double #000; }
+p                           { margin: 0px; padding: 0px; }
+ul.public-properties        { list-style-type: none; margin: 0px; padding: 0px; }
+ul.public-properties li     { border-bottom: 1px dotted #ccc; margin-left: 1em; padding: 0px; }
+ul.public-properties li i:first-child { display: inline-block; width: 4em; }
+ul.public-properties li b   { display: inline-block; width: 7em; }
+ul.public-properties li:last-child { border-bottom: 0px solid #000; }
+ul.private-properties       { list-style-type: none; margin: 0px; padding: 0px; }
+ul.private-properties li    { border-bottom: 1px dotted #ccc; margin-left: 1em; padding: 0px; }
+ul.private-properties li i:first-child { display: inline-block; width: 4em; }
+ul.private-properties li b  { display: inline-block; width: 7em; }
+ul.private-properties li:last-child { border-bottom: 0px solid #000; }
+ul.protected-properties     { list-style-type: none; margin: 0px; padding: 0px; }
+ul.protected-properties li  { border-bottom: 1px dotted #ccc; margin-left: 1em; padding: 0px; }
+ul.protected-properties li i:first-child { display: inline-block; width: 4em; }
+ul.protected-properties li b { display: inline-block; width: 7em; }
+ul.protected-properties li:last-child { border-bottom: 0px solid #000; }
+ol.params                   { list-style-type: lower-roman; margin: 0px; padding: 0px; margin-left: 1em; padding-left: 1em;  }
+ol.params li                { margin-left: 1em; padding-left: 1em; border-bottom: 1px dotted #ccc; }
+ol.params li i:first-child  { display: inline-block; width: 4em; }
+ol.params li b              { display: inline-block; width: 7em; }
+ol.params li:last-child     { border-bottom: 0px solid #000; }
+ol.returns                  { list-style-type: lower-alpha; margin: 0px; padding: 0px; margin-left: 1em; padding-left: 1em;  }
+ol.returns li               { margin-left: 1em; padding-left: 1em; border-bottom: 1px dotted #ccc; }
+ol.returns li i:first-child { display: inline-block; width: 4em; }
+ol.returns li:last-child    { border-bottom: 0px solid #000; }
+ol.throws                   { list-style-type: disc; margin: 0px; padding: 0px; margin-left: 1em; padding-left: 1em;  }
+ol.throws li                { margin-left: 1em; padding-left: 1em; border-bottom: 1px dotted #ccc; }
+ol.throws li i:first-child  { display: inline-block; width: 10em; }
+ol.throws li:last-child     { border-bottom: 0px solid #000; }
+#test-container             { position: absolute; top: 32px; left: 0px; right: 0px; bottom: 0px; overflow: auto; }
+#src-container              { position: absolute; top: 32px; left: 0px; right: 0px; bottom: 0px; overflow: auto; }
+.syntaxhighlighter          { position: absolute !important; top: 0px; left: 0px; right: 0px; bottom: 0px; }
+#footer                     { display: inline-block; margin-top: 0em; margin-left: 0em; border-top: 1px solid #ccc; min-width: 750px; font-style: italic; font-weight: bold; color: #fff; background-color: #aaa; padding: 0.5em; padding-left: 1.25em; }
+
+</style><script src="../../atomos.t.js"></script><script type="text/javascript">/* jsfs.js
+ *
+ * ++[black[Atomic OS Class: HxJSFS]++
+ *
+ * Tree structure to contain temporary filesystem in JavaScript
+ *
+ * Derived from https://gist.github.com/897565
+ *
+ * @author Scott Elcomb <psema4@gmail.com (http://www.psema4.com)
+ * @version 2.0.0
+ */
+
+
+var HxJSFS = HxStream.extend({
+    /* @constructor
+     * @method init
+     * Extends <a href="stream.html">HxStream</a>
+     *
+     * @param {Object} opts Options dictionary
+     */
+
+    init: function(opts) {
+        this.tree = opts.tree || {};
+        this._super(opts);
+    },
+
+    /* @method traverse
+     * Crawls a tree, executing a callback on each node found
+     * @param {Object} obj Object to crawl
+     * @param {Function} fn Function to call on each node
+     * @param {Object} parent Parent node
+     */
+
+    traverse: function(obj, fn, parent) {
+        for (i in obj) {
+            if (typeof(obj[i]) != 'function') fn.apply(this, [i, obj[i], parent]);
+
+            if (obj[i] instanceof HxJSFS) {
+                this.traverse(obj[i].tree, fn, i);
+            }
+        }
+    },
+
+    /* @method getNodeRecursive
+     * Search a tree of objects looking for a particular property name
+     * @param {String} property Property to search for
+     * @returns {Array} Returns a list of objects, containing the matched node and it's parent
+     */
+
+    getNodeRecursive: function(property) {
+        var acc = [];
+
+        this.traverse(this.tree, function(key, value, parent) {
+            if (key === property) {
+                acc.push({ parent: parent, value: value });
+            }
+        });
+
+        return acc;
+    },
+
+    /* @method getPath
+     * Get the filepath representation of a node
+     * @param {String} nodeName Name of the node to search for (eg. an HxFile filename)
+     * @returns {String} Returns the filepath to a node
+     */
+
+    getPath: function(nodeName) {
+        var path = '/' + nodeName;
+
+        var matches = this.getNodeRecursive(nodeName);
+
+        if (matches.length > 0) {
+            var parentNode = matches[0].parent;
+            if (parentNode) path = this.getPath(parentNode) + path;
+        }
+
+        return path;
+    },
+
+    /* @method find
+     * Locate a file under this filesystem
+     * @param {String} nodeName Name of the node to locate
+     * @returns {Array} Returns a list of potentially matching filepaths
+     */
+
+    find: function(nodeName) {
+        var acc = [];
+        var matches = this.getNodeRecursive(nodeName);
+
+        for (var m in matches) {
+            var parentNode = matches[m].parent;
+            var path = this.getPath(parentNode) + '/' + nodeName;
+            acc.push({ path: path, file: matches[m].value });
+        }
+
+        return acc;
+    },
+
+    /* @method basename
+     * @param {String} path Filepath to return basename
+     * @returns {String} Strips the filename from a full filepath
+     */
+
+    basename: function(path) {
+        if (path.match(/\//)) {
+            return path.split('/').pop();
+        } else {
+            return path;
+        }
+    },
+
+    /* @method listFiles
+     * List all files and folders that are immediate children of this node
+     * @returns {Array} Returns a sorted list of files and subtrees
+     */
+
+    listFiles: function() {
+        var acc = [];
+
+        for (var child in this.tree) {
+            var node = this.tree[child];
+            acc.push({ path: child, file: node });
+        }
+
+        return acc.sort(function(a, b) {
+            var path1 = a.path.toLowerCase(), path2 = b.path.toLowerCase();
+            if (path1 < path2) return -1;
+            if (path1 > path2) return 1;
+            return 0;
+        });
+    },
+
+    /* @method readFile
+     * Read and return an HxFile's contents
+     * @param {String} path Filepath to node to be read
+     * @returns {String} file contents
+     */
+
+    readFile: function(path) {
+        var nodeName = this.basename(path);
+        var candidates = this.find(nodeName);
+
+        for (var i=0; i < candidates.length; i++) {
+            if (candidates[i].path == path) {
+                return candidates[i].file.read();
+            }
+        }
+
+        console.warn('file "' + path + '" not found');
+        return false;
+    },
+
+    /* @method writeFile
+     * @param {String} path Filepath to node to be written to
+     * @param {String} buf Contents to write to an HxFile
+     * @param {Bool} append Append to file if true
+     * @returns {Bool} True on success
+     */
+
+    writeFile: function(path, buf, append) {
+        var nodeName = this.basename(path);
+        var candidates = this.find(nodeName);
+
+        for (var i=0; i < candidates.length; i++) {
+            if (candidates[i].path == path) {
+                if (append) {
+                    candidates[i].file.append(buf);
+                } else {
+                    candidates[i].file.write(buf);
+
+                    try {
+                        // update system.bin if necessary
+                        if (path.match(/^\/bin\//)) {
+                            // FIXME: after saving updated command, running again causes exception SyntaxError: Unexpected token (
+                            var warning = 'saving to /bin not currently supported, but trying anyway...';
+                            system.wash.fd[1].write(warning);
+
+                            var binpath = 'system' + path.replace(/\//g, '.');
+                            var binobj = eval(binpath); // get the exectable object
+                            binobj.exec = eval(buf);    // evaluate text to create function object and assign it
+                        }
+                    } catch(e) {
+                        system.wash.fd[1].write("sorry, it didn't work");
+                    }
+                }
+                return true;
+            }
+        }
+
+        return false;
+    },
+
+    /* @method getFolder
+     * @param {String} path Filepath to desired folder
+     * @returns {HxJSFS} False if not found, otherwise a JSFS object (or subclass)
+     */
+
+    getFolder: function(path) {
+            if (path == '/') return system.fs;
+
+            path = path.replace(/\/$/, ''); // trim trailing slash
+
+            var fspath = 'system.fs',
+                newpath = '',
+                pathParts = path.split('/');
+
+            // create a js path
+            if (pathParts.length > 1) {
+                pathParts.shift();
+
+                for (var i=0; i<pathParts.length; i++) {
+                    newpath += '.tree.' + pathParts[i];
+                }
+            }
+            fspath += newpath;
+
+            try {
+                var o = eval(fspath);
+                return o ? o : false;
+
+            } catch(e) {
+                console.warn('fs exception: fs object does not exist');
+                return false;
+            }
+    },
+
+    /* @method mount
+     * Attach an HxJSFS (or subclass) tree to a node
+     * @param {String} path Filepath to mount a filesystem onto
+     * @param {HxJSFS} fs An instantiated filesystem to mount
+     */
+
+    mount: function(path, fs) {
+        var subtreeName = this.basename(fs.name);
+        var folder = this.getFolder(path);
+        folder.tree[subtreeName] = fs;
+    },
+
+    /* @method addChildFolder
+     * Creates a named subfolder
+     * @param {String} name Name of subfolder
+     * @returns {Bool} True on success
+     */
+
+    addChildFolder: function(name) {
+        this.tree[name] = new HxJSFS({});
+        return (this.tree[name] instanceof HxJSFS);
+    },
+
+    /* @method removeChildFolder
+     * Remove a named subfolder
+     * @param {String} name Name of subfolder to delete
+     * @returns {Bool} True on success
+     */
+
+    removeChildFolder: function(name) {
+        if (this.tree[name] && this.tree[name] instanceof HxJSFS) {
+            delete(this.tree[name]);
+            return (this.tree[name]) ? false : true;
+        }
+    },
+
+    /* @method addFile
+     * Create an empty HxFile
+     * @param {String} name Name of file to create
+     * @returns {Bool} True on success
+     */
+
+    addFile: function(name) {
+        this.tree[name] = new HxFile({
+            name: name
+        });
+        return (this.tree[name] instanceof HxFile);
+    },
+
+    /* @method removeFile
+     * Delete a named file
+     * @param {String} name Name of file to delete
+     * @returns {Bool} True on success
+     */
+
+    removeFile: function(name) {
+        if (this.tree[name] && this.tree[name] instanceof HxFile) {
+            delete(this.tree[name]);
+            return (this.tree[name]) ? false : true;
+        }
+    }
+});
+
+
+
+</script><script type="text/javascript">var currentPg = 'docs';
+
+function show(pg) {
+  if (pg !== 'docs')  $('#doc-container').fadeOut('slow');  
+  if (pg !== 'tests') $('#test-container').fadeOut('slow');  
+  if (pg !== 'codes') $('#src-container').fadeOut('slow');  
+  
+  switch(pg) {  
+    case "tests":  
+    $('#test-container').fadeIn('slow');  
+  break;  
+  
+  case "codes":  
+    $('#src-container').fadeIn('slow');  
+  break;  
+  
+  case "docs":  
+  default:  
+    $('#doc-container').fadeIn('slow');  
+  
+  }  
+  
+  currentPg = pg;
+}
+
+$(document).ready(function() {
+  show('docs');  
+  SyntaxHighlighter.all();  
+  
+  module("HxJSFS");
+test("load", function() {
+    var myfs = new HxJSFS({
+        name: '/',
+        tree: {}
+    });
+    ok(myfs instanceof HxJSFS, "new HxJSFS");
+});
+
+});
+
+</script></head><body><div id="ctx-container"><button onclick="show('docs');">Documentation</button><button onclick="show('tests');">Unit Tests</button><button onclick="show('codes');">Source Code</button></div><div id="doc-container" style="display: none;"><div id="block0" class="block"><p style="color: #777;">jsfs.js<br />
+<br />
+<span style="font-size: x-large;"><span style="color: black;">Atomic&nbsp;OS&nbsp;Class:&nbsp;HxJSFS</span></span><br />
+<br />
+Tree structure to contain temporary filesystem in JavaScript<br />
+<br />
+Derived from <a href="https://gist.github.com/897565">https://gist.github.com/897565</a><br />
+<br />
+</p><p><b>Author: &nbsp;</b>Scott Elcomb &lt;psema4-at-gmail-dot-com (<a href="http://www.psema4.com)">http://www.psema4.com)</a>
+</p><p><b>Version: &nbsp;</b>2.0.0
+</p></div><div id="block1" class="block"><b style="font-size: 20pt;">init&nbsp;-&nbsp;</b><i>    init: function(opts) </i><b style="color: green; font-variant: small-caps;">Constructor</b><p style="color: #777;">Extends <a href="stream.html">HxStream</a><br />
+<br />
+</p><br><span>Parameters:</span><ol class="params"><li><i>Object</i>&nbsp;
+<b>opts</b>&nbsp;
+Options dictionary
+</li></ol></div><div id="block2" class="block"><b style="font-size: 20pt;">traverse&nbsp;-&nbsp;</b><i>    traverse: function(obj, fn, parent) </i><p style="color: #777;">Crawls a tree, executing a callback on each node found<br />
+</p><br><span>Parameters:</span><ol class="params"><li><i>Object</i>&nbsp;
+<b>obj</b>&nbsp;
+Object to crawl
+</li><li><i>Function</i>&nbsp;
+<b>fn</b>&nbsp;
+Function to call on each node
+</li><li><i>Object</i>&nbsp;
+<b>parent</b>&nbsp;
+Parent node
+</li></ol></div><div id="block3" class="block"><b style="font-size: 20pt;">getNodeRecursive&nbsp;-&nbsp;</b><i>    getNodeRecursive: function(property) </i><p style="color: #777;">Search a tree of objects looking for a particular property name<br />
+</p><br><span>Parameters:</span><ol class="params"><li><i>String</i>&nbsp;
+<b>property</b>&nbsp;
+Property to search for
+</li></ol><br><span>Returns:</span><ol class="returns"><li><i>Array</i>&nbsp;
+Returns a list of objects, containing the matched node and it's parent
+</li></ol></div><div id="block4" class="block"><b style="font-size: 20pt;">getPath&nbsp;-&nbsp;</b><i>    getPath: function(nodeName) </i><p style="color: #777;">Get the filepath representation of a node<br />
+</p><br><span>Parameters:</span><ol class="params"><li><i>String</i>&nbsp;
+<b>nodeName</b>&nbsp;
+Name of the node to search for (eg. an HxFile filename)
+</li></ol><br><span>Returns:</span><ol class="returns"><li><i>String</i>&nbsp;
+Returns the filepath to a node
+</li></ol></div><div id="block5" class="block"><b style="font-size: 20pt;">find&nbsp;-&nbsp;</b><i>    find: function(nodeName) </i><p style="color: #777;">Locate a file under this filesystem<br />
+</p><br><span>Parameters:</span><ol class="params"><li><i>String</i>&nbsp;
+<b>nodeName</b>&nbsp;
+Name of the node to locate
+</li></ol><br><span>Returns:</span><ol class="returns"><li><i>Array</i>&nbsp;
+Returns a list of potentially matching filepaths
+</li></ol></div><div id="block6" class="block"><b style="font-size: 20pt;">basename&nbsp;-&nbsp;</b><i>    basename: function(path) </i><p style="color: #777;"></p><br><span>Parameters:</span><ol class="params"><li><i>String</i>&nbsp;
+<b>path</b>&nbsp;
+Filepath to return basename
+</li></ol><br><span>Returns:</span><ol class="returns"><li><i>String</i>&nbsp;
+Strips the filename from a full filepath
+</li></ol></div><div id="block7" class="block"><b style="font-size: 20pt;">listFiles&nbsp;-&nbsp;</b><i>    listFiles: function() </i><p style="color: #777;">List all files and folders that are immediate children of this node<br />
+</p><br><span>Returns:</span><ol class="returns"><li><i>Array</i>&nbsp;
+Returns a sorted list of files and subtrees
+</li></ol></div><div id="block8" class="block"><b style="font-size: 20pt;">readFile&nbsp;-&nbsp;</b><i>    readFile: function(path) </i><p style="color: #777;">Read and return an HxFile's contents<br />
+</p><br><span>Parameters:</span><ol class="params"><li><i>String</i>&nbsp;
+<b>path</b>&nbsp;
+Filepath to node to be read
+</li></ol><br><span>Returns:</span><ol class="returns"><li><i>String</i>&nbsp;
+file contents
+</li></ol></div><div id="block9" class="block"><b style="font-size: 20pt;">writeFile&nbsp;-&nbsp;</b><i>    writeFile: function(path, buf, append) </i><p style="color: #777;"></p><br><span>Parameters:</span><ol class="params"><li><i>String</i>&nbsp;
+<b>path</b>&nbsp;
+Filepath to node to be written to
+</li><li><i>String</i>&nbsp;
+<b>buf</b>&nbsp;
+Contents to write to an HxFile
+</li><li><i>Bool</i>&nbsp;
+<b>append</b>&nbsp;
+Append to file if true
+</li></ol><br><span>Returns:</span><ol class="returns"><li><i>Bool</i>&nbsp;
+True on success
+</li></ol></div><div id="block10" class="block"><b style="font-size: 20pt;">getFolder&nbsp;-&nbsp;</b><i>    getFolder: function(path) </i><p style="color: #777;"></p><br><span>Parameters:</span><ol class="params"><li><i>String</i>&nbsp;
+<b>path</b>&nbsp;
+Filepath to desired folder
+</li></ol><br><span>Returns:</span><ol class="returns"><li><i>HxJSFS</i>&nbsp;
+False if not found, otherwise a JSFS object (or subclass)
+</li></ol></div><div id="block11" class="block"><b style="font-size: 20pt;">mount&nbsp;-&nbsp;</b><i>    mount: function(path, fs) </i><p style="color: #777;">Attach an HxJSFS (or subclass) tree to a node<br />
+</p><br><span>Parameters:</span><ol class="params"><li><i>String</i>&nbsp;
+<b>path</b>&nbsp;
+Filepath to mount a filesystem onto
+</li><li><i>HxJSFS</i>&nbsp;
+<b>fs</b>&nbsp;
+An instantiated filesystem to mount
+</li></ol></div><div id="block12" class="block"><b style="font-size: 20pt;">addChildFolder&nbsp;-&nbsp;</b><i>    addChildFolder: function(name) </i><p style="color: #777;">Creates a named subfolder<br />
+</p><br><span>Parameters:</span><ol class="params"><li><i>String</i>&nbsp;
+<b>name</b>&nbsp;
+Name of subfolder
+</li></ol><br><span>Returns:</span><ol class="returns"><li><i>Bool</i>&nbsp;
+True on success
+</li></ol></div><div id="block13" class="block"><b style="font-size: 20pt;">removeChildFolder&nbsp;-&nbsp;</b><i>    removeChildFolder: function(name) </i><p style="color: #777;">Remove a named subfolder<br />
+</p><br><span>Parameters:</span><ol class="params"><li><i>String</i>&nbsp;
+<b>name</b>&nbsp;
+Name of subfolder to delete
+</li></ol><br><span>Returns:</span><ol class="returns"><li><i>Bool</i>&nbsp;
+True on success
+</li></ol></div><div id="block14" class="block"><b style="font-size: 20pt;">addFile&nbsp;-&nbsp;</b><i>    addFile: function(name) </i><p style="color: #777;">Create an empty HxFile<br />
+</p><br><span>Parameters:</span><ol class="params"><li><i>String</i>&nbsp;
+<b>name</b>&nbsp;
+Name of file to create
+</li></ol><br><span>Returns:</span><ol class="returns"><li><i>Bool</i>&nbsp;
+True on success
+</li></ol></div><div id="block15" class="block"><b style="font-size: 20pt;">removeFile&nbsp;-&nbsp;</b><i>    removeFile: function(name) </i><p style="color: #777;">Delete a named file<br />
+</p><br><span>Parameters:</span><ol class="params"><li><i>String</i>&nbsp;
+<b>name</b>&nbsp;
+Name of file to delete
+</li></ol><br><span>Returns:</span><ol class="returns"><li><i>Bool</i>&nbsp;
+True on success
+</li></ol></div><div id="footer"><p>Generated by&nbsp;<a href="http://github.com/psema4/jsdog">JSDog</a>&nbsp;in about 0.005 seconds
+</p></div></div><div id="test-container" style="display: none;"><h1 id="qunit-header">jsfs.js</h1><h2 id="qunit-banner"></h2><h2 id="qunit-userAgent"></h2><ol id="qunit-tests"></ol></div><div id="src-container" style="display: none;"><pre class="brush: js">/* jsfs.js
+ *
+ * ++[black[Atomic OS Class: HxJSFS]++
+ *
+ * Tree structure to contain temporary filesystem in JavaScript
+ *
+ * Derived from https://gist.github.com/897565
+ *
+ * @author Scott Elcomb &lt;psema4@gmail.com (http://www.psema4.com)
+ * @version 2.0.0
+ */
+
+
+var HxJSFS = HxStream.extend({
+    /* @constructor
+     * @method init
+     * Extends &lt;a href=&quot;stream.html&quot;&gt;HxStream&lt;/a&gt;
+     *
+     * @param {Object} opts Options dictionary
+     */
+
+    init: function(opts) {
+        this.tree = opts.tree || {};
+        this._super(opts);
+    },
+
+    /* @method traverse
+     * Crawls a tree, executing a callback on each node found
+     * @param {Object} obj Object to crawl
+     * @param {Function} fn Function to call on each node
+     * @param {Object} parent Parent node
+     */
+
+    traverse: function(obj, fn, parent) {
+        for (i in obj) {
+            if (typeof(obj[i]) != 'function') fn.apply(this, [i, obj[i], parent]);
+
+            if (obj[i] instanceof HxJSFS) {
+                this.traverse(obj[i].tree, fn, i);
+            }
+        }
+    },
+
+    /* @method getNodeRecursive
+     * Search a tree of objects looking for a particular property name
+     * @param {String} property Property to search for
+     * @returns {Array} Returns a list of objects, containing the matched node and it's parent
+     */
+
+    getNodeRecursive: function(property) {
+        var acc = [];
+
+        this.traverse(this.tree, function(key, value, parent) {
+            if (key === property) {
+                acc.push({ parent: parent, value: value });
+            }
+        });
+
+        return acc;
+    },
+
+    /* @method getPath
+     * Get the filepath representation of a node
+     * @param {String} nodeName Name of the node to search for (eg. an HxFile filename)
+     * @returns {String} Returns the filepath to a node
+     */
+
+    getPath: function(nodeName) {
+        var path = '/' + nodeName;
+
+        var matches = this.getNodeRecursive(nodeName);
+
+        if (matches.length &gt; 0) {
+            var parentNode = matches[0].parent;
+            if (parentNode) path = this.getPath(parentNode) + path;
+        }
+
+        return path;
+    },
+
+    /* @method find
+     * Locate a file under this filesystem
+     * @param {String} nodeName Name of the node to locate
+     * @returns {Array} Returns a list of potentially matching filepaths
+     */
+
+    find: function(nodeName) {
+        var acc = [];
+        var matches = this.getNodeRecursive(nodeName);
+
+        for (var m in matches) {
+            var parentNode = matches[m].parent;
+            var path = this.getPath(parentNode) + '/' + nodeName;
+            acc.push({ path: path, file: matches[m].value });
+        }
+
+        return acc;
+    },
+
+    /* @method basename
+     * @param {String} path Filepath to return basename
+     * @returns {String} Strips the filename from a full filepath
+     */
+
+    basename: function(path) {
+        if (path.match(/\//)) {
+            return path.split('/').pop();
+        } else {
+            return path;
+        }
+    },
+
+    /* @method listFiles
+     * List all files and folders that are immediate children of this node
+     * @returns {Array} Returns a sorted list of files and subtrees
+     */
+
+    listFiles: function() {
+        var acc = [];
+
+        for (var child in this.tree) {
+            var node = this.tree[child];
+            acc.push({ path: child, file: node });
+        }
+
+        return acc.sort(function(a, b) {
+            var path1 = a.path.toLowerCase(), path2 = b.path.toLowerCase();
+            if (path1 &lt; path2) return -1;
+            if (path1 &gt; path2) return 1;
+            return 0;
+        });
+    },
+
+    /* @method readFile
+     * Read and return an HxFile's contents
+     * @param {String} path Filepath to node to be read
+     * @returns {String} file contents
+     */
+
+    readFile: function(path) {
+        var nodeName = this.basename(path);
+        var candidates = this.find(nodeName);
+
+        for (var i=0; i &lt; candidates.length; i++) {
+            if (candidates[i].path == path) {
+                return candidates[i].file.read();
+            }
+        }
+
+        console.warn('file &quot;' + path + '&quot; not found');
+        return false;
+    },
+
+    /* @method writeFile
+     * @param {String} path Filepath to node to be written to
+     * @param {String} buf Contents to write to an HxFile
+     * @param {Bool} append Append to file if true
+     * @returns {Bool} True on success
+     */
+
+    writeFile: function(path, buf, append) {
+        var nodeName = this.basename(path);
+        var candidates = this.find(nodeName);
+
+        for (var i=0; i &lt; candidates.length; i++) {
+            if (candidates[i].path == path) {
+                if (append) {
+                    candidates[i].file.append(buf);
+                } else {
+                    candidates[i].file.write(buf);
+
+                    try {
+                        // update system.bin if necessary
+                        if (path.match(/^\/bin\//)) {
+                            // FIXME: after saving updated command, running again causes exception SyntaxError: Unexpected token (
+                            var warning = 'saving to /bin not currently supported, but trying anyway...';
+                            system.wash.fd[1].write(warning);
+
+                            var binpath = 'system' + path.replace(/\//g, '.');
+                            var binobj = eval(binpath); // get the exectable object
+                            binobj.exec = eval(buf);    // evaluate text to create function object and assign it
+                        }
+                    } catch(e) {
+                        system.wash.fd[1].write(&quot;sorry, it didn't work&quot;);
+                    }
+                }
+                return true;
+            }
+        }
+
+        return false;
+    },
+
+    /* @method getFolder
+     * @param {String} path Filepath to desired folder
+     * @returns {HxJSFS} False if not found, otherwise a JSFS object (or subclass)
+     */
+
+    getFolder: function(path) {
+            if (path == '/') return system.fs;
+
+            path = path.replace(/\/$/, ''); // trim trailing slash
+
+            var fspath = 'system.fs',
+                newpath = '',
+                pathParts = path.split('/');
+
+            // create a js path
+            if (pathParts.length &gt; 1) {
+                pathParts.shift();
+
+                for (var i=0; i&lt;pathParts.length; i++) {
+                    newpath += '.tree.' + pathParts[i];
+                }
+            }
+            fspath += newpath;
+
+            try {
+                var o = eval(fspath);
+                return o ? o : false;
+
+            } catch(e) {
+                console.warn('fs exception: fs object does not exist');
+                return false;
+            }
+    },
+
+    /* @method mount
+     * Attach an HxJSFS (or subclass) tree to a node
+     * @param {String} path Filepath to mount a filesystem onto
+     * @param {HxJSFS} fs An instantiated filesystem to mount
+     */
+
+    mount: function(path, fs) {
+        var subtreeName = this.basename(fs.name);
+        var folder = this.getFolder(path);
+        folder.tree[subtreeName] = fs;
+    },
+
+    /* @method addChildFolder
+     * Creates a named subfolder
+     * @param {String} name Name of subfolder
+     * @returns {Bool} True on success
+     */
+
+    addChildFolder: function(name) {
+        this.tree[name] = new HxJSFS({});
+        return (this.tree[name] instanceof HxJSFS);
+    },
+
+    /* @method removeChildFolder
+     * Remove a named subfolder
+     * @param {String} name Name of subfolder to delete
+     * @returns {Bool} True on success
+     */
+
+    removeChildFolder: function(name) {
+        if (this.tree[name] &amp;&amp; this.tree[name] instanceof HxJSFS) {
+            delete(this.tree[name]);
+            return (this.tree[name]) ? false : true;
+        }
+    },
+
+    /* @method addFile
+     * Create an empty HxFile
+     * @param {String} name Name of file to create
+     * @returns {Bool} True on success
+     */
+
+    addFile: function(name) {
+        this.tree[name] = new HxFile({
+            name: name
+        });
+        return (this.tree[name] instanceof HxFile);
+    },
+
+    /* @method removeFile
+     * Delete a named file
+     * @param {String} name Name of file to delete
+     * @returns {Bool} True on success
+     */
+
+    removeFile: function(name) {
+        if (this.tree[name] &amp;&amp; this.tree[name] instanceof HxFile) {
+            delete(this.tree[name]);
+            return (this.tree[name]) ? false : true;
+        }
+    }
+});
+
+</pre></div><img id="jsdog-logo" src="data:image/gif;base64,R0lGODlhAQABAIAAAP///////yH+EUNyZWF0ZWQgd2l0aCBHSU1QACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="></body></html>

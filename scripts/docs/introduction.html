@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+    <head>
+        <title>Introduction to Atomic OS</title>
+        <link rel="stylesheet" href="docs.css" />
+    </head>
+
+    <body>
+        <h1>&nbsp;</h1>
+
+        <h2>Introduction</h2>
+
+        <p>Atomic OS Version 2</p>
+
+        <h3>Browser Compatability</h3>
+        <table width="100%">
+            <tr>
+                <th>Chrome</th>
+                <th>Firefox</th>
+                <th>Safari</th>
+                <th>Opera</th>
+                <th>IE<sup>1</sup></th>
+                <th>Mobile Webkit<sup>2</sup></th>
+                <th>Mobile Firefox<sup>2</sup></th>
+                <th>Mobile Safari<sup>2</sup></th>
+                <th>Opera Mini<sup>2</sup></th>
+            </tr>
+
+            <tr>
+                <td class="ok">YES</td>
+                <td class="ok">YES</td>
+                <td class="">?</td>
+                <td class="">?</td>
+                <td class="fail">NO</td>
+                <td class="ok">Yes</td>
+                <td class="ok">Yes</td>
+                <td class="">?</td>
+                <td class="">?</td>
+            </tr>
+        </table>
+
+        <p></p>
+
+        <strong>&nbsp; &nbsp; Table notes:</strong>
+        <ul>
+            <li><sup>1</sup> IE is not supported by Zepto.js (perhaps with html5 and/or es5 shims?)</li>
+            <li><sup>2</sup> Mobile devices reqiure special consideration of UI needs</li>
+        </ul>
+
+        <h3>Miscellaneous Notes</h3>
+        <ol>
+            <li>HxProcess should extend HxJSFS so it can be mounted under /proc</li>
+            <li>HxInit should extend HxProcess and replace HxWASH as the default process</li>
+            <li>HxWidget should be implemented, extended by proper UI widgets</li>
+            <li>Remove temporary windows/classes from default main.js; these should be processes</li>
+        </ol>
+    </body>
+</html>

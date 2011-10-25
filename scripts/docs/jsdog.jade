@@ -1,0 +1,232 @@
+!!! 5
+html(lang='en')
+  head
+    title= pageTitle
+
+    //- syntaxhighlighter3
+    script(src="http://alexgorbatchev.com/pub/sh/current/scripts/shCore.js",type="text/javascript")
+    script(src="http://alexgorbatchev.com/pub/sh/current/scripts/shBrushJScript.js",type="text/javascript")
+    link(href="http://alexgorbatchev.com/pub/sh/current/styles/shCore.css", rel="stylesheet",type="text/css")
+    link(href="http://alexgorbatchev.com/pub/sh/current/styles/shThemeDefault.css", rel="stylesheet",type="text/css")
+
+    //- jquery & qunit
+    script(src="http://code.jquery.com/jquery-1.6.1.min.js", type="text/javascript")
+    script(src="http://code.jquery.com/qunit/git/qunit.js", type="text/javascript")
+    link(href="http://code.jquery.com/qunit/git/qunit.css", rel="stylesheet", type="text/css")
+
+    style(type="text/css")
+      #jsdog-logo                 { position: absolute; bottom: 10px; right: 20px; z-index: 1000 !important; opacity: 0.25; filter:alpha(opacity=25); }
+      #ctx-container              { position: absolute; top: 0px; left: 0px; right: 0px; height: 32px; background-color: #eee; border: 1px dotted #ddd; text-align: right; }
+      #ctx-container button       { height: 30px; padding-top: 1px; padding-bottom: 1px; }
+      #ctx-container a, a:active, a:visited { color: #00f; text-decoration: none; }
+      #ctx-container a:hover      { color: #00f; text-decoration: underline; }
+      img#logo                    { width: 80px; height: 24px; float: left; margin-top: 2px; margin-left: 2px; border: 1px solid #000; background-color: #fff; }
+      #doc-container              { position: absolute; top: 32px; left: 0px; right: 0px; bottom: 0px; overflow: auto; }
+      div.block                   { border-bottom: 1px solid #aaa; margin-left: 1em; margin-right: 1em; padding-top: 1em; padding-bottom: 1em; }
+      #block0                     { margin-bottom: 1em; border-bottom: 3px double #000; }
+      p                           { margin: 0px; padding: 0px; }
+      ul.public-properties        { list-style-type: none; margin: 0px; padding: 0px; }
+      ul.public-properties li     { border-bottom: 1px dotted #ccc; margin-left: 1em; padding: 0px; }
+      ul.public-properties li i:first-child { display: inline-block; width: 4em; }
+      ul.public-properties li b   { display: inline-block; width: 7em; }
+      ul.public-properties li:last-child { border-bottom: 0px solid #000; }
+      ul.private-properties       { list-style-type: none; margin: 0px; padding: 0px; }
+      ul.private-properties li    { border-bottom: 1px dotted #ccc; margin-left: 1em; padding: 0px; }
+      ul.private-properties li i:first-child { display: inline-block; width: 4em; }
+      ul.private-properties li b  { display: inline-block; width: 7em; }
+      ul.private-properties li:last-child { border-bottom: 0px solid #000; }
+      ul.protected-properties     { list-style-type: none; margin: 0px; padding: 0px; }
+      ul.protected-properties li  { border-bottom: 1px dotted #ccc; margin-left: 1em; padding: 0px; }
+      ul.protected-properties li i:first-child { display: inline-block; width: 4em; }
+      ul.protected-properties li b { display: inline-block; width: 7em; }
+      ul.protected-properties li:last-child { border-bottom: 0px solid #000; }
+      ol.params                   { list-style-type: lower-roman; margin: 0px; padding: 0px; margin-left: 1em; padding-left: 1em;  }
+      ol.params li                { margin-left: 1em; padding-left: 1em; border-bottom: 1px dotted #ccc; }
+      ol.params li i:first-child  { display: inline-block; width: 4em; }
+      ol.params li b              { display: inline-block; width: 7em; }
+      ol.params li:last-child     { border-bottom: 0px solid #000; }
+      ol.returns                  { list-style-type: lower-alpha; margin: 0px; padding: 0px; margin-left: 1em; padding-left: 1em;  }
+      ol.returns li               { margin-left: 1em; padding-left: 1em; border-bottom: 1px dotted #ccc; }
+      ol.returns li i:first-child { display: inline-block; width: 4em; }
+      ol.returns li:last-child    { border-bottom: 0px solid #000; }
+      ol.throws                   { list-style-type: disc; margin: 0px; padding: 0px; margin-left: 1em; padding-left: 1em;  }
+      ol.throws li                { margin-left: 1em; padding-left: 1em; border-bottom: 1px dotted #ccc; }
+      ol.throws li i:first-child  { display: inline-block; width: 10em; }
+      ol.throws li:last-child     { border-bottom: 0px solid #000; }
+      #test-container             { position: absolute; top: 32px; left: 0px; right: 0px; bottom: 0px; overflow: auto; }
+      #src-container              { position: absolute; top: 32px; left: 0px; right: 0px; bottom: 0px; overflow: auto; }
+      .syntaxhighlighter          { position: absolute !important; top: 0px; left: 0px; right: 0px; bottom: 0px; }
+      #footer                     { display: inline-block; margin-top: 0em; margin-left: 0em; border-top: 1px solid #ccc; min-width: 750px; font-style: italic; font-weight: bold; color: #fff; background-color: #aaa; padding: 0.5em; padding-left: 1.25em; }
+
+    //- include the source file for tests (if tests were included)
+    - if (qunitTestFile)
+        //- atomic os
+        script(src="../../atomos.t.js")
+      script(type="text/javascript")
+        !{src}
+
+    script(type="text/javascript")
+      var currentPg = 'docs';
+
+      function show(pg) {
+        if (pg !== 'docs')  $('#doc-container').fadeOut('slow');
+        if (pg !== 'tests') $('#test-container').fadeOut('slow');
+        if (pg !== 'codes') $('#src-container').fadeOut('slow');
+
+        switch(pg) {
+          case "tests":
+            $('#test-container').fadeIn('slow');
+            break;
+
+          case "codes":
+            $('#src-container').fadeIn('slow');
+            break;
+
+          case "docs":
+          default:
+            $('#doc-container').fadeIn('slow');
+        }
+
+        currentPg = pg;
+      }
+
+      $(document).ready(function() {
+        show('docs');
+        SyntaxHighlighter.all();
+
+        !{qunitTestFile}
+      });
+
+  body
+    #ctx-container
+      button(onclick="show('docs');") Documentation
+      - if (qunitTestFile)
+        button(onclick="show('tests');") Unit Tests
+      button(onclick="show('codes');") Source Code
+
+    #doc-container(style="display: none;")
+      - for (var block in docs)
+        - var counter = 0;
+        - var b = docs[block]
+          #block(id= b.id, class='block')
+            - if (b.name)
+              b(style='font-size: 20pt;') #{b.name}&nbsp;-&nbsp;
+
+            - if (b.declaration)
+              i #{b.declaration}
+
+            - if (b.constructor === true)
+              b(style='color: green; font-variant: small-caps;') Constructor
+
+            - if (b.deprecated)
+              b(style='color: red; font-variant: small-caps;') Deprecated
+
+            - if (b.event)
+              b(style='color: orange; font-variant: small-caps;') Event
+
+            - each val, key in b
+              - if (key == 'text')
+                p(style='color: #777;') !{val}
+
+              - if (key == 'author' || key == 'version') {
+                - var Key = key.substring(0,1).toUpperCase() + key.substring(1);
+                p
+                  b #{Key}: &nbsp;
+                  !{val}
+              - }
+
+              - if (key == 'publicProperties') {
+                - if (b.id == 'block1') {
+                  - counter++;
+                  - if (counter == 1)
+                    h4 Properties
+                - }
+
+                u Public
+                ul.public-properties
+                  - each prop in val
+                    li
+                      i #{prop.datatype}
+                      &nbsp;
+                      b #{prop.name}
+                      &nbsp;
+                      !{prop.desc}
+              - }
+
+              - if (key == 'privateProperties') {
+                br
+                u Private
+                ul.private-properties
+                  - each prop in val
+                    li
+                      i #{prop.datatype}
+                      &nbsp;
+                      b #{prop.name}
+                      &nbsp;
+                      !{prop.desc}
+              - }
+
+              - if (key == 'protectedProperties') {
+                br
+                u Protected
+                ul.protected-properties
+                  - each prop in val
+                    li
+                      i #{prop.datatype}
+                      &nbsp;
+                      b #{prop.name}
+                      &nbsp;
+                      !{prop.desc}
+              - }
+
+              - if (key == 'params') {
+                br
+                span Parameters:
+                ol.params
+                  - each param in val
+                    li
+                      i #{param.datatype}
+                      &nbsp;
+                      b #{param.name}
+                      &nbsp;
+                      !{param.desc}
+              - }
+
+              - if (key == 'returns') {
+                br
+                span Returns:
+                ol.returns
+                  - each ret in val
+                    li
+                      i #{ret.datatype}
+                      &nbsp;
+                      #{ret.desc}
+              - }
+
+              - if (key == 'throws') {
+                br
+                span Exceptions:
+                ol.throws
+                  - each ret in val
+                    li
+                      i #{ret.datatype}
+                      &nbsp;
+                      #{ret.desc}
+              - }
+      #footer
+        p Generated by&nbsp;
+          a(href="http://github.com/psema4/jsdog") JSDog
+          &nbsp;in about #{genTime} seconds
+
+    #test-container(style="display: none;")
+      h1#qunit-header #{pageTitle}
+      h2#qunit-banner
+      h2#qunit-userAgent
+      ol#qunit-tests
+
+    #src-container(style="display: none;")
+      pre(class='brush: js')= src
+      //- script(type="text/javascript")
+      //- SyntaxHighlighter.all();
+
+    img#jsdog-logo(src="data:image/gif;base64,R0lGODlhAQABAIAAAP///////yH+EUNyZWF0ZWQgd2l0aCBHSU1QACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==")
