@@ -80,13 +80,41 @@ window.system = {
         STDERR: 2
     }
 }
+/* cat.js
+ *
+ * Atomic OS WASH command
+ *
+ * Echo file contents to stdout
+ *
+ * @author Scott Elcomb <psema4@gmail.com (http://www.psema4.com)
+ * @version 2.0.0
+ */
+
 window.system = window.system || {};
 system.bin = system.bin || {};
 
+/* Dummy constructor
+ *
+ * Access programmatically via system.bin.cat.!!methodName!!
+ * @constructor
+ */
+
 system.bin.cat = {
+    /* @method help
+     * @returns {string} Returns a simple string synopsis for this command
+     *
+     * Simple synopsis on this command, used by the <a href="help.html">help command</a>
+     */
+
     help: function() {
         return "Echo file contents to stdout\n\n  Usage: cat [filepath]";
     },
+
+    /* @method exec
+     * @param {Array} args A list of arguments the command was called with
+     * Executes command with args. The calling HxProcess is available as **this** and it's first 3 file descriptors are stdin, stdout, and stderr respectively.
+     * For example, to echo text to stdout: **this.fd[1].write('foobar');**
+     */
 
     exec: function(args) {
         var stdin  = (this.fd && this.fd.length > 0) ? this.fd[0] : false;
@@ -112,13 +140,43 @@ system.bin.cat = {
         }
     }
 };
+/* cd.js
+ *
+ * Atomic OS WASH command
+ *
+ * Change Directory. Supports:
+ *   ~ (home folder)
+ *   - (last folder)
+ *  .. (parent folder)
+ * @author Scott Elcomb <psema4@gmail.com (http://www.psema4.com)
+ * @version 2.0.0
+ */
+
 window.system = window.system || {};
 system.bin = system.bin || {};
 
+/* Dummy constructor
+ *
+ * Access programmatically via system.bin.cd.!!methodName!!
+ * @constructor
+ */
+
 system.bin.cd = {
+    /* @method help
+     * @returns {string} Returns a simple string synopsis for this command
+     *
+     * Simple synopsis on this command, used by the <a href="help.html">help command</a>
+     */
+
     help: function() {
-        return "Change Directory\n\n  Usage: cd [path]";
+        return "Change Directory\n\n  Usage: cd [path]\n\nNOTE: Supports  ~ (home folder), - (last folder), and .. (parent folder)";
     },
+
+    /* @method exec
+     * @param {Array} args A list of arguments the command was called with
+     * Executes command with args. The calling HxProcess is available as **this** and it's first 3 file descriptors are stdin, stdout, and stderr respectively.
+     * For example, to echo text to stdout: **this.fd[1].write('foobar');**
+     */
 
     exec: function(args) {
         var stdin  = (this.fd && this.fd.length > 0) ? this.fd[0] : false;
@@ -201,13 +259,37 @@ system.bin.cd = {
         return system.env.pwd;
     }
 };
+/* clear.js
+ *
+ * Atomic OS WASH command
+ *
+ * Clear command console's output window
+ *
+ * The clear command is currently broken.  After running this command, the global wash stdout stream will no longer echo to the console window
+ *
+ * @author Scott Elcomb <psema4@gmail.com (http://www.psema4.com)
+ * @version 2.0.0
+ */
+
 window.system = window.system || {};
 system.bin = system.bin || {};
+
+/* Dummy constructor
+ *
+ * Access programmatically via system.bin.clear.!!methodName!!
+ * @constructor
+ */
 
 system.bin.clear = {
     help: function() {
         return "Clear command console's output window\n\n  Usage: clear\n\nNote: the clear command is currently broken.  After running this command, the global wash stdout stream will no longer echo to the console window";
     },
+
+    /* @method exec
+     * @param {Array} args A list of arguments the command was called with
+     * Executes command with args. The calling HxProcess is available as **this** and it's first 3 file descriptors are stdin, stdout, and stderr respectively.
+     * For example, to echo text to stdout: **this.fd[1].write('foobar');**
+     */
 
     exec: function(args) {
         var stdin  = (this.fd && this.fd.length > 0) ? this.fd[0] : false;
@@ -225,13 +307,41 @@ system.bin.clear = {
         }
     }
 };
+/* commands.js
+ *
+ * Atomic OS WASH command
+ *
+ * List available commands from /bin to stdout
+ *
+ * @author Scott Elcomb <psema4@gmail.com (http://www.psema4.com)
+ * @version 2.0.0
+ */
+
 window.system = window.system || {};
 system.bin = system.bin || {};
 
+/* Dummy constructor
+ *
+ * Access programmatically via system.bin.commands.!!methodName!!
+ * @constructor
+ */
+
 system.bin.commands = {
+    /* @method help
+     * @returns {string} Returns a simple string synopsis for this command
+     *
+     * Simple synopsis on this command, used by the <a href="help.html">help command</a>
+     */
+
     help: function() {
         return "List available commands from /bin to stdout\n\n  Usage: commands";
     },
+
+    /* @method exec
+     * @param {Array} args A list of arguments the command was called with
+     * Executes command with args. The calling HxProcess is available as **this** and it's first 3 file descriptors are stdin, stdout, and stderr respectively.
+     * For example, to echo text to stdout: **this.fd[1].write('foobar');**
+     */
 
     exec: function(args) {
         // 'this' is the calling process
@@ -255,14 +365,39 @@ system.bin.commands = {
         }
     }
 };
+/* echo.js
+ *
+ * Atomic OS WASH command
+ *
+ * Echo string to stdout
+ *
+ * @author Scott Elcomb <psema4@gmail.com (http://www.psema4.com)
+ * @version 2.0.0
+ */
+
 window.system = window.system || {};
 system.bin = system.bin || {};
 
+/* Dummy constructor
+ *
+ * Access programmatically via system.bin.echo.!!methodName!!
+ * @constructor
+ */
 system.bin.echo = {
+    /* @method help
+     * @returns {string} Returns a simple string synopsis for this command
+     *
+     * Simple synopsis on this command, used by the <a href="help.html">help command</a>
+     */
     help: function() {
         return "Echo string to stdout\n\n  Usage: echo [string]";
     },
 
+    /* @method exec
+     * @param {Array} args A list of arguments the command was called with
+     * Executes command with args. The calling HxProcess is available as **this** and it's first 3 file descriptors are stdin, stdout, and stderr respectively.
+     * For example, to echo text to stdout: **this.fd[1].write('foobar');**
+     */
     exec: function(args) {
         var debug = false;
         // 'this' is the calling process
@@ -294,13 +429,43 @@ system.bin.echo = {
         }
     }
 };
+/* edit.js
+ *
+ * Atomic OS WASH command
+ *
+ * Edit file in File Editor
+ *
+ * This command is currently tied to the temporary File Editor window
+ *
+ * @author Scott Elcomb <psema4@gmail.com (http://www.psema4.com)
+ * @version 2.0.0
+ */
+
 window.system = window.system || {};
 system.bin = system.bin || {};
 
+/* Dummy constructor
+ *
+ * Access programmatically via system.bin.edit.!!methodName!!
+ * @constructor
+ */
+
 system.bin.edit = {
+    /* @method help
+     * @returns {string} Returns a simple string synopsis for this command
+     *
+     * Simple synopsis on this command, used by the <a href="help.html">help command</a>
+     */
+
     help: function() {
         return "Edit file in File Editor\n\n  Usage: edit [filepath]\n\nNOTE: This command is currently tied to the temporary File Editor window.";
     },
+
+    /* @method exec
+     * @param {Array} args A list of arguments the command was called with
+     * Executes command with args. The calling HxProcess is available as **this** and it's first 3 file descriptors are stdin, stdout, and stderr respectively.
+     * For example, to echo text to stdout: **this.fd[1].write('foobar');**
+     */
 
     exec: function(args) {
         // 'this' is the calling process
@@ -327,13 +492,41 @@ system.bin.edit = {
         }
     }
 };
+/* help.js
+ *
+ * Atomic OS WASH command
+ *
+ * Simple help utility
+ *
+ * @author Scott Elcomb <psema4@gmail.com (http://www.psema4.com)
+ * @version 2.0.0
+ */
+
 window.system = window.system || {};
 system.bin = system.bin || {};
 
+/* Dummy constructor
+ *
+ * Access programmatically via system.bin.help.!!methodName!!
+ * @constructor
+ */
+
 system.bin.help = {
+    /* @method help
+     * @returns {string} Returns a simple string synopsis for this command
+     *
+     * Simple synopsis on this command, used by the <a href="help.html">help command</a>
+     */
+
     help: function() {
         return "Simple help utility\n\n  Usage: help [command name]";
     },
+
+    /* @method exec
+     * @param {Array} args A list of arguments the command was called with
+     * Executes command with args. The calling HxProcess is available as **this** and it's first 3 file descriptors are stdin, stdout, and stderr respectively.
+     * For example, to echo text to stdout: **this.fd[1].write('foobar');**
+     */
 
     exec: function(args) {
         // 'this' is the calling process
@@ -363,13 +556,44 @@ system.bin.help = {
         }
     }
 };
+/* ls.js
+ *
+ * Atomic OS WASH command
+ *
+ * List files
+ *
+ * Without a path, lists the current working directory
+ * With -l, lists files in a single column
+ *
+ * @author Scott Elcomb <psema4@gmail.com (http://www.psema4.com)
+ * @version 2.0.0
+ */
+
 window.system = window.system || {};
 system.bin = system.bin || {};
 
+/* Dummy constructor
+ *
+ * Access programmatically via system.bin.ls.!!methodName!!
+ * @constructor
+ */
+
 system.bin.ls = {
+    /* @method help
+     * @returns {string} Returns a simple string synopsis for this command
+     *
+     * Simple synopsis on this command, used by the <a href="help.html">help command</a>
+     */
+
     help: function() {
         return "List files\n\n  Usage: ls [-l] [path]\n\nWithout a path, lists the current working directory.\nWith -l, lists files in a single column.";
     },
+
+    /* @method exec
+     * @param {Array} args A list of arguments the command was called with
+     * Executes command with args. The calling HxProcess is available as **this** and it's first 3 file descriptors are stdin, stdout, and stderr respectively.
+     * For example, to echo text to stdout: **this.fd[1].write('foobar');**
+     */
 
     exec: function(args) {
         // 'this' is the calling process
@@ -456,14 +680,41 @@ system.bin.ls = {
         }
     }
 };
+/* mkdir.js
+ *
+ * Atomic OS WASH command
+ *
+ * Make directory
+ *
+ * This command is currently limited to creating folders in the current directory
+ *
+ * @author Scott Elcomb <psema4@gmail.com (http://www.psema4.com)
+ * @version 2.0.0
+ */
+
 window.system = window.system || {};
 system.bin = system.bin || {};
 
+/* Dummy constructor
+ *
+ * Access programmatically via system.bin.mkdir.!!methodName!!
+ * @constructor
+ */
 system.bin.mkdir = {
+    /* @method help
+     * @returns {string} Returns a simple string synopsis for this command
+     *
+     * Simple synopsis on this command, used by the <a href="help.html">help command</a>
+     */
     help: function() {
         return "Make directory\n\n  Usage: mkdir [folder name]\n\nNOTE: This command is currently limited to creating folders in the current directory";
     },
 
+    /* @method exec
+     * @param {Array} args A list of arguments the command was called with
+     * Executes command with args. The calling HxProcess is available as **this** and it's first 3 file descriptors are stdin, stdout, and stderr respectively.
+     * For example, to echo text to stdout: **this.fd[1].write('foobar');**
+     */
     exec: function(args) {
         // 'this' is the calling process
 
@@ -492,13 +743,41 @@ system.bin.mkdir = {
         }
     }
 };
+/* pwd.js
+ *
+ * Atomic OS WASH command
+ *
+ * Echo current working directory to stdout
+ *
+ * @author Scott Elcomb <psema4@gmail.com (http://www.psema4.com)
+ * @version 2.0.0
+ */
+
 window.system = window.system || {};
 system.bin = system.bin || {};
 
+/* Dummy constructor
+ *
+ * Access programmatically via system.bin.pwd.!!methodName!!
+ * @constructor
+ */
+
 system.bin.pwd = {
+    /* @method help
+     * @returns {string} Returns a simple string synopsis for this command
+     *
+     * Simple synopsis on this command, used by the <a href="help.html">help command</a>
+     */
+
     help: function() {
         return "Echo current working directory to stdout\n\n  Usage: pwd";
     },
+
+    /* @method exec
+     * @param {Array} args A list of arguments the command was called with
+     * Executes command with args. The calling HxProcess is available as **this** and it's first 3 file descriptors are stdin, stdout, and stderr respectively.
+     * For example, to echo text to stdout: **this.fd[1].write('foobar');**
+     */
 
     exec: function(args) {
         var stdin  = (this.fd && this.fd.length > 0) ? this.fd[0] : false;
@@ -518,13 +797,43 @@ system.bin.pwd = {
         }
     }
 };
+/* rm.js
+ *
+ * Atomic OS WASH command
+ *
+ * Remove a file
+ * 
+ * This command is currently limited to removing files in the current directory
+ *
+ * @author Scott Elcomb <psema4@gmail.com (http://www.psema4.com)
+ * @version 2.0.0
+ */
+
 window.system = window.system || {};
 system.bin = system.bin || {};
 
+/* Dummy constructor
+ *
+ * Access programmatically via system.bin.rm.!!methodName!!
+ * @constructor
+ */
+
 system.bin.rm = {
+    /* @method help
+     * @returns {string} Returns a simple string synopsis for this command
+     *
+     * Simple synopsis on this command, used by the <a href="help.html">help command</a>
+     */
+
     help: function() {
         return "Remove a file\n\n  Usage: rm [filename]\n\nNOTE: This command is currently limited to removing files in the current directory";
     },
+
+    /* @method exec
+     * @param {Array} args A list of arguments the command was called with
+     * Executes command with args. The calling HxProcess is available as **this** and it's first 3 file descriptors are stdin, stdout, and stderr respectively.
+     * For example, to echo text to stdout: **this.fd[1].write('foobar');**
+     */
 
     exec: function(args) {
         // 'this' is the calling process
@@ -554,13 +863,43 @@ system.bin.rm = {
         }
     }
 };
+/* rmdir.js
+ *
+ * Remove a directory
+ *
+ * This command is currently limited to removing folders in the current directory
+ *
+ * Atomic OS WASH command
+ *
+ * @author Scott Elcomb <psema4@gmail.com (http://www.psema4.com)
+ * @version 2.0.0
+ */
+
 window.system = window.system || {};
 system.bin = system.bin || {};
 
+/* Dummy constructor
+ *
+ * Access programmatically via system.bin.rmdir.!!methodName!!
+ * @constructor
+ */
+
 system.bin.rmdir = {
+    /* @method help
+     * @returns {string} Returns a simple string synopsis for this command
+     *
+     * Simple synopsis on this command, used by the <a href="help.html">help command</a>
+     */
+
     help: function() {
         return "Remove a directory\n\n  Usage: rmdir [folder name]\n\nNOTE: This command is currently limited to removing folders in the current directory";
     },
+
+    /* @method exec
+     * @param {Array} args A list of arguments the command was called with
+     * Executes command with args. The calling HxProcess is available as **this** and it's first 3 file descriptors are stdin, stdout, and stderr respectively.
+     * For example, to echo text to stdout: **this.fd[1].write('foobar');**
+     */
 
     exec: function(args) {
         // 'this' is the calling process
@@ -590,13 +929,43 @@ system.bin.rmdir = {
         }
     }
 };
+/* touch.js
+ *
+ * Atomic OS WASH command
+ *
+ * Create empty file
+ *
+ * This command is currently limited to creating files in the current directory
+ *
+ * @author Scott Elcomb <psema4@gmail.com (http://www.psema4.com)
+ * @version 2.0.0
+ */
+
 window.system = window.system || {};
 system.bin = system.bin || {};
 
+/* Dummy constructor
+ *
+ * Access programmatically via system.bin.touch.!!methodName!!
+ * @constructor
+ */
+
 system.bin.touch = {
+    /* @method help
+     * @returns {string} Returns a simple string synopsis for this command
+     *
+     * Simple synopsis on this command, used by the <a href="help.html">help command</a>
+     */
+
     help: function() {
         return "Create empty file\n\n  Usage: touch [file name]\n\nNOTE: This command is currently limited to creating files in the current directory";
     },
+
+    /* @method exec
+     * @param {Array} args A list of arguments the command was called with
+     * Executes command with args. The calling HxProcess is available as **this** and it's first 3 file descriptors are stdin, stdout, and stderr respectively.
+     * For example, to echo text to stdout: **this.fd[1].write('foobar');**
+     */
 
     exec: function(args) {
         // 'this' is the calling process
@@ -632,13 +1001,43 @@ system.bin.touch = {
         }
     }
 };
+/* wallpaper.js
+ *
+ * Atomic OS WASH command
+ *
+ * Sets the desktop wallpaper
+ *
+ * This command can currently only add/remove one graphic [css class="bg-tile"]
+ *
+ * @author Scott Elcomb <psema4@gmail.com (http://www.psema4.com)
+ * @version 2.0.0
+ */
+
 window.system = window.system || {};
 system.bin = system.bin || {};
 
+/* Dummy constructor
+ *
+ * Access programmatically via system.bin.wallpaper.!!methodName!!
+ * @constructor
+ */
+
 system.bin.wallpaper = {
+    /* @method help
+     * @returns {string} Returns a simple string synopsis for this command
+     *
+     * Simple synopsis on this command, used by the <a href="help.html">help command</a>
+     */
+
     help: function() {
         return "Sets the desktop wallpaper\n\n  Usage: wallpaper\n\nThis command can currently only add/remove one graphic [css class=\"bg-tile\"]";
     },
+
+    /* @method exec
+     * @param {Array} args A list of arguments the command was called with
+     * Executes command with args. The calling HxProcess is available as **this** and it's first 3 file descriptors are stdin, stdout, and stderr respectively.
+     * For example, to echo text to stdout: **this.fd[1].write('foobar');**
+     */
 
     exec: function(args) {
         // 'this' is the calling process
@@ -668,46 +1067,37 @@ system.bin.wallpaper = {
         }
     }
 };
+/* class.js
+ *
+ * ++[black[Atomic OS Class: HxClass]++
+ *
+ * Base class for Atomic OS objects
+ *
+ * @author Scott Elcomb <psema4@gmail.com (http://www.psema4.com)
+ * @version 2.0.0
+ */
+
 var HxClass = Class.extend({
+    /* @constructor
+     * @method init
+     * @param {Object} opts Options dictionary
+     *
+     */
     init: function(opts) {
         opts = opts || {};
     }
 });
 
-// Derived from http://aymanh.com/9-javascript-tips-you-may-not-know
+/* guid.js
+ *
+ * ++[black[Atomic OS Class: HxGUID] **Singleton**++
+ *
+ * Simple GUID generator based on http://stackoverflow.com/questions/105034/how-to-create-a-guid-uuid-in-javascript
+ *
+ * @author Scott Elcomb <psema4@gmail.com (http://www.psema4.com)
+ * @version 2.0.0
+ */
 
-function HxAssertException(message) { this.message = message; }
-
-HxAssertException.prototype.toString = function() {
-    return 'HxAssertException: ' + this.message;
-}
-
-window.assert = function(exp, message, echoOnly) {
-    if (! exp) {
-        var exception = new HxAssertException(message);
-
-        if (echoOnly) {
-            console.warn(exception.toString());
-
-        } else {
-            throw exception;
-        }
-    }
-}
-
-window.assertNot = function(exp, message, echoOnly) {
-    if (exp) {
-        var exception = new HxAssertException(message);
-
-        if (echoOnly) {
-            console.warn(exception.toString());
-
-        } else {
-            throw exception;
-        }
-    }
-}
-// source: http://stackoverflow.com/questions/105034/how-to-create-a-guid-uuid-in-javascript
 // FIXME: no validation
 window.HxGUID = (function() {
     var S4 = function() {
@@ -715,11 +1105,26 @@ window.HxGUID = (function() {
     };
 
     return {
+        /* @method next
+         * Generates a GUID. **WARNING:** Does not check if ID already in use
+         * @returns {String} GUID
+         */
+
         next: function() {
             return (S4()+S4()+"-"+S4()+"-"+S4()+"-"+S4()+"-"+S4()+S4()+S4());
         }
     }
 })();
+/* bus.js
+ *
+ * ++[black[Atomic OS Class: HxBus] **Singleton**++
+ *
+ * Primary message bus
+ *
+ * @author Scott Elcomb <psema4@gmail.com (http://www.psema4.com)
+ * @version 2.0.0
+ */
+
 var HxBus = (function () {
     var channels = {
         "default": {
@@ -728,6 +1133,14 @@ var HxBus = (function () {
     };
 
     return {
+        /* @method publish
+         * Publish a message and execute all subscribed callback functions
+         * @param {String} msg Message being published
+         * @param {Array} args Arguments to pass to subscribed callbacks
+         * @param {Object} scope Context to execute callback with
+         * @param {String} ch Optional channel name !!default: 'default'!!
+         */
+
         publish: function (msg, args, scope, ch) {
             ch = (ch) ? ch : "default";
 
@@ -752,6 +1165,13 @@ var HxBus = (function () {
             }
         },
 
+        /* @method subscribe
+         * Add a subscription
+         * @param {String} msg Message to subscribe to
+         * @param {Function} fn Function to callback when message is published
+         * @param {String} ch Optional channel name !!default: 'default'!!
+         */
+
         subscribe: function (msg, fn, ch) {
             if (typeof fn !== 'function') {
                 throw new Error('system bus: subscribe: fn must be a function');
@@ -772,6 +1192,13 @@ var HxBus = (function () {
             channels[ch].subscriptions[msg].push(fn);
         },
 
+        /* @method unsubscribe
+         * Remove a subscription
+         * @param {String} msg Subscribed message name
+         * @param {Function} fn The callback that was subscribed
+         * @param {String} ch Optional channel name !!default: 'default'!!
+         */
+
         unsubscribe: function (msg, fn, ch) {
             if (typeof fn !== 'function') {
                 throw new Error('system bus: unsubscribe: fn must be a function');
@@ -788,7 +1215,22 @@ var HxBus = (function () {
         }
     }
 })();
+/* stream.js
+ *
+ * ++[black[Atomic OS Class: HxStream]++
+ *
+ * @author Scott Elcomb <psema4@gmail.com (http://www.psema4.com)
+ * @version 2.0.0
+ */
+
 var HxStream = HxClass.extend({
+    /* @constructor
+     * @method init
+     * Extends <a href="class.html">HxClass</a>
+     *
+     * @param {Object} opts Options dictionary
+     */
+
     init: function(opts) {
         opts = opts                          || {};
         this.name = opts.name                || HxGUID.next();
@@ -802,11 +1244,22 @@ var HxStream = HxClass.extend({
         });
     },
 
+    /* @method read
+     * Read and return the internal buffer.  If this stream objects' autoFlush property is set to true, internal buffer will be flushed once read.
+     * @returns {String} Internal buffer
+     */
+
     read: function() {
         var buf = this.buffer;
         if (this.autoFlush) this.flush();
         return buf;
     },
+
+    /* @method write
+     * Write characters to internal buffer, overwriting any previous contents
+     * @param {String} buf Text contents to store in internal buffer
+     * @returns {HxStream} Returns this stream object
+     */
 
     write: function(buf) {
         this.buffer = buf;
@@ -814,39 +1267,96 @@ var HxStream = HxClass.extend({
         return this;
     },
 
+    /* @method append
+     * Write characters to internal buffer, appending to any previous contents
+     * @param {String} buf Text contents to append to internal buffer
+     * @returns {HxStream} Returns this stream object
+     */
+
     append: function(buf) {
         this.buffer += buf;
         this.bus.publish(this.name + ':ondata', this.buffer.length);
         return this;
     },
 
+    /* @method flush
+     * Empties the internal buffer
+     */
+
     flush: function() {
         this.buffer = '';
     }
 });
+/* file.js
+ *
+ * ++[black[Atomic OS Class: HxFile]++
+ *
+ * @author Scott Elcomb <psema4@gmail.com (http://www.psema4.com)
+ * @version 2.0.0
+ */
+
 var HxFile = HxStream.extend({
+    /* @constructor
+     * @method init
+     * Extends <a href="stream.html">HxStream</a>
+     *
+     * By default, autoFlush is false for a file. Otherwise the contents would be lost after reading.
+     * @param {Object} opts Options dictionary
+     */
+
     init: function(opts) {
         this._super(opts);
         this.autoFlush = false;
     }
 });
-// derived from https://gist.github.com/897565
+/* jsfs.js
+ *
+ * ++[black[Atomic OS Class: HxJSFS]++
+ *
+ * Tree structure to contain temporary filesystem in JavaScript
+ *
+ * Derived from https://gist.github.com/897565
+ *
+ * @author Scott Elcomb <psema4@gmail.com (http://www.psema4.com)
+ * @version 2.0.0
+ */
+
 
 var HxJSFS = HxStream.extend({
+    /* @constructor
+     * @method init
+     * Extends <a href="stream.html">HxStream</a>
+     *
+     * @param {Object} opts Options dictionary
+     */
+
     init: function(opts) {
         this.tree = opts.tree || {};
         this._super(opts);
     },
 
-    traverse: function(obj, func, parent) {
+    /* @method traverse
+     * Crawls a tree, executing a callback on each node found
+     * @param {Object} obj Object to crawl
+     * @param {Function} fn Function to call on each node
+     * @param {Object} parent Parent node
+     */
+
+    traverse: function(obj, fn, parent) {
         for (i in obj) {
-            if (typeof(obj[i]) != 'function') func.apply(this, [i, obj[i], parent]);
+            if (typeof(obj[i]) != 'function') fn.apply(this, [i, obj[i], parent]);
 
             if (obj[i] instanceof HxJSFS) {
-                this.traverse(obj[i].tree, func, i);
+                this.traverse(obj[i].tree, fn, i);
             }
         }
     },
+
+    /* @method getNodeRecursive
+     * Search a tree of objects looking for a particular property name
+     * @param {String} property Property to search for
+     * @returns {Array} Returns a list of objects, containing the matched node and it's parent
+     */
 
     getNodeRecursive: function(property) {
         var acc = [];
@@ -859,6 +1369,12 @@ var HxJSFS = HxStream.extend({
 
         return acc;
     },
+
+    /* @method getPath
+     * Get the filepath representation of a node
+     * @param {String} nodeName Name of the node to search for (eg. an HxFile filename)
+     * @returns {String} Returns the filepath to a node
+     */
 
     getPath: function(nodeName) {
         var path = '/' + nodeName;
@@ -873,6 +1389,12 @@ var HxJSFS = HxStream.extend({
         return path;
     },
 
+    /* @method find
+     * Locate a file under this filesystem
+     * @param {String} nodeName Name of the node to locate
+     * @returns {Array} Returns a list of potentially matching filepaths
+     */
+
     find: function(nodeName) {
         var acc = [];
         var matches = this.getNodeRecursive(nodeName);
@@ -886,6 +1408,11 @@ var HxJSFS = HxStream.extend({
         return acc;
     },
 
+    /* @method basename
+     * @param {String} path Filepath to return basename
+     * @returns {String} Strips the filename from a full filepath
+     */
+
     basename: function(path) {
         if (path.match(/\//)) {
             return path.split('/').pop();
@@ -893,6 +1420,11 @@ var HxJSFS = HxStream.extend({
             return path;
         }
     },
+
+    /* @method listFiles
+     * List all files and folders that are immediate children of this node
+     * @returns {Array} Returns a sorted list of files and subtrees
+     */
 
     listFiles: function() {
         var acc = [];
@@ -910,6 +1442,12 @@ var HxJSFS = HxStream.extend({
         });
     },
 
+    /* @method readFile
+     * Read and return an HxFile's contents
+     * @param {String} path Filepath to node to be read
+     * @returns {String} file contents
+     */
+
     readFile: function(path) {
         var nodeName = this.basename(path);
         var candidates = this.find(nodeName);
@@ -923,6 +1461,13 @@ var HxJSFS = HxStream.extend({
         console.warn('file "' + path + '" not found');
         return false;
     },
+
+    /* @method writeFile
+     * @param {String} path Filepath to node to be written to
+     * @param {String} buf Contents to write to an HxFile
+     * @param {Bool} append Append to file if true
+     * @returns {Bool} True on success
+     */
 
     writeFile: function(path, buf, append) {
         var nodeName = this.basename(path);
@@ -957,6 +1502,11 @@ var HxJSFS = HxStream.extend({
         return false;
     },
 
+    /* @method getFolder
+     * @param {String} path Filepath to desired folder
+     * @returns {HxJSFS} False if not found, otherwise a JSFS object (or subclass)
+     */
+
     getFolder: function(path) {
             if (path == '/') return system.fs;
 
@@ -986,16 +1536,34 @@ var HxJSFS = HxStream.extend({
             }
     },
 
+    /* @method mount
+     * Attach an HxJSFS (or subclass) tree to a node
+     * @param {String} path Filepath to mount a filesystem onto
+     * @param {HxJSFS} fs An instantiated filesystem to mount
+     */
+
     mount: function(path, fs) {
         var subtreeName = this.basename(fs.name);
         var folder = this.getFolder(path);
         folder.tree[subtreeName] = fs;
     },
 
+    /* @method addChildFolder
+     * Creates a named subfolder
+     * @param {String} name Name of subfolder
+     * @returns {Bool} True on success
+     */
+
     addChildFolder: function(name) {
         this.tree[name] = new HxJSFS({});
         return (this.tree[name] instanceof HxJSFS);
     },
+
+    /* @method removeChildFolder
+     * Remove a named subfolder
+     * @param {String} name Name of subfolder to delete
+     * @returns {Bool} True on success
+     */
 
     removeChildFolder: function(name) {
         if (this.tree[name] && this.tree[name] instanceof HxJSFS) {
@@ -1004,12 +1572,24 @@ var HxJSFS = HxStream.extend({
         }
     },
 
+    /* @method addFile
+     * Create an empty HxFile
+     * @param {String} name Name of file to create
+     * @returns {Bool} True on success
+     */
+
     addFile: function(name) {
         this.tree[name] = new HxFile({
             name: name
         });
         return (this.tree[name] instanceof HxFile);
     },
+
+    /* @method removeFile
+     * Delete a named file
+     * @param {String} name Name of file to delete
+     * @returns {Bool} True on success
+     */
 
     removeFile: function(name) {
         if (this.tree[name] && this.tree[name] instanceof HxFile) {
@@ -1018,16 +1598,47 @@ var HxJSFS = HxStream.extend({
         }
     }
 });
+/* domfs.js
+ *
+ * ++[black[Atomic OS Class: HxDOMFS]++
+ *
+ * JavaScript tree structure to represent a filesystem in the DOM
+ *
+ * @author Scott Elcomb <psema4@gmail.com (http://www.psema4.com)
+ * @version 2.0.0
+ */
+
 var HxDOMFS = HxJSFS.extend({
+    /* @constructor
+     * @method init
+     * Extends <a href="jsfs.html">HxJSFS</a>
+     *
+     * @param {Object} opts Options dictionary
+     */
+
     init: function(opts) {
         this.tree = opts.tree || {};
         this._super(opts);
     },
 
+    /* @method addChildFolder
+     * **Superclass Override**
+     * Creates a named subfolder
+     * @param {String} name Name of subfolder
+     * @returns {Bool} True on success
+     */
+
     addChildFolder: function(name) {
         this.tree[name] = new HxDOMFS({});
         return (this.tree[name] instanceof HxDOMFS);
     },
+
+    /* @method addFile
+     * **Superclass Override**
+     * Create an empty HxFile
+     * @param {String} name Name of file to create
+     * @returns {Bool} True on success
+     */
 
     addFile: function(name) {
         $('#fileroot').append('<div class="domfile"></div>');
@@ -1037,7 +1648,24 @@ var HxDOMFS = HxJSFS.extend({
         return (this.tree[name] instanceof HxFile);
     }
 });
+/* process.js
+ *
+ * ++[black[Atomic OS Class: HxProcess]++
+ *
+ * A simple object to represent a "process"
+ *
+ * @author Scott Elcomb <psema4@gmail.com (http://www.psema4.com)
+ * @version 2.0.0
+ */
+
 var HxProcess = HxClass.extend({
+    /* @constructor
+     * @method init
+     * Extends <a href="class.html">HxClass</a>
+     *
+     * Creates three streams per process: STDIN, STDOUT, and STDERR
+     * @param {Object} opts Options dictionary
+     */
     init: function(opts) {
         opts = opts || {};
         this.name = opts.name || HxGUID.next();
@@ -1052,7 +1680,24 @@ var HxProcess = HxClass.extend({
     }
 });
 
+/* wash.js
+ *
+ * ++[black[Atomic OS Class: HxWASH]++
+ *
+ * WASH (Web Application SHell)
+ *
+ * @author Scott Elcomb <psema4@gmail.com (http://www.psema4.com)
+ * @version 2.0.0
+ */
+
 var HxWash = HxProcess.extend({
+    /* @constructor
+     * @method init
+     * Extends <a href="process.html">HxProcess</a>
+     *
+     * @param {Object} opts Options dictionary
+     */
+
     init: function(opts) {
         opts = opts || {};
 
@@ -1067,6 +1712,11 @@ var HxWash = HxProcess.extend({
         this.fd[1].bus.subscribe(stdout + ':ondata', this.onOutput);
         this.fd[2].bus.subscribe(stderr + ':ondata', this.onError);
     },
+
+    /* @method exec
+     * Executes a command
+     * @param {String} command The command line to execute
+     */
 
     exec: function(command) {
         var args = command.match(' ') ? command.split(' ') : command;
@@ -1094,6 +1744,11 @@ var HxWash = HxProcess.extend({
         }
     },
 
+    /* @method onInput
+     * Callback to execute when data is placed on STDIN
+     * @param {Mixed} args Arguments passed by <a href="bus.html">HxBus</a>.publish()
+     */
+
     onInput: function(args) {
 //        this.exec( this.fd[0].read() );
 
@@ -1106,6 +1761,11 @@ var HxWash = HxProcess.extend({
         system.wash.exec(buf);
     },
 
+    /* @method onOutput
+     * Callback to execute when data is written to STDOUT
+     * @param {Mixed} args Arguments passed by <a href="bus.html">HxBus</a>.publish()
+     */
+
     onOutput: function(args) {
         //FIXME: How do we set the scope to *this* wash instance
         //       (...and want to route messages to linked processes)
@@ -1113,6 +1773,11 @@ var HxWash = HxProcess.extend({
         var buf = system.wash.fd[1].read();
         console.log(buf);
     },
+
+    /* @method onError
+     * Callback to execute when data is written to STDERR
+     * @param {Mixed} args Arguments passed by <a href="bus.html">HxBus</a>.publish()
+     */
 
     onError: function(args) {
         //FIXME: How do we set the scope to *this* wash instance
@@ -1122,7 +1787,24 @@ var HxWash = HxProcess.extend({
     }
 });
 
+/* panel.js
+ *
+ * ++[black[Atomic OS Class: HxPanel++]
+ *
+ * HxJSFS-based, mountable UI widget
+ *
+ * @author Scott Elcomb <psema4@gmail.com (http://www.psema4.com)
+ * @version 2.0.0
+ */
+
 var HxPanel = HxJSFS.extend({
+    /* @constructor
+     * @method init
+     * Extends <a href="jsfs.html">HxJSFS</a>
+     *
+     * @param {Object} opts Options dictionary
+     */
+
     init: function(opts) {
         this._super(opts);
 
@@ -1152,13 +1834,48 @@ var HxPanel = HxJSFS.extend({
         }
     },
 
-    get: function() { return this.hxpanel },
+    /* @method get
+     * Get a Zepto object for this panels' DOM element
+     * @returns {Object} Returns the jQuery-compatible container for this panel
+     */
 
-    getName: function() { return this.name; },
+    get: function() {
+        return this.hxpanel
+    },
 
-    moveTo: function(x,y) { this.hxpanel.css({ top: y, left: x }); },
+    /* @method getName
+     * Get the name for this panel
+     * @returns {String} DOM element ID
+     */
 
-    resizeTo: function(x2,y2) { this.hxpanel.css({ right: x2, bottom: y2 }); },
+    getName: function() {
+        return this.name;
+    },
+
+    /* @method moveTo
+     * Move this panel to a new location on the screen
+     * @param {Integer} x The left co-ordinate to position the panel at
+     * @param {Integer} y The top co-ordinate to position the panel at
+     */
+
+    moveTo: function(x,y) {
+        this.hxpanel.css({ top: y, left: x });
+    },
+
+    /* @method resizeTo
+     * Resize this panel (using CSS right/bottom rules, not width/height)
+     * @param {Integer} x2 The right co-oridinate for this panel
+     * @param {Integer} y2 The bottom co-ordinate for this panel
+     */
+
+    resizeTo: function(x2,y2) {
+        this.hxpanel.css({ right: x2, bottom: y2 });
+    },
+
+    /* @method toggle
+     * Show or hide this panel
+     * @returns {Bool} Returns the toggled state of this panel
+     */
 
     toggle: function() {
         toggleState = (toggleState) ? false : true;
@@ -1168,7 +1885,25 @@ var HxPanel = HxJSFS.extend({
     }
 });
 
+/* window.js
+ *
+ * ++[black[Atomic OS Class: HxWindow]++
+ *
+ * Mountable UI Window
+ *
+ * @author Scott Elcomb <psema4@gmail.com (http://www.psema4.com)
+ * @version 2.0.0
+ */
+
 var HxWindow = HxPanel.extend({
+    /* @constructor
+     * @method init
+     * Extends <a href="panel.html">HxPanel</a>
+     *
+     * When attaching to an HxProcess, be sure to connect handlers to your STD* streams
+     * @param {Object} opts Options dictionary
+     */
+
     init: function(opts) {
         opts = opts || {};
 
@@ -1192,9 +1927,19 @@ var HxWindow = HxPanel.extend({
         this.get().append(ui);
     },
 
+    /* @method getTitlebar
+     * Get a Zepto object for the DOM element representing this windows' titlebar
+     * @returns {Object} Returns a jQuery-compatible container for the titlebar
+     */
+
     getTitlebar: function() {
         return $('#' + this.name + '-titlebar');
     },
+
+    /* @method getContent
+     * Get a Zepto object for the DOM element representing this windows' main content area
+     * @returns {Object} Returns a jQuery-compatible container for the content area
+     */
 
     getContent: function() {
         return $('#' + this.name + '-content');
@@ -1518,39 +2263,31 @@ var HxEditWindow = HxWindow.extend({
     }
 });
 
-var HxTest = function(plan) {
-    this.plan = plan || [];
-    this.assertCounter = 0;
+var HxDocWindow = HxWindow.extend({
+    init: function(opts) {
+        opts = opts || {};
+        this._super(opts);
 
-    this.run = function() {
-        for (var i=0; i < this.plan.length; i++) {
-            this.plan[i] = this.plan[i].replace(/^assert/, 'this.assert');
-            eval( this.plan[i] );
-        }
+        var ui = "<div id='" + this.name + "-h-iframe'><iframe id='" + this.name + "-iframe' class='rounded' src='scripts/docs/index.html'></iframe></div>";
+        this.getContent().append(ui);
+
+        var self = this;
+
+        var hIframe = $('#' + this.name + '-h-iframe').css({
+            position: 'absolute',
+            top: 35,
+            left: 15,
+            right: 0,
+            bottom: 15
+        });
+
+        var iFrame = $('#' + this.name + '-iframe').css({
+            width: '99%',
+            height: '99%'
+        });
     }
+});
 
-    this.assert = function(caption, value, expected) {
-        var header = ++this.assertCounter + '/' + this.plan.length + ' ';
-        header += !expected ? '[SKIP]' : (value == expected) ? '[PASS]' : '[FAIL]';
-
-        var msg = header + ' ' + caption + ': "' + value + '"';
-        msg += (header.match(/\[FAIL\]/)) ? ', expected: "' + expected + '"' : '';
-
-        console.log(msg);
-    };
-
-    this.assertNotEqual = function(caption, value, expected) {
-        var header = ++this.assertCounter + '/' + this.plan.length + ' ';
-        header += !expected ? '[SKIP]' : (value != expected) ? '[PASS]' : '[FAIL]';
-
-        var msg = header + ' ' + caption + ': "' + value + '"';
-        msg += (header.match(/\[FAIL\]/)) ? ', NOT expected: "' + expected + '"' : '';
-
-        console.log(msg);
-    };
-
-    return this;
-};
 $(document).ready(function() {
     $('body').append('<div id="winroot"></div><div id="fileroot"></div>');
 
@@ -1761,9 +2498,28 @@ $(document).ready(function() {
         this.className = (this.className.match(/ui-btn-pressed/)) ? 'ui-btn' : 'ui-btn-pressed';
     });
 
-    if (system.env.mobile) setTimeout(function() {
-        $('#editwin-taskbtn').click();
-    }, 250);
+    window.docWindow = new HxDocWindow({
+        parentEl: 'desktop',
+        mount: '/mnt/desktop',
+        title: 'Documentation',
+        defaultStyle: true,
+        css: {
+            top: 40,
+            left: 0,
+            right: 0,
+            bottom: '3%'
+        }
+    });
+
+    // add a taskbutton
+    $('.taskbar').append('<button id="docwin-taskbtn" class="ui-btn-pressed">Docs</button>');
+    $('#docwin-taskbtn').click(function() {
+        $('#' + docWindow.name).toggle('hide');
+        this.className = (this.className.match(/ui-btn-pressed/)) ? 'ui-btn' : 'ui-btn-pressed';
+    });
+
+    $('#editwin-taskbtn')[0].click();
+    $('#docwin-taskbtn')[0].click();
 
     wash("cat /mnt/dom/motd");
 });

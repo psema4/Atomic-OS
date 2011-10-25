@@ -1,10 +1,38 @@
+/* commands.js
+ *
+ * Atomic OS WASH command
+ *
+ * List available commands from /bin to stdout
+ *
+ * @author Scott Elcomb <psema4@gmail.com (http://www.psema4.com)
+ * @version 2.0.0
+ */
+
 window.system = window.system || {};
 system.bin = system.bin || {};
 
+/* Dummy constructor
+ *
+ * Access programmatically via system.bin.commands.!!methodName!!
+ * @constructor
+ */
+
 system.bin.commands = {
+    /* @method help
+     * @returns {string} Returns a simple string synopsis for this command
+     *
+     * Simple synopsis on this command, used by the <a href="help.html">help command</a>
+     */
+
     help: function() {
         return "List available commands from /bin to stdout\n\n  Usage: commands";
     },
+
+    /* @method exec
+     * @param {Array} args A list of arguments the command was called with
+     * Executes command with args. The calling HxProcess is available as **this** and it's first 3 file descriptors are stdin, stdout, and stderr respectively.
+     * For example, to echo text to stdout: **this.fd[1].write('foobar');**
+     */
 
     exec: function(args) {
         // 'this' is the calling process

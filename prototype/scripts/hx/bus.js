@@ -1,3 +1,13 @@
+/* bus.js
+ *
+ * ++[black[Atomic OS Class: HxBus] **Singleton**++
+ *
+ * Primary message bus
+ *
+ * @author Scott Elcomb <psema4@gmail.com (http://www.psema4.com)
+ * @version 2.0.0
+ */
+
 var HxBus = (function () {
     var channels = {
         "default": {
@@ -6,6 +16,14 @@ var HxBus = (function () {
     };
 
     return {
+        /* @method publish
+         * Publish a message and execute all subscribed callback functions
+         * @param {String} msg Message being published
+         * @param {Array} args Arguments to pass to subscribed callbacks
+         * @param {Object} scope Context to execute callback with
+         * @param {String} ch Optional channel name !!default: 'default'!!
+         */
+
         publish: function (msg, args, scope, ch) {
             ch = (ch) ? ch : "default";
 
@@ -30,6 +48,13 @@ var HxBus = (function () {
             }
         },
 
+        /* @method subscribe
+         * Add a subscription
+         * @param {String} msg Message to subscribe to
+         * @param {Function} fn Function to callback when message is published
+         * @param {String} ch Optional channel name !!default: 'default'!!
+         */
+
         subscribe: function (msg, fn, ch) {
             if (typeof fn !== 'function') {
                 throw new Error('system bus: subscribe: fn must be a function');
@@ -49,6 +74,13 @@ var HxBus = (function () {
 
             channels[ch].subscriptions[msg].push(fn);
         },
+
+        /* @method unsubscribe
+         * Remove a subscription
+         * @param {String} msg Subscribed message name
+         * @param {Function} fn The callback that was subscribed
+         * @param {String} ch Optional channel name !!default: 'default'!!
+         */
 
         unsubscribe: function (msg, fn, ch) {
             if (typeof fn !== 'function') {

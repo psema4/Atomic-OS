@@ -208,9 +208,28 @@ $(document).ready(function() {
         this.className = (this.className.match(/ui-btn-pressed/)) ? 'ui-btn' : 'ui-btn-pressed';
     });
 
-    if (system.env.mobile) setTimeout(function() {
-        $('#editwin-taskbtn').click();
-    }, 250);
+    window.docWindow = new HxDocWindow({
+        parentEl: 'desktop',
+        mount: '/mnt/desktop',
+        title: 'Documentation',
+        defaultStyle: true,
+        css: {
+            top: 40,
+            left: 0,
+            right: 0,
+            bottom: '3%'
+        }
+    });
+
+    // add a taskbutton
+    $('.taskbar').append('<button id="docwin-taskbtn" class="ui-btn-pressed">Docs</button>');
+    $('#docwin-taskbtn').click(function() {
+        $('#' + docWindow.name).toggle('hide');
+        this.className = (this.className.match(/ui-btn-pressed/)) ? 'ui-btn' : 'ui-btn-pressed';
+    });
+
+    $('#editwin-taskbtn')[0].click();
+    $('#docwin-taskbtn')[0].click();
 
     wash("cat /mnt/dom/motd");
 });

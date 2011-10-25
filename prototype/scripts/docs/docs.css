@@ -1,0 +1,86 @@
+* {
+    margin: 0px;
+    padding: 0px;
+    font-family: verdana;
+    font-size: 16px;
+}
+
+body {
+    background-color: #fff;
+}
+
+h1 {
+    color: #fff;
+    background-color: #000;
+    padding: 0.5em;
+    font-size: 48px;
+}
+
+h2 {
+    color: #fff;
+    background-color: #777;
+    padding: 0.25em;
+    font-size: 32px;
+}
+
+h3, p {
+    margin-bottom: 1em;
+}
+
+td {
+    text-align: center;
+}
+
+ul {
+    list-style: none;
+    margin-bottom: 1em;
+}
+
+ul li {
+    margin-left: 1em;
+}
+
+ol li {
+    margin-left: 1.75em;
+}
+
+a, a:active, a:visited {
+    color: #000;
+    text-decoration: underline;
+    font-family: Times;
+}
+
+a:hover {
+    color: #00f;
+    text-decoration: none;
+}
+
+h1 a, h1 a:active, h1 a:visited {
+    color: #fff;
+    font-size: 48px;
+    text-decoration: none;
+}
+
+h1 a:hover {
+    text-decoration: underline;
+}
+
+.description {
+    font-size: 14px;
+}
+
+.description a, description a:active, description a:visited {
+    color: #00f;
+    text-decoration: underline;
+}
+
+.description a:hover {
+}
+
+.ok {
+    color: #0a0;
+}
+
+.fail {
+    color: #a00;
+}

@@ -1,0 +1,330 @@
+<!DOCTYPE html><html lang="en"><head><title>bus.js</title><script src="http://alexgorbatchev.com/pub/sh/current/scripts/shCore.js" type="text/javascript"></script><script src="http://alexgorbatchev.com/pub/sh/current/scripts/shBrushJScript.js" type="text/javascript"></script><link href="http://alexgorbatchev.com/pub/sh/current/styles/shCore.css" rel="stylesheet" type="text/css"><link href="http://alexgorbatchev.com/pub/sh/current/styles/shThemeDefault.css" rel="stylesheet" type="text/css"><script src="http://code.jquery.com/jquery-1.6.1.min.js" type="text/javascript"></script><script src="http://code.jquery.com/qunit/git/qunit.js" type="text/javascript"></script><link href="http://code.jquery.com/qunit/git/qunit.css" rel="stylesheet" type="text/css"><style type="text/css">#jsdog-logo                 { position: absolute; bottom: 10px; right: 20px; z-index: 1000 !important; opacity: 0.25; filter:alpha(opacity=25); }
+#ctx-container              { position: absolute; top: 0px; left: 0px; right: 0px; height: 32px; background-color: #eee; border: 1px dotted #ddd; text-align: right; }
+#ctx-container button       { height: 30px; padding-top: 1px; padding-bottom: 1px; }
+#ctx-container a, a:active, a:visited { color: #00f; text-decoration: none; }
+#ctx-container a:hover      { color: #00f; text-decoration: underline; }
+img#logo                    { width: 80px; height: 24px; float: left; margin-top: 2px; margin-left: 2px; border: 1px solid #000; background-color: #fff; }
+#doc-container              { position: absolute; top: 32px; left: 0px; right: 0px; bottom: 0px; overflow: auto; }
+div.block                   { border-bottom: 1px solid #aaa; margin-left: 1em; margin-right: 1em; padding-top: 1em; padding-bottom: 1em; }
+#block0                     { margin-bottom: 1em; border-bottom: 3px double #000; }
+p                           { margin: 0px; padding: 0px; }
+ul.public-properties        { list-style-type: none; margin: 0px; padding: 0px; }
+ul.public-properties li     { border-bottom: 1px dotted #ccc; margin-left: 1em; padding: 0px; }
+ul.public-properties li i:first-child { display: inline-block; width: 4em; }
+ul.public-properties li b   { display: inline-block; width: 7em; }
+ul.public-properties li:last-child { border-bottom: 0px solid #000; }
+ul.private-properties       { list-style-type: none; margin: 0px; padding: 0px; }
+ul.private-properties li    { border-bottom: 1px dotted #ccc; margin-left: 1em; padding: 0px; }
+ul.private-properties li i:first-child { display: inline-block; width: 4em; }
+ul.private-properties li b  { display: inline-block; width: 7em; }
+ul.private-properties li:last-child { border-bottom: 0px solid #000; }
+ul.protected-properties     { list-style-type: none; margin: 0px; padding: 0px; }
+ul.protected-properties li  { border-bottom: 1px dotted #ccc; margin-left: 1em; padding: 0px; }
+ul.protected-properties li i:first-child { display: inline-block; width: 4em; }
+ul.protected-properties li b { display: inline-block; width: 7em; }
+ul.protected-properties li:last-child { border-bottom: 0px solid #000; }
+ol.params                   { list-style-type: lower-roman; margin: 0px; padding: 0px; margin-left: 1em; padding-left: 1em;  }
+ol.params li                { margin-left: 1em; padding-left: 1em; border-bottom: 1px dotted #ccc; }
+ol.params li i:first-child  { display: inline-block; width: 4em; }
+ol.params li b              { display: inline-block; width: 7em; }
+ol.params li:last-child     { border-bottom: 0px solid #000; }
+ol.returns                  { list-style-type: lower-alpha; margin: 0px; padding: 0px; margin-left: 1em; padding-left: 1em;  }
+ol.returns li               { margin-left: 1em; padding-left: 1em; border-bottom: 1px dotted #ccc; }
+ol.returns li i:first-child { display: inline-block; width: 4em; }
+ol.returns li:last-child    { border-bottom: 0px solid #000; }
+ol.throws                   { list-style-type: disc; margin: 0px; padding: 0px; margin-left: 1em; padding-left: 1em;  }
+ol.throws li                { margin-left: 1em; padding-left: 1em; border-bottom: 1px dotted #ccc; }
+ol.throws li i:first-child  { display: inline-block; width: 10em; }
+ol.throws li:last-child     { border-bottom: 0px solid #000; }
+#test-container             { position: absolute; top: 32px; left: 0px; right: 0px; bottom: 0px; overflow: auto; }
+#src-container              { position: absolute; top: 32px; left: 0px; right: 0px; bottom: 0px; overflow: auto; }
+.syntaxhighlighter          { position: absolute !important; top: 0px; left: 0px; right: 0px; bottom: 0px; }
+#footer                     { display: inline-block; margin-top: 0em; margin-left: 0em; border-top: 1px solid #ccc; min-width: 750px; font-style: italic; font-weight: bold; color: #fff; background-color: #aaa; padding: 0.5em; padding-left: 1.25em; }
+
+</style><script src="../../atomos.t.js"></script><script type="text/javascript">/* bus.js
+ *
+ * ++[black[Atomic OS Class: HxBus] **Singleton**++
+ *
+ * Primary message bus
+ *
+ * @author Scott Elcomb <psema4@gmail.com (http://www.psema4.com)
+ * @version 2.0.0
+ */
+
+var HxBus = (function () {
+    var channels = {
+        "default": {
+            subscriptions: {}
+        }
+    };
+
+    return {
+        /* @method publish
+         * Publish a message and execute all subscribed callback functions
+         * @param {String} msg Message being published
+         * @param {Array} args Arguments to pass to subscribed callbacks
+         * @param {Object} scope Context to execute callback with
+         * @param {String} ch Optional channel name !!default: 'default'!!
+         */
+
+        publish: function (msg, args, scope, ch) {
+            ch = (ch) ? ch : "default";
+
+            if (! channels.hasOwnProperty(ch)) {
+                console.warn('system bus: publish: "' + ch + '" is not a registered channel');
+                return;
+            }
+
+            if (! channels[ch].subscriptions.hasOwnProperty(msg)) {
+                console.warn('system bus: publish: "' + msg + '" is not a registered message');
+                return;
+            }
+
+            args = (args) ? args : [];
+
+            for (var i=0; i < channels[ch].subscriptions[msg].length; i++) {
+                if (scope) {
+                    channels[ch].subscriptions[msg][i].call(scope, args);
+                } else {
+                    channels[ch].subscriptions[msg][i](args);
+                }
+            }
+        },
+
+        /* @method subscribe
+         * Add a subscription
+         * @param {String} msg Message to subscribe to
+         * @param {Function} fn Function to callback when message is published
+         * @param {String} ch Optional channel name !!default: 'default'!!
+         */
+
+        subscribe: function (msg, fn, ch) {
+            if (typeof fn !== 'function') {
+                throw new Error('system bus: subscribe: fn must be a function');
+            }
+
+            ch = (ch) ? ch : "default";
+
+            if (! channels.hasOwnProperty(ch)) {
+                channels[ch] = {
+                    subscriptions: {}
+                };
+            };
+
+            if (! channels[ch].subscriptions[msg]) {
+                channels[ch].subscriptions[msg] = new Array();
+            }
+
+            channels[ch].subscriptions[msg].push(fn);
+        },
+
+        /* @method unsubscribe
+         * Remove a subscription
+         * @param {String} msg Subscribed message name
+         * @param {Function} fn The callback that was subscribed
+         * @param {String} ch Optional channel name !!default: 'default'!!
+         */
+
+        unsubscribe: function (msg, fn, ch) {
+            if (typeof fn !== 'function') {
+                throw new Error('system bus: unsubscribe: fn must be a function');
+            }
+
+            ch = (ch) ? ch : "default";
+
+            for (var i=0; i < channels[ch].subscriptions[msg].length; i++) {
+                if (channels[ch].subscriptions[msg][i] === fn) {
+                    channels[ch].subscriptions[msg].splice(i, 1);
+                    return;
+                }
+            }
+        }
+    }
+})();
+
+
+
+</script><script type="text/javascript">var currentPg = 'docs';
+
+function show(pg) {
+  if (pg !== 'docs')  $('#doc-container').fadeOut('slow');  
+  if (pg !== 'tests') $('#test-container').fadeOut('slow');  
+  if (pg !== 'codes') $('#src-container').fadeOut('slow');  
+  
+  switch(pg) {  
+    case "tests":  
+    $('#test-container').fadeIn('slow');  
+  break;  
+  
+  case "codes":  
+    $('#src-container').fadeIn('slow');  
+  break;  
+  
+  case "docs":  
+  default:  
+    $('#doc-container').fadeIn('slow');  
+  
+  }  
+  
+  currentPg = pg;
+}
+
+$(document).ready(function() {
+  show('docs');  
+  SyntaxHighlighter.all();  
+  
+  module("HxBus");
+test("load", function() {
+    ok(window.HxBus, "HxBus singleton exists");
+    if (system) {
+        if (! system.bus) system.bus = window.HxBus;
+    }
+    ok(system && system.bus, "System exists and has a bus");
+});
+
+});
+
+</script></head><body><div id="ctx-container"><button onclick="show('docs');">Documentation</button><button onclick="show('tests');">Unit Tests</button><button onclick="show('codes');">Source Code</button></div><div id="doc-container" style="display: none;"><div id="block0" class="block"><i>var HxBus = (function () </i><p style="color: #777;">bus.js<br />
+<br />
+<span style="font-size: x-large;"><span style="color: black;">Atomic&nbsp;OS&nbsp;Class:&nbsp;HxBus</span> <b>Singleton</b></span><br />
+<br />
+Primary message bus<br />
+<br />
+</p><p><b>Author: &nbsp;</b>Scott Elcomb &lt;psema4-at-gmail-dot-com (<a href="http://www.psema4.com)">http://www.psema4.com)</a>
+</p><p><b>Version: &nbsp;</b>2.0.0
+</p></div><div id="block1" class="block"><b style="font-size: 20pt;">publish&nbsp;-&nbsp;</b><i>        publish: function (msg, args, scope, ch) </i><p style="color: #777;">Publish a message and execute all subscribed callback functions<br />
+</p><br><span>Parameters:</span><ol class="params"><li><i>String</i>&nbsp;
+<b>msg</b>&nbsp;
+Message being published
+</li><li><i>Array</i>&nbsp;
+<b>args</b>&nbsp;
+Arguments to pass to subscribed callbacks
+</li><li><i>Object</i>&nbsp;
+<b>scope</b>&nbsp;
+Context to execute callback with
+</li><li><i>String</i>&nbsp;
+<b>ch</b>&nbsp;
+Optional channel name <i>default: 'default'</i>
+</li></ol></div><div id="block2" class="block"><b style="font-size: 20pt;">subscribe&nbsp;-&nbsp;</b><i>        subscribe: function (msg, fn, ch) </i><p style="color: #777;">Add a subscription<br />
+</p><br><span>Parameters:</span><ol class="params"><li><i>String</i>&nbsp;
+<b>msg</b>&nbsp;
+Message to subscribe to
+</li><li><i>Function</i>&nbsp;
+<b>fn</b>&nbsp;
+Function to callback when message is published
+</li><li><i>String</i>&nbsp;
+<b>ch</b>&nbsp;
+Optional channel name <i>default: 'default'</i>
+</li></ol></div><div id="block3" class="block"><b style="font-size: 20pt;">unsubscribe&nbsp;-&nbsp;</b><i>        unsubscribe: function (msg, fn, ch) </i><p style="color: #777;">Remove a subscription<br />
+</p><br><span>Parameters:</span><ol class="params"><li><i>String</i>&nbsp;
+<b>msg</b>&nbsp;
+Subscribed message name
+</li><li><i>Function</i>&nbsp;
+<b>fn</b>&nbsp;
+The callback that was subscribed
+</li><li><i>String</i>&nbsp;
+<b>ch</b>&nbsp;
+Optional channel name <i>default: 'default'</i>
+</li></ol></div><div id="footer"><p>Generated by&nbsp;<a href="http://github.com/psema4/jsdog">JSDog</a>&nbsp;in about 0.003 seconds
+</p></div></div><div id="test-container" style="display: none;"><h1 id="qunit-header">bus.js</h1><h2 id="qunit-banner"></h2><h2 id="qunit-userAgent"></h2><ol id="qunit-tests"></ol></div><div id="src-container" style="display: none;"><pre class="brush: js">/* bus.js
+ *
+ * ++[black[Atomic OS Class: HxBus] **Singleton**++
+ *
+ * Primary message bus
+ *
+ * @author Scott Elcomb &lt;psema4@gmail.com (http://www.psema4.com)
+ * @version 2.0.0
+ */
+
+var HxBus = (function () {
+    var channels = {
+        &quot;default&quot;: {
+            subscriptions: {}
+        }
+    };
+
+    return {
+        /* @method publish
+         * Publish a message and execute all subscribed callback functions
+         * @param {String} msg Message being published
+         * @param {Array} args Arguments to pass to subscribed callbacks
+         * @param {Object} scope Context to execute callback with
+         * @param {String} ch Optional channel name !!default: 'default'!!
+         */
+
+        publish: function (msg, args, scope, ch) {
+            ch = (ch) ? ch : &quot;default&quot;;
+
+            if (! channels.hasOwnProperty(ch)) {
+                console.warn('system bus: publish: &quot;' + ch + '&quot; is not a registered channel');
+                return;
+            }
+
+            if (! channels[ch].subscriptions.hasOwnProperty(msg)) {
+                console.warn('system bus: publish: &quot;' + msg + '&quot; is not a registered message');
+                return;
+            }
+
+            args = (args) ? args : [];
+
+            for (var i=0; i &lt; channels[ch].subscriptions[msg].length; i++) {
+                if (scope) {
+                    channels[ch].subscriptions[msg][i].call(scope, args);
+                } else {
+                    channels[ch].subscriptions[msg][i](args);
+                }
+            }
+        },
+
+        /* @method subscribe
+         * Add a subscription
+         * @param {String} msg Message to subscribe to
+         * @param {Function} fn Function to callback when message is published
+         * @param {String} ch Optional channel name !!default: 'default'!!
+         */
+
+        subscribe: function (msg, fn, ch) {
+            if (typeof fn !== 'function') {
+                throw new Error('system bus: subscribe: fn must be a function');
+            }
+
+            ch = (ch) ? ch : &quot;default&quot;;
+
+            if (! channels.hasOwnProperty(ch)) {
+                channels[ch] = {
+                    subscriptions: {}
+                };
+            };
+
+            if (! channels[ch].subscriptions[msg]) {
+                channels[ch].subscriptions[msg] = new Array();
+            }
+
+            channels[ch].subscriptions[msg].push(fn);
+        },
+
+        /* @method unsubscribe
+         * Remove a subscription
+         * @param {String} msg Subscribed message name
+         * @param {Function} fn The callback that was subscribed
+         * @param {String} ch Optional channel name !!default: 'default'!!
+         */
+
+        unsubscribe: function (msg, fn, ch) {
+            if (typeof fn !== 'function') {
+                throw new Error('system bus: unsubscribe: fn must be a function');
+            }
+
+            ch = (ch) ? ch : &quot;default&quot;;
+
+            for (var i=0; i &lt; channels[ch].subscriptions[msg].length; i++) {
+                if (channels[ch].subscriptions[msg][i] === fn) {
+                    channels[ch].subscriptions[msg].splice(i, 1);
+                    return;
+                }
+            }
+        }
+    }
+})();
+
+</pre></div><img id="jsdog-logo" src="data:image/gif;base64,R0lGODlhAQABAIAAAP///////yH+EUNyZWF0ZWQgd2l0aCBHSU1QACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="></body></html>

@@ -9,7 +9,9 @@ Some Rights Reserved
 Legal
 =====
 
-Atomic OS is licensed under the LGPLv3 license.  For details, please see the LICENSE file.
+Atomic OS itself is licensed under the LGPLv3 license.  For details, please see the LICENSE file.
+
+Some dependencies may be licensed under another license.  Please see their respective source files in the script/vendor/ directory
 
 Summary
 =======
@@ -24,9 +26,21 @@ Atomic OS hopes to help ameliorate dependence on the cloud by allowing app data 
 
 Because Atomic OS is simply an html file, it is instantly a template, infinitely reusable and extremely easy to distribute.
 
+Building the Prototype
+======================
+
+Currently building is limited to Linux-like systems with bash and node.js
+
+Node.js requires the JsDog documentation engine, which should be installed globally with:  npm install jsdog -g
+
+To avoid the necessity of calling the scripts/build bash script after every edit, you can use scripts/autobuild if node.js is on your path.  It will run the build script whenever a javascript file is written to
+
+The most recent reference prototype should be found at http://psema4.github.com/Atomic-OS/
 
 Support
 =======
 
-  - Issue Tracker: https://github.com/psema4/Atomic-OS/issues
-  - Mailing List:  https://lists.sourceforge.net/lists/listinfo/atomos-discuss
+  - Main Site:      https://code.google.com/p/atomos/
+  - Issue Tracker:  https://github.com/psema4/Atomic-OS/issues
+  - Discussion:     https://lists.sourceforge.net/lists/listinfo/atomos-discuss
+  - Developers:     https://lists.sourceforge.net/lists/listinfo/atomos-devel

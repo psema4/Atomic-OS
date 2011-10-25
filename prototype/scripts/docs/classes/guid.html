@@ -1,0 +1,150 @@
+<!DOCTYPE html><html lang="en"><head><title>guid.js</title><script src="http://alexgorbatchev.com/pub/sh/current/scripts/shCore.js" type="text/javascript"></script><script src="http://alexgorbatchev.com/pub/sh/current/scripts/shBrushJScript.js" type="text/javascript"></script><link href="http://alexgorbatchev.com/pub/sh/current/styles/shCore.css" rel="stylesheet" type="text/css"><link href="http://alexgorbatchev.com/pub/sh/current/styles/shThemeDefault.css" rel="stylesheet" type="text/css"><script src="http://code.jquery.com/jquery-1.6.1.min.js" type="text/javascript"></script><script src="http://code.jquery.com/qunit/git/qunit.js" type="text/javascript"></script><link href="http://code.jquery.com/qunit/git/qunit.css" rel="stylesheet" type="text/css"><style type="text/css">#jsdog-logo                 { position: absolute; bottom: 10px; right: 20px; z-index: 1000 !important; opacity: 0.25; filter:alpha(opacity=25); }
+#ctx-container              { position: absolute; top: 0px; left: 0px; right: 0px; height: 32px; background-color: #eee; border: 1px dotted #ddd; text-align: right; }
+#ctx-container button       { height: 30px; padding-top: 1px; padding-bottom: 1px; }
+#ctx-container a, a:active, a:visited { color: #00f; text-decoration: none; }
+#ctx-container a:hover      { color: #00f; text-decoration: underline; }
+img#logo                    { width: 80px; height: 24px; float: left; margin-top: 2px; margin-left: 2px; border: 1px solid #000; background-color: #fff; }
+#doc-container              { position: absolute; top: 32px; left: 0px; right: 0px; bottom: 0px; overflow: auto; }
+div.block                   { border-bottom: 1px solid #aaa; margin-left: 1em; margin-right: 1em; padding-top: 1em; padding-bottom: 1em; }
+#block0                     { margin-bottom: 1em; border-bottom: 3px double #000; }
+p                           { margin: 0px; padding: 0px; }
+ul.public-properties        { list-style-type: none; margin: 0px; padding: 0px; }
+ul.public-properties li     { border-bottom: 1px dotted #ccc; margin-left: 1em; padding: 0px; }
+ul.public-properties li i:first-child { display: inline-block; width: 4em; }
+ul.public-properties li b   { display: inline-block; width: 7em; }
+ul.public-properties li:last-child { border-bottom: 0px solid #000; }
+ul.private-properties       { list-style-type: none; margin: 0px; padding: 0px; }
+ul.private-properties li    { border-bottom: 1px dotted #ccc; margin-left: 1em; padding: 0px; }
+ul.private-properties li i:first-child { display: inline-block; width: 4em; }
+ul.private-properties li b  { display: inline-block; width: 7em; }
+ul.private-properties li:last-child { border-bottom: 0px solid #000; }
+ul.protected-properties     { list-style-type: none; margin: 0px; padding: 0px; }
+ul.protected-properties li  { border-bottom: 1px dotted #ccc; margin-left: 1em; padding: 0px; }
+ul.protected-properties li i:first-child { display: inline-block; width: 4em; }
+ul.protected-properties li b { display: inline-block; width: 7em; }
+ul.protected-properties li:last-child { border-bottom: 0px solid #000; }
+ol.params                   { list-style-type: lower-roman; margin: 0px; padding: 0px; margin-left: 1em; padding-left: 1em;  }
+ol.params li                { margin-left: 1em; padding-left: 1em; border-bottom: 1px dotted #ccc; }
+ol.params li i:first-child  { display: inline-block; width: 4em; }
+ol.params li b              { display: inline-block; width: 7em; }
+ol.params li:last-child     { border-bottom: 0px solid #000; }
+ol.returns                  { list-style-type: lower-alpha; margin: 0px; padding: 0px; margin-left: 1em; padding-left: 1em;  }
+ol.returns li               { margin-left: 1em; padding-left: 1em; border-bottom: 1px dotted #ccc; }
+ol.returns li i:first-child { display: inline-block; width: 4em; }
+ol.returns li:last-child    { border-bottom: 0px solid #000; }
+ol.throws                   { list-style-type: disc; margin: 0px; padding: 0px; margin-left: 1em; padding-left: 1em;  }
+ol.throws li                { margin-left: 1em; padding-left: 1em; border-bottom: 1px dotted #ccc; }
+ol.throws li i:first-child  { display: inline-block; width: 10em; }
+ol.throws li:last-child     { border-bottom: 0px solid #000; }
+#test-container             { position: absolute; top: 32px; left: 0px; right: 0px; bottom: 0px; overflow: auto; }
+#src-container              { position: absolute; top: 32px; left: 0px; right: 0px; bottom: 0px; overflow: auto; }
+.syntaxhighlighter          { position: absolute !important; top: 0px; left: 0px; right: 0px; bottom: 0px; }
+#footer                     { display: inline-block; margin-top: 0em; margin-left: 0em; border-top: 1px solid #ccc; min-width: 750px; font-style: italic; font-weight: bold; color: #fff; background-color: #aaa; padding: 0.5em; padding-left: 1.25em; }
+
+</style><script src="../../atomos.t.js"></script><script type="text/javascript">/* guid.js
+ *
+ * ++[black[Atomic OS Class: HxGUID] **Singleton**++
+ *
+ * Simple GUID generator based on http://stackoverflow.com/questions/105034/how-to-create-a-guid-uuid-in-javascript
+ *
+ * @author Scott Elcomb <psema4@gmail.com (http://www.psema4.com)
+ * @version 2.0.0
+ */
+
+// FIXME: no validation
+window.HxGUID = (function() {
+    var S4 = function() {
+        return (((1+Math.random())*0x10000)|0).toString(16).substring(1);
+    };
+
+    return {
+        /* @method next
+         * Generates a GUID. **WARNING:** Does not check if ID already in use
+         * @returns {String} GUID
+         */
+
+        next: function() {
+            return (S4()+S4()+"-"+S4()+"-"+S4()+"-"+S4()+"-"+S4()+S4()+S4());
+        }
+    }
+})();
+
+
+
+</script><script type="text/javascript">var currentPg = 'docs';
+
+function show(pg) {
+  if (pg !== 'docs')  $('#doc-container').fadeOut('slow');  
+  if (pg !== 'tests') $('#test-container').fadeOut('slow');  
+  if (pg !== 'codes') $('#src-container').fadeOut('slow');  
+  
+  switch(pg) {  
+    case "tests":  
+    $('#test-container').fadeIn('slow');  
+  break;  
+  
+  case "codes":  
+    $('#src-container').fadeIn('slow');  
+  break;  
+  
+  case "docs":  
+  default:  
+    $('#doc-container').fadeIn('slow');  
+  
+  }  
+  
+  currentPg = pg;
+}
+
+$(document).ready(function() {
+  show('docs');  
+  SyntaxHighlighter.all();  
+  
+  module("HxGUID");
+test("load", function() {
+    ok(window.HxGUID && HxGUID.hasOwnProperty("next"), "HxGUID singleton exists");
+});
+
+});
+
+</script></head><body><div id="ctx-container"><button onclick="show('docs');">Documentation</button><button onclick="show('tests');">Unit Tests</button><button onclick="show('codes');">Source Code</button></div><div id="doc-container" style="display: none;"><div id="block0" class="block"><i>window.HxGUID = (function() </i><p style="color: #777;">guid.js<br />
+<br />
+<span style="font-size: x-large;"><span style="color: black;">Atomic&nbsp;OS&nbsp;Class:&nbsp;HxGUID</span> <b>Singleton</b></span><br />
+<br />
+Simple GUID generator based on <a href="http://stackoverflow.com/questions/105034/how-to-create-a-guid-uuid-in-javascript">http://stackoverflow.com/questions/105034/how-to-create-a-guid-uuid-in-javascript</a><br />
+<br />
+</p><p><b>Author: &nbsp;</b>Scott Elcomb &lt;psema4-at-gmail-dot-com (<a href="http://www.psema4.com)">http://www.psema4.com)</a>
+</p><p><b>Version: &nbsp;</b>2.0.0
+</p></div><div id="block1" class="block"><b style="font-size: 20pt;">next&nbsp;-&nbsp;</b><i>        next: function() </i><p style="color: #777;">Generates a GUID. <b>WARNING:</b> Does not check if ID already in use<br />
+</p><br><span>Returns:</span><ol class="returns"><li><i>String</i>&nbsp;
+GUID
+</li></ol></div><div id="footer"><p>Generated by&nbsp;<a href="http://github.com/psema4/jsdog">JSDog</a>&nbsp;in about 0.003 seconds
+</p></div></div><div id="test-container" style="display: none;"><h1 id="qunit-header">guid.js</h1><h2 id="qunit-banner"></h2><h2 id="qunit-userAgent"></h2><ol id="qunit-tests"></ol></div><div id="src-container" style="display: none;"><pre class="brush: js">/* guid.js
+ *
+ * ++[black[Atomic OS Class: HxGUID] **Singleton**++
+ *
+ * Simple GUID generator based on http://stackoverflow.com/questions/105034/how-to-create-a-guid-uuid-in-javascript
+ *
+ * @author Scott Elcomb &lt;psema4@gmail.com (http://www.psema4.com)
+ * @version 2.0.0
+ */
+
+// FIXME: no validation
+window.HxGUID = (function() {
+    var S4 = function() {
+        return (((1+Math.random())*0x10000)|0).toString(16).substring(1);
+    };
+
+    return {
+        /* @method next
+         * Generates a GUID. **WARNING:** Does not check if ID already in use
+         * @returns {String} GUID
+         */
+
+        next: function() {
+            return (S4()+S4()+&quot;-&quot;+S4()+&quot;-&quot;+S4()+&quot;-&quot;+S4()+&quot;-&quot;+S4()+S4()+S4());
+        }
+    }
+})();
+
+</pre></div><img id="jsdog-logo" src="data:image/gif;base64,R0lGODlhAQABAIAAAP///////yH+EUNyZWF0ZWQgd2l0aCBHSU1QACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="></body></html>

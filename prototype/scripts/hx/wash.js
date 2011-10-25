@@ -1,4 +1,21 @@
+/* wash.js
+ *
+ * ++[black[Atomic OS Class: HxWASH]++
+ *
+ * WASH (Web Application SHell)
+ *
+ * @author Scott Elcomb <psema4@gmail.com (http://www.psema4.com)
+ * @version 2.0.0
+ */
+
 var HxWash = HxProcess.extend({
+    /* @constructor
+     * @method init
+     * Extends <a href="process.html">HxProcess</a>
+     *
+     * @param {Object} opts Options dictionary
+     */
+
     init: function(opts) {
         opts = opts || {};
 
@@ -13,6 +30,11 @@ var HxWash = HxProcess.extend({
         this.fd[1].bus.subscribe(stdout + ':ondata', this.onOutput);
         this.fd[2].bus.subscribe(stderr + ':ondata', this.onError);
     },
+
+    /* @method exec
+     * Executes a command
+     * @param {String} command The command line to execute
+     */
 
     exec: function(command) {
         var args = command.match(' ') ? command.split(' ') : command;
@@ -40,6 +62,11 @@ var HxWash = HxProcess.extend({
         }
     },
 
+    /* @method onInput
+     * Callback to execute when data is placed on STDIN
+     * @param {Mixed} args Arguments passed by <a href="bus.html">HxBus</a>.publish()
+     */
+
     onInput: function(args) {
 //        this.exec( this.fd[0].read() );
 
@@ -52,6 +79,11 @@ var HxWash = HxProcess.extend({
         system.wash.exec(buf);
     },
 
+    /* @method onOutput
+     * Callback to execute when data is written to STDOUT
+     * @param {Mixed} args Arguments passed by <a href="bus.html">HxBus</a>.publish()
+     */
+
     onOutput: function(args) {
         //FIXME: How do we set the scope to *this* wash instance
         //       (...and want to route messages to linked processes)
@@ -59,6 +91,11 @@ var HxWash = HxProcess.extend({
         var buf = system.wash.fd[1].read();
         console.log(buf);
     },
+
+    /* @method onError
+     * Callback to execute when data is written to STDERR
+     * @param {Mixed} args Arguments passed by <a href="bus.html">HxBus</a>.publish()
+     */
 
     onError: function(args) {
         //FIXME: How do we set the scope to *this* wash instance

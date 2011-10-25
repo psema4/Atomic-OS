@@ -1,10 +1,41 @@
+/* ls.js
+ *
+ * Atomic OS WASH command
+ *
+ * List files
+ *
+ * Without a path, lists the current working directory
+ * With -l, lists files in a single column
+ *
+ * @author Scott Elcomb <psema4@gmail.com (http://www.psema4.com)
+ * @version 2.0.0
+ */
+
 window.system = window.system || {};
 system.bin = system.bin || {};
 
+/* Dummy constructor
+ *
+ * Access programmatically via system.bin.ls.!!methodName!!
+ * @constructor
+ */
+
 system.bin.ls = {
+    /* @method help
+     * @returns {string} Returns a simple string synopsis for this command
+     *
+     * Simple synopsis on this command, used by the <a href="help.html">help command</a>
+     */
+
     help: function() {
         return "List files\n\n  Usage: ls [-l] [path]\n\nWithout a path, lists the current working directory.\nWith -l, lists files in a single column.";
     },
+
+    /* @method exec
+     * @param {Array} args A list of arguments the command was called with
+     * Executes command with args. The calling HxProcess is available as **this** and it's first 3 file descriptors are stdin, stdout, and stderr respectively.
+     * For example, to echo text to stdout: **this.fd[1].write('foobar');**
+     */
 
     exec: function(args) {
         // 'this' is the calling process

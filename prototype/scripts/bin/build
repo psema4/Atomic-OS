@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+echo "- concat"
 cat "cat.js"            \
     "cd.js"             \
     "clear.js"          \
@@ -15,3 +16,24 @@ cat "cat.js"            \
     "touch.js"          \
     "wallpaper.js"      \
   > "atomos-bin.js"
+
+#docs
+echo "- docs"
+DOCNGN=`which jsdog`
+DOCDIR="../docs/wash-commands"
+DOCTMPL="-m ../docs/jsdog.jade"
+
+$DOCNGN $DOCTMPL -s cat.js       -t t/cat.js       > $DOCDIR/cat.html
+$DOCNGN $DOCTMPL -s cd.js        -t t/cd.js        > $DOCDIR/cd.html
+$DOCNGN $DOCTMPL -s clear.js     -t t/clear.js     > $DOCDIR/clear.html
+$DOCNGN $DOCTMPL -s commands.js  -t t/commands.js  > $DOCDIR/commands.html
+$DOCNGN $DOCTMPL -s echo.js      -t t/echo.js      > $DOCDIR/echo.html
+$DOCNGN $DOCTMPL -s edit.js      -t t/edit.js      > $DOCDIR/edit.html
+$DOCNGN $DOCTMPL -s help.js      -t t/help.js      > $DOCDIR/help.html
+$DOCNGN $DOCTMPL -s ls.js        -t t/ls.js        > $DOCDIR/ls.html
+$DOCNGN $DOCTMPL -s mkdir.js     -t t/mkdir.js     > $DOCDIR/mkdir.html
+$DOCNGN $DOCTMPL -s pwd.js       -t t/pwd.js       > $DOCDIR/pwd.html
+$DOCNGN $DOCTMPL -s rmdir.js     -t t/rmdir.js     > $DOCDIR/rmdir.html
+$DOCNGN $DOCTMPL -s rm.js        -t t/rm.js        > $DOCDIR/rm.html
+$DOCNGN $DOCTMPL -s touch.js     -t t/touch.js     > $DOCDIR/touch.html
+$DOCNGN $DOCTMPL -s wallpaper.js -t t/wallpaper.js > $DOCDIR/wallpaper.html

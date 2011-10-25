@@ -16,7 +16,8 @@ cat "vendor/zepto.min.js"   \
     "system.js"             \
     "bin/atomos-bin.js"     \
     "hx/atomos-hx.js"       \
-    "main.js"               \
-  > "atomos.js"
+  > "atomos.t.js"
+
+cat "atomos.t.js" "main.js" > "atomos.js"
 
 uglifyjs -o atomos.min.js atomos.js

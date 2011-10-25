@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
 cat "class.js"           \
-    "assert.js"          \
     "guid.js"            \
     "bus.js"             \
     "stream.js"          \
@@ -14,5 +13,24 @@ cat "class.js"           \
     "window.js"          \
     "commandwindow.js"   \
     "editwindow.js"      \
-    "test.js"            \
+    "docwindow.js"       \
   > "atomos-hx.js"
+
+#docs
+echo "- docs"
+DOCNGN=`which jsdog`
+DOCDIR="../docs/classes"
+DOCTMPL="-m ../docs/jsdog.jade"
+
+$DOCNGN $DOCTMPL -s class.js   -t t/class.js   > $DOCDIR/class.html
+$DOCNGN $DOCTMPL -s guid.js    -t t/guid.js    > $DOCDIR/guid.html
+$DOCNGN $DOCTMPL -s bus.js     -t t/bus.js     > $DOCDIR/bus.html
+$DOCNGN $DOCTMPL -s stream.js  -t t/stream.js  > $DOCDIR/stream.html
+$DOCNGN $DOCTMPL -s file.js    -t t/file.js    > $DOCDIR/file.html
+$DOCNGN $DOCTMPL -s jsfs.js    -t t/jsfs.js    > $DOCDIR/jsfs.html
+$DOCNGN $DOCTMPL -s domfs.js   -t t/domfs.js   > $DOCDIR/domfs.html
+$DOCNGN $DOCTMPL -s process.js -t t/process.js > $DOCDIR/process.html
+$DOCNGN $DOCTMPL -s wash.js    -t t/wash.js    > $DOCDIR/wash.html
+$DOCNGN $DOCTMPL -s panel.js   -t t/panel.js   > $DOCDIR/panel.html
+$DOCNGN $DOCTMPL -s window.js  -t t/window.js  > $DOCDIR/window.html
+
