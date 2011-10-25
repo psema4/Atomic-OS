@@ -10,6 +10,7 @@ cd ..
 
 #TODO zepto.eof.txt should not be required, check minifier & zepto issues on github
 
+echo "- merging dependencies and wash commands into system"
 cat "vendor/zepto.min.js"   \
     "zepto.eof.txt"         \
     "vendor/ejohn-class.js" \
@@ -18,6 +19,8 @@ cat "vendor/zepto.min.js"   \
     "hx/atomos-hx.js"       \
   > "atomos.t.js"
 
+echo "- adding main"
 cat "atomos.t.js" "main.js" > "atomos.js"
 
+echo "- minimizing"
 uglifyjs -o atomos.min.js atomos.js
