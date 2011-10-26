@@ -38,4 +38,7 @@ then
     $DOCNGN $DOCTMPL -s wash.js    -t t/wash.js    > $DOCDIR/wash.html
     $DOCNGN $DOCTMPL -s panel.js   -t t/panel.js   > $DOCDIR/panel.html
     $DOCNGN $DOCTMPL -s window.js  -t t/window.js  > $DOCDIR/window.html
+
+else
+    echo "  - skipping documentation and unit tests"
 fi

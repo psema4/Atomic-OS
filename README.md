@@ -29,13 +29,15 @@ Because Atomic OS is simply an html file, it is instantly a template, infinitely
 Building the Prototype
 ======================
 
-Currently building is limited to Linux-like systems with bash and node.js
+Building the Atomic OS prototype is currently limited to Linux-like systems with bash. Having Node.js installed and available on your path is highly recommended. An alternative build system should soon be available for Windows platforms.
 
-Node.js requires the JsDog documentation engine, which should be installed globally with:  npm install jsdog -g
+Documentation and unit tests will be built if the JSDog documentation engine is installed.  Assuming you have Node.js and NPM installed, then you can get JSDog by running:  npm install jsdog -g
 
-To avoid the necessity of calling the scripts/build bash script after every edit, you can use scripts/autobuild if node.js is on your path.  It will run the build script whenever a javascript file is written to
+To avoid having to run build (in the prototype/scripts folder) after editing source files, you can use the autobuild daemon.  It will rebuild the prototype anytime a javascript file is written to.
 
-The most recent reference prototype should be found at http://psema4.github.com/Atomic-OS/
+Minification is handled by uglify.js and installation is similar to JSDog: npm install uglifyjs -g
+
+The most recent reference prototype should be available at http://psema4.github.com/Atomic-OS/
 
 Support
 =======

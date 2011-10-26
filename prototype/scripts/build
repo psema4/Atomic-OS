@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+echo "Atomic OS Build Utility"
+echo ""
+
 cd ./bin
 ./build
 
@@ -22,5 +25,13 @@ cat "vendor/zepto.min.js"   \
 echo "- adding main"
 cat "atomos.t.js" "main.js" > "atomos.js"
 
-echo "- minimizing"
-uglifyjs -o atomos.min.js atomos.js
+MINNGN=`which uglifyjs`
+if [ -n "$MINNGN" ]
+then
+    echo "- minimizing"
+    $MINNGN -o atomos.min.js atomos.js
+else
+    echo "- skipping minification"
+fi
+
+echo ""

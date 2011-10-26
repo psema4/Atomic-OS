@@ -41,4 +41,7 @@ then
     $DOCNGN $DOCTMPL -s rm.js        -t t/rm.js        > $DOCDIR/rm.html
     $DOCNGN $DOCTMPL -s touch.js     -t t/touch.js     > $DOCDIR/touch.html
     $DOCNGN $DOCTMPL -s wallpaper.js -t t/wallpaper.js > $DOCDIR/wallpaper.html
+
+else
+    echo "  - skipping documentation and unit tests"
 fi
