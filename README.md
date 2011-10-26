@@ -9,9 +9,12 @@ Some Rights Reserved
 Legal
 =====
 
-Atomic OS itself is licensed under the LGPLv3 license.  For details, please see the LICENSE file.
+Atomic OS is licensed under the LGPLv3 license.  For details, please see the LICENSE file.
 
-Some dependencies may be licensed under another license.  Please see their respective source files in the script/vendor/ directory
+Source files in the vendor directory may be distributed under another license.
+
+Some source files may contain attribution in comments for portions of code or ideas and should include a url to said inspiration.
+
 
 Summary
 =======
@@ -26,23 +29,49 @@ Atomic OS hopes to help ameliorate dependence on the cloud by allowing app data 
 
 Because Atomic OS is simply an html file, it is instantly a template, infinitely reusable and extremely easy to distribute.
 
+
 Building the Prototype
 ======================
 
-Building the Atomic OS prototype is currently limited to Linux-like systems with bash. Having Node.js installed and available on your path is highly recommended. An alternative build system should soon be available for Windows platforms.
+Note: These build methods will be replaced by a common Node.js build system
 
-Documentation and unit tests will be built if the JSDog documentation engine is installed.  Assuming you have Node.js and NPM installed, then you can get JSDog by running:  npm install jsdog -g
 
-To avoid having to run build (in the prototype/scripts folder) after editing source files, you can use the autobuild daemon.  It will rebuild the prototype anytime a javascript file is written to.
+Windows
+-------
 
-Minification is handled by uglify.js and installation is similar to JSDog: npm install uglifyjs -g
+Open a dos box and cd into the scripts directory:
 
-The most recent reference prototype should be available at http://psema4.github.com/Atomic-OS/
+    cd c:\\devel\\Atomic-OS\\prototype\\scripts
+
+After editing source files you must rebuild atomos.js by running buildall.bat
+
+With the above path you can now view your build by visiting:
+
+    file:///C:/devel/Atomic-OS/prototype/index.html
+
+NOTE: Atomic-OS is not known to work in any version of Internet Explorer.
+
+Documentation, unit tests and minification are not currently generated when building under Windows.
+
+Linux
+-----
+The basic build process is the same as for Windows. Run script/buildall in a Bash compatible shell.
+
+Install Node.js and the Node Package Manager (NPM) for additional features:
+
+* The autobuild daemon in the scripts folder will rebuild Atomic OS for you every time a source file is saved
+* Documentation and unit tests will be built if JSDog is available.  You can install JSDog with:  npm install jsdog -g
+* Minification is handled by uglify.js:  npm install uglify-js -g
+
 
 Support
 =======
 
+  - Reference
+    Implementation: http://psema4.github.com/Atomic-OS/
+
   - Main Site:      https://code.google.com/p/atomos/
   - Issue Tracker:  https://github.com/psema4/Atomic-OS/issues
+
   - Discussion:     https://lists.sourceforge.net/lists/listinfo/atomos-discuss
   - Developers:     https://lists.sourceforge.net/lists/listinfo/atomos-devel

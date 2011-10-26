@@ -27,7 +27,7 @@ autobuilder = {
     "build": function() {
         var that = this;
 
-        this.process = child_process.spawn('./build');
+        this.process = child_process.spawn('./buildall');
 
         this.process.stdout.addListener('data', function (data) {
             process.stdout.write(data);
