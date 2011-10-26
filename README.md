@@ -41,7 +41,7 @@ Windows
 
 Open a dos box and cd into the scripts directory:
 
-    cd c:\\devel\\Atomic-OS\\prototype\\scripts
+    cd c:\devel\Atomic-OS\prototype\scripts
 
 After editing source files you must rebuild atomos.js by running buildall.bat
 
