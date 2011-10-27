@@ -1313,7 +1313,7 @@ var HxFile = HxStream.extend({
  *
  * ++[black[Atomic OS Class: HxJSFS]++
  *
- * Tree structure to contain temporary filesystem in JavaScript
+ * Tree structure to contain a temporary file system in JavaScript
  *
  * Derived from https://gist.github.com/897565
  *
@@ -1353,9 +1353,9 @@ var HxJSFS = HxStream.extend({
     },
 
     /* @method getNodeRecursive
-     * Search a tree of objects looking for a particular property name
+     * Search tree for the specified property name
      * @param {String} property Property to search for
-     * @returns {Array} Returns a list of objects, containing the matched node and it's parent
+     * @returns {Array} a list of objects, containing the matched node and it's parent
      */
 
     getNodeRecursive: function(property) {
@@ -1371,9 +1371,9 @@ var HxJSFS = HxStream.extend({
     },
 
     /* @method getPath
-     * Get the filepath representation of a node
-     * @param {String} nodeName Name of the node to search for (eg. an HxFile filename)
-     * @returns {String} Returns the filepath to a node
+     * Get the file path representation to a subnode
+     * @param {String} nodeName Name of the node to search for (eg. an <a href="file.html">HxFile</a>'s name)
+     * @returns {String} the file path to a subnode
      */
 
     getPath: function(nodeName) {
@@ -1390,9 +1390,9 @@ var HxJSFS = HxStream.extend({
     },
 
     /* @method find
-     * Locate a file under this filesystem
+     * Locate a file in this file system
      * @param {String} nodeName Name of the node to locate
-     * @returns {Array} Returns a list of potentially matching filepaths
+     * @returns {Array} a list of file paths containing the passed node name
      */
 
     find: function(nodeName) {
@@ -1409,21 +1409,17 @@ var HxJSFS = HxStream.extend({
     },
 
     /* @method basename
-     * @param {String} path Filepath to return basename
-     * @returns {String} Strips the filename from a full filepath
+     * @param {String} path File path to process
+     * @returns {String} the filename (endpoint of the file path)
      */
 
     basename: function(path) {
-        if (path.match(/\//)) {
-            return path.split('/').pop();
-        } else {
-            return path;
-        }
+        return (path.match(/\//)) ? path.split('/').pop() : path;
     },
 
     /* @method listFiles
      * List all files and folders that are immediate children of this node
-     * @returns {Array} Returns a sorted list of files and subtrees
+     * @returns {Array} a sorted list of files and subtrees
      */
 
     listFiles: function() {
@@ -1435,7 +1431,9 @@ var HxJSFS = HxStream.extend({
         }
 
         return acc.sort(function(a, b) {
-            var path1 = a.path.toLowerCase(), path2 = b.path.toLowerCase();
+            var path1 = a.path.toLowerCase(),
+                path2 = b.path.toLowerCase();
+
             if (path1 < path2) return -1;
             if (path1 > path2) return 1;
             return 0;
@@ -1443,8 +1441,8 @@ var HxJSFS = HxStream.extend({
     },
 
     /* @method readFile
-     * Read and return an HxFile's contents
-     * @param {String} path Filepath to node to be read
+     * Read and return an <a href="file.html">HxFile</a>'s contents
+     * @param {String} path Path to the file to read from
      * @returns {String} file contents
      */
 
@@ -1463,10 +1461,10 @@ var HxJSFS = HxStream.extend({
     },
 
     /* @method writeFile
-     * @param {String} path Filepath to node to be written to
+     * @param {String} path File path to node to be written to
      * @param {String} buf Contents to write to an HxFile
      * @param {Bool} append Append to file if true
-     * @returns {Bool} True on success
+     * @returns {Bool} true on success
      */
 
     writeFile: function(path, buf, append) {
@@ -1503,8 +1501,8 @@ var HxJSFS = HxStream.extend({
     },
 
     /* @method getFolder
-     * @param {String} path Filepath to desired folder
-     * @returns {HxJSFS} False if not found, otherwise a JSFS object (or subclass)
+     * @param {String} path Path to the desired folder
+     * @returns {HxJSFS} false if not found, otherwise an HxJSFS object (or subclass)
      */
 
     getFolder: function(path) {
@@ -1538,8 +1536,8 @@ var HxJSFS = HxStream.extend({
 
     /* @method mount
      * Attach an HxJSFS (or subclass) tree to a node
-     * @param {String} path Filepath to mount a filesystem onto
-     * @param {HxJSFS} fs An instantiated filesystem to mount
+     * @param {String} path Path to mount the file system on
+     * @param {HxJSFS} fs The HxJSFS file system to mount
      */
 
     mount: function(path, fs) {
@@ -1551,7 +1549,7 @@ var HxJSFS = HxStream.extend({
     /* @method addChildFolder
      * Creates a named subfolder
      * @param {String} name Name of subfolder
-     * @returns {Bool} True on success
+     * @returns {Bool} true on success
      */
 
     addChildFolder: function(name) {
@@ -1562,7 +1560,7 @@ var HxJSFS = HxStream.extend({
     /* @method removeChildFolder
      * Remove a named subfolder
      * @param {String} name Name of subfolder to delete
-     * @returns {Bool} True on success
+     * @returns {Bool} true on success
      */
 
     removeChildFolder: function(name) {
@@ -1575,7 +1573,7 @@ var HxJSFS = HxStream.extend({
     /* @method addFile
      * Create an empty HxFile
      * @param {String} name Name of file to create
-     * @returns {Bool} True on success
+     * @returns {Bool} true on success
      */
 
     addFile: function(name) {
@@ -1588,7 +1586,7 @@ var HxJSFS = HxStream.extend({
     /* @method removeFile
      * Delete a named file
      * @param {String} name Name of file to delete
-     * @returns {Bool} True on success
+     * @returns {Bool} true on success
      */
 
     removeFile: function(name) {
