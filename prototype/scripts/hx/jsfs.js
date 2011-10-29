@@ -238,12 +238,12 @@ var HxJSFS = HxStream.extend({
     /* @method addChildFolder
      * Creates a named subfolder
      * @param {String} name Name of subfolder
-     * @returns {Bool} true on success
+     * @returns {Mixed} subfolder on success, false on failure
      */
 
     addChildFolder: function(name) {
         this.tree[name] = new HxJSFS({});
-        return (this.tree[name] instanceof HxJSFS);
+        return (this.tree[name] instanceof HxJSFS) ? this.tree[name] : false;
     },
 
     /* @method removeChildFolder
@@ -262,14 +262,17 @@ var HxJSFS = HxStream.extend({
     /* @method addFile
      * Create an empty HxFile
      * @param {String} name Name of file to create
-     * @returns {Bool} true on success
+     * @param {String} buf Initial contents of the file
+     * @returns {Mixed} file on success, false on failure
      */
 
-    addFile: function(name) {
+    addFile: function(name, buf) {
+        buf = buf || '';
         this.tree[name] = new HxFile({
-            name: name
+            name: name,
+            buffer: buf
         });
-        return (this.tree[name] instanceof HxFile);
+        return (this.tree[name] instanceof HxFile) ? this.tree[name] : false;
     },
 
     /* @method removeFile

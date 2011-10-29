@@ -1,26 +1,35 @@
 #!/usr/bin/env bash
 
+# set DOCS environment variable to build documentation and unit tests
+#     eg:
+#     user@host:/path/to/atomos/scripts$ DOCS=1 ./buildall
+
 echo "Atomic OS Build Utility"
 echo ""
 
-cd ./bin
-./build
+echo "building kernel"
+cd ./hx; ./build
 
-cd ../hx
-./build
+echo ""
+echo "building shell commands"
+cd ../bin; ./build
 
 cd ..
 
 #TODO zepto.eof.txt should not be required, check minifier & zepto issues on github
 
-echo "- merging dependencies and wash commands into system"
+echo ""
+echo "building system"
 cat "vendor/zepto.min.js"   \
     "zepto.eof.txt"         \
     "vendor/ejohn-class.js" \
-    "system.js"             \
     "bin/atomos-bin.js"     \
     "hx/atomos-hx.js"       \
+    "system.js"             \
+    "libsys.js"             \
   > "atomos.t.js"
+
+# above: libsys should come before system
 
 echo "- adding main"
 cat "atomos.t.js" "main.js" > "atomos.js"

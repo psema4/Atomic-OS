@@ -68,18 +68,6 @@
     return Class;
   };
 })();
-window.system = {
-    debug: true,
-
-    env: {
-    },
-
-    constant: {
-        STDIN: 0,
-        STDOUT: 1,
-        STDERR: 2
-    }
-}
 /* cat.js
  *
  * Atomic OS WASH command
@@ -1549,12 +1537,12 @@ var HxJSFS = HxStream.extend({
     /* @method addChildFolder
      * Creates a named subfolder
      * @param {String} name Name of subfolder
-     * @returns {Bool} true on success
+     * @returns {Mixed} subfolder on success, false on failure
      */
 
     addChildFolder: function(name) {
         this.tree[name] = new HxJSFS({});
-        return (this.tree[name] instanceof HxJSFS);
+        return (this.tree[name] instanceof HxJSFS) ? this.tree[name] : false;
     },
 
     /* @method removeChildFolder
@@ -1573,14 +1561,17 @@ var HxJSFS = HxStream.extend({
     /* @method addFile
      * Create an empty HxFile
      * @param {String} name Name of file to create
-     * @returns {Bool} true on success
+     * @param {String} buf Initial contents of the file
+     * @returns {Mixed} file on success, false on failure
      */
 
-    addFile: function(name) {
+    addFile: function(name, buf) {
+        buf = buf || '';
         this.tree[name] = new HxFile({
-            name: name
+            name: name,
+            buffer: buf
         });
-        return (this.tree[name] instanceof HxFile);
+        return (this.tree[name] instanceof HxFile) ? this.tree[name] : false;
     },
 
     /* @method removeFile
@@ -1594,6 +1585,41 @@ var HxJSFS = HxStream.extend({
             delete(this.tree[name]);
             return (this.tree[name]) ? false : true;
         }
+    }
+});
+/* procfs.js
+ *
+ * ++[black[Atomic OS Class: HxPROCFS]++
+ *
+ * JavaScript tree structure to represent processes in a filesystem
+ *
+ * @author Scott Elcomb <psema4@gmail.com (http://www.psema4.com)
+ * @version 2.0.0
+ */
+
+var HxPROCFS = HxJSFS.extend({
+    /* @constructor
+     * @method init
+     * Extends <a href="jsfs.html">HxJSFS</a>
+     *
+     * @param {Object} opts Options dictionary
+     */
+
+    init: function(opts) {
+        this.tree = opts.tree || {};
+        this._super(opts);
+    },
+
+    /* @method addChildFolder
+     * **Superclass Override**
+     * Creates a named subfolder
+     * @param {String} name Name of subfolder
+     * @returns {Mixed} Folder on success, false on failure
+     */
+
+    addChildFolder: function(name) {
+        this.tree[name] = new HxPROCFS({});
+        return (this.tree[name] instanceof HxPROCFS) ? this.tree[name] : false;
     }
 });
 /* domfs.js
@@ -1670,11 +1696,14 @@ var HxProcess = HxClass.extend({
 
         this._super(opts);
 
+        // default file descriptors; TODO: processes should push file references or temporary files here
         this.fd = [
             new HxStream({}),
             new HxStream({}),
             new HxStream({})
         ];
+
+        system.lib.registerProcess(this);
     }
 });
 
@@ -1752,11 +1781,11 @@ var HxWash = HxProcess.extend({
 
         //FIXME: 'this' is an empty object
         //
-        //       How do we set the scope to wash instance
-        //       (We don't want to reference system.wash...)
+        //       How do we set the scope to the wash instance
+        //       (We don't want to reference system.proc.wash...)
 
-        var buf = system.wash.fd[0].read();
-        system.wash.exec(buf);
+        var buf = system.proc.wash.fd[0].read();
+        system.proc.wash.exec(buf);
     },
 
     /* @method onOutput
@@ -1768,7 +1797,7 @@ var HxWash = HxProcess.extend({
         //FIXME: How do we set the scope to *this* wash instance
         //       (...and want to route messages to linked processes)
 
-        var buf = system.wash.fd[1].read();
+        var buf = system.proc.wash.fd[1].read();
         console.log(buf);
     },
 
@@ -1780,7 +1809,7 @@ var HxWash = HxProcess.extend({
     onError: function(args) {
         //FIXME: How do we set the scope to *this* wash instance
 
-        var buf = system.wash.fd[2].read();
+        var buf = system.proc.wash.fd[2].read();
         console.warn(buf);
     }
 });
@@ -2084,8 +2113,8 @@ var HxCommandWindow = HxWindow.extend({
         input.val('');
 
         this.history.push(cmdString);               // push onto command history
-        system.wash.fd[1].write("\n" + system.env.cwd + "$ " + cmdString);  // echo to stdout
-        system.wash.fd[0].write(cmdString);         // write to stdin so global wash will execute it
+        system.proc.wash.fd[1].write("\n" + system.env.cwd + "$ " + cmdString);  // echo to stdout
+        system.proc.wash.fd[0].write(cmdString);         // write to stdin so global wash will execute it
 
         input[0].focus();
         this.historyPtr = this.history.length;
@@ -2286,3 +2315,114 @@ var HxDocWindow = HxWindow.extend({
     }
 });
 
+window.system = {
+    debug: true,
+
+    // wash commands
+    bin: system.bin || {},
+
+    // message bus
+    bus: (system.bus) ? system.bus : (HxBus) ? HxBus : {},
+
+    // wash environment
+    env: {},
+
+    // root file system
+    fs: new HxJSFS({
+        name: '/',
+        tree: {
+
+            bin: new HxJSFS({
+                name: '/bin',
+                tree: {}
+            }),
+
+            etc: new HxJSFS({
+                name: '/etc',
+                tree: {
+                    motd: new HxFile({
+                        name: '/etc/motd',
+                        buffer: 'Welcome to Atomic OS 2'
+                    })
+                }
+            }),
+
+            home: new HxJSFS({
+                name: '/home',
+                tree: {
+                    guest: new HxJSFS({
+                        name: '/home/guest',
+                        tree: {
+                            readme: new HxFile({
+                                name: '/home/guest/readme',
+                                buffer: 'Lorem ipsum and all that jazz.'
+                            }),
+
+                            data: new HxJSFS({
+                                name: '/home/guest/data',
+                                tree: {
+                                    readme: new HxFile({
+                                        name: '/home/guest/data/settings',
+                                        buffer: "# Sample config"
+                                    })
+                                }
+                            })
+                        }
+                    })
+                }
+            }),
+
+            lib: new HxJSFS({
+                name: '/lib',
+                tree: {}
+            }),
+
+            mnt: new HxJSFS({
+                name: '/mnt',
+                tree: {}
+            }),
+
+            proc: new HxPROCFS({
+                name: '/proc',
+                tree: {}
+            })
+        }
+    }),
+
+    // system library
+    lib: system.lib || {},
+
+    // process container
+    proc: {}
+};
+
+
+// copy shell commands into file system
+for (var cmd in system.bin) {
+    system.fs.tree.bin.tree[cmd] = new HxFile({
+        name: '/bin/' + cmd,
+        buffer: system.bin[cmd].exec.toString()
+    });
+}
+// system call library
+
+system = system || {};
+
+system.lib = {
+    registerProcess: function(process) {
+        console.warn("syslib: registering new process as " + process.name);
+
+        var procfs = system.fs.getFolder('/proc');
+        var folder = procfs.addChildFolder(process.name);
+
+        if (folder) {
+            folder.addFile('stdin', process.fd[0].name);
+
+        } else {
+            console.warn("process folder not found!");
+        }
+    },
+
+    log: function() {
+    }
+};

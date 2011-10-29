@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-echo "- creating core system"
+echo "- merging system classes"
 
 cat "class.js"           \
     "guid.js"            \
@@ -8,6 +8,7 @@ cat "class.js"           \
     "stream.js"          \
     "file.js"            \
     "jsfs.js"            \
+    "procfs.js"          \
     "domfs.js"           \
     "process.js"         \
     "wash.js"            \
@@ -21,7 +22,7 @@ cat "class.js"           \
 #docs
 DOCNGN=`which jsdog`
 
-if [ -n "$DOCNGN" ]
+if [ -n "$DOCS" ] && [ -n "$DOCNGN" ]
 then
     echo "  - building documentation and unit tests"
     DOCDIR="../docs/classes"

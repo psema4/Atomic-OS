@@ -22,11 +22,14 @@ var HxProcess = HxClass.extend({
 
         this._super(opts);
 
+        // default file descriptors; TODO: processes should push file references or temporary files here
         this.fd = [
             new HxStream({}),
             new HxStream({}),
             new HxStream({})
         ];
+
+        system.lib.registerProcess(this);
     }
 });
 

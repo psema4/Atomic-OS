@@ -60,9 +60,8 @@ The basic build process is the same as for Windows. Run script/buildall in a Bas
 Install Node.js and the Node Package Manager (NPM) for additional features:
 
 * The autobuild daemon in the scripts folder will rebuild Atomic OS for you every time a source file is saved
-* Documentation and unit tests will be built if JSDog is available.  You can install JSDog with:  npm install jsdog -g
+* Documentation and unit tests will be built if the environment variable DOCS is set and JSDog is available.  You can install JSDog with:  npm install jsdog -g
 * Minification is handled by uglify.js:  npm install uglify-js -g
-
 
 Support
 =======

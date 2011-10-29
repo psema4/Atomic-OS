@@ -1,12 +1,9 @@
 $(document).ready(function() {
+    console.log('System starting... this is main');
     $('body').append('<div id="winroot"></div><div id="fileroot"></div>');
 
-    // system setup (use system.js to configure)
-    window.system = window.system || {};
-    if (! system.bus) system.bus = HxBus;
 
-
-    // environment setup
+    console.log('Setting up environment');
     system.env = {
         home:'/home/guest',
         cwd: '/home/guest',
@@ -16,75 +13,16 @@ $(document).ready(function() {
     };
 
 
-    // command interpreter setup (init process will load here instead of wash)
-    system.wash = new HxWash();
-    window.wash = function(args) { system.wash.exec.call(system.wash, args); };
+    console.log('Loading init process (wash)'); // FIXME: Create an init process
+    system.proc.wash = new HxWash();
+    window.wash = function(args) { system.proc.wash.exec.call(system.proc.wash, args); };
 
+    //-- application code should be loaded by init into process; the following
+    //-- are leftovers from early testing and act as proof of concept
 
-    // create filesystem
-    system.fs = new HxJSFS({
-        name: '/',
-        tree: {
-            etc: new HxJSFS({
-                name: '/etc',
-                tree: {
-                    motd: new HxFile({
-                        name: '/etc/motd',
-                        buffer: 'Welcome to Atomic OS 2'
-                    })
-                }
-            }),
+    // mount dom test (convert to HxProcess)
 
-            home: new HxJSFS({
-                name: '/home',
-                tree: {
-                    guest: new HxJSFS({
-                        name: '/home/guest',
-                        tree: {
-                            readme: new HxFile({
-                                name: '/home/guest/readme',
-                                buffer: 'Lorem ipsum and all that jazz.'
-                            }),
-
-                            data: new HxJSFS({
-                                name: '/home/guest/data',
-                                tree: {
-                                    readme: new HxFile({
-                                        name: '/home/guest/data/settings',
-                                        buffer: "# Sample config"
-                                    })
-                                }
-                            })
-                        }
-                    })
-                }
-            }),
-
-            mnt: new HxJSFS({
-                name: '/mnt',
-                tree: {}
-            })
-        }
-    });
-
-
-    // build /bin from command objects
-    var binfs = new HxJSFS({
-        name: '/bin',
-        tree: {}
-    });
-
-    for (var cmd in system.bin) {
-        binfs.tree[cmd] = new HxFile({
-            name: '/bin/' + cmd,
-            buffer: system.bin[cmd].exec.toString()
-        });
-    }
-
-    system.fs.mount("/", binfs);
-
-
-    // build /mnt/dom from dom objects
+    console.log('Creating domfs');
     var domfs = new HxDOMFS({
         name: '/mnt/dom',
         tree: {}
@@ -111,9 +49,12 @@ $(document).ready(function() {
     }
 
     system.fs.mount("/mnt", domfs);
+    var msg = (system.fs.tree.mnt.tree.dom instanceof HxJSFS) ? '[ OK ]' : '[FAIL]';
+    console.log('Mount domfs ' + msg);
 
+    // desktop test (convert to HxProcess)
 
-    // add a desktop mount and attach panels
+    console.log('Creating desktop');
     //FIXME: need to improve name support, see panel.js
 
     var desktopfs = new HxPanel({
@@ -134,13 +75,18 @@ $(document).ready(function() {
     });
 
     system.fs.mount("/mnt", desktopfs);
+    msg = (system.fs.tree.mnt.tree.desktop instanceof HxJSFS) ? '[ OK ]' : '[FAIL]';
+    console.log('Mount desktop ' + msg);
 
     $('#desktop').append('<div class="taskbar"></div>');
 
 
     // prevent global wash from flushing stdout on read so we can mirror it to the command window's output
-    system.wash.fd[1].autoFlush = false;
+    console.log('Sharing global stdout')
+    system.proc.wash.fd[1].autoFlush = false;
 
+
+    console.log('Creating UI');
     // window test - this needs to break out into a webtty process which should contain it's on HxWASH interpreter
     var left = '1%',
         width = '48%';
@@ -158,11 +104,11 @@ $(document).ready(function() {
         css: { top: '40px', left: left, width: width, bottom: '3%', position: 'absolute', backgroundColor: '#fff', border: '2px outset #ddd' },
 
         inputHandler: function(buf) {
-            system.wash.fd[0].write(buf);
+            system.proc.wash.fd[0].write(buf);
         },
 
         outputHandler: function() {
-            var buf = system.wash.fd[1].read() + "\n";
+            var buf = system.proc.wash.fd[1].read() + "\n";
             var output = $('#' + cmdWindow.name + '-output');
             output.append(buf);
             output[0].scrollTop = output[0].scrollHeight;
@@ -173,7 +119,7 @@ $(document).ready(function() {
     });
 
     // tie global wash's stdout to cmdWindow output
-    var stdout = system.wash.fd[1];
+    var stdout = system.proc.wash.fd[1];
     stdout.bus.subscribe(stdout.name + ':ondata', cmdWindow.outputHandler);
 
     // add a taskbutton
@@ -231,5 +177,7 @@ $(document).ready(function() {
     $('#editwin-taskbtn')[0].click();
     $('#docwin-taskbtn')[0].click();
 
+
+    console.log('Startup complete.');
     wash("cat /mnt/dom/motd");
 });

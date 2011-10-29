@@ -20,7 +20,7 @@ cat "cat.js"            \
 #docs
 DOCNGN=`which jsdog`
 
-if [ -n "$DOCNGN" ]
+if [ -n "$DOCS" ] && [ -n "$DOCNGN" ]
 then
     echo "  - building documentation and unit tests"
 

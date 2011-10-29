@@ -72,11 +72,11 @@ var HxWash = HxProcess.extend({
 
         //FIXME: 'this' is an empty object
         //
-        //       How do we set the scope to wash instance
-        //       (We don't want to reference system.wash...)
+        //       How do we set the scope to the wash instance
+        //       (We don't want to reference system.proc.wash...)
 
-        var buf = system.wash.fd[0].read();
-        system.wash.exec(buf);
+        var buf = system.proc.wash.fd[0].read();
+        system.proc.wash.exec(buf);
     },
 
     /* @method onOutput
@@ -88,7 +88,7 @@ var HxWash = HxProcess.extend({
         //FIXME: How do we set the scope to *this* wash instance
         //       (...and want to route messages to linked processes)
 
-        var buf = system.wash.fd[1].read();
+        var buf = system.proc.wash.fd[1].read();
         console.log(buf);
     },
 
@@ -100,7 +100,7 @@ var HxWash = HxProcess.extend({
     onError: function(args) {
         //FIXME: How do we set the scope to *this* wash instance
 
-        var buf = system.wash.fd[2].read();
+        var buf = system.proc.wash.fd[2].read();
         console.warn(buf);
     }
 });

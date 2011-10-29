@@ -138,8 +138,8 @@ var HxCommandWindow = HxWindow.extend({
         input.val('');
 
         this.history.push(cmdString);               // push onto command history
-        system.wash.fd[1].write("\n" + system.env.cwd + "$ " + cmdString);  // echo to stdout
-        system.wash.fd[0].write(cmdString);         // write to stdin so global wash will execute it
+        system.proc.wash.fd[1].write("\n" + system.env.cwd + "$ " + cmdString);  // echo to stdout
+        system.proc.wash.fd[0].write(cmdString);         // write to stdin so global wash will execute it
 
         input[0].focus();
         this.historyPtr = this.history.length;
