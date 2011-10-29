@@ -68,18 +68,6 @@
     return Class;
   };
 })();
-window.system = {
-    debug: true,
-
-    env: {
-    },
-
-    constant: {
-        STDIN: 0,
-        STDOUT: 1,
-        STDERR: 2
-    }
-}
 /* cat.js
  *
  * Atomic OS WASH command
@@ -1313,7 +1301,7 @@ var HxFile = HxStream.extend({
  *
  * ++[black[Atomic OS Class: HxJSFS]++
  *
- * Tree structure to contain temporary filesystem in JavaScript
+ * Tree structure to contain a temporary file system in JavaScript
  *
  * Derived from https://gist.github.com/897565
  *
@@ -1353,9 +1341,9 @@ var HxJSFS = HxStream.extend({
     },
 
     /* @method getNodeRecursive
-     * Search a tree of objects looking for a particular property name
+     * Search tree for the specified property name
      * @param {String} property Property to search for
-     * @returns {Array} Returns a list of objects, containing the matched node and it's parent
+     * @returns {Array} a list of objects, containing the matched node and it's parent
      */
 
     getNodeRecursive: function(property) {
@@ -1371,9 +1359,9 @@ var HxJSFS = HxStream.extend({
     },
 
     /* @method getPath
-     * Get the filepath representation of a node
-     * @param {String} nodeName Name of the node to search for (eg. an HxFile filename)
-     * @returns {String} Returns the filepath to a node
+     * Get the file path representation to a subnode
+     * @param {String} nodeName Name of the node to search for (eg. an <a href="file.html">HxFile</a>'s name)
+     * @returns {String} the file path to a subnode
      */
 
     getPath: function(nodeName) {
@@ -1390,9 +1378,9 @@ var HxJSFS = HxStream.extend({
     },
 
     /* @method find
-     * Locate a file under this filesystem
+     * Locate a file in this file system
      * @param {String} nodeName Name of the node to locate
-     * @returns {Array} Returns a list of potentially matching filepaths
+     * @returns {Array} a list of file paths containing the passed node name
      */
 
     find: function(nodeName) {
@@ -1409,21 +1397,17 @@ var HxJSFS = HxStream.extend({
     },
 
     /* @method basename
-     * @param {String} path Filepath to return basename
-     * @returns {String} Strips the filename from a full filepath
+     * @param {String} path File path to process
+     * @returns {String} the filename (endpoint of the file path)
      */
 
     basename: function(path) {
-        if (path.match(/\//)) {
-            return path.split('/').pop();
-        } else {
-            return path;
-        }
+        return (path.match(/\//)) ? path.split('/').pop() : path;
     },
 
     /* @method listFiles
      * List all files and folders that are immediate children of this node
-     * @returns {Array} Returns a sorted list of files and subtrees
+     * @returns {Array} a sorted list of files and subtrees
      */
 
     listFiles: function() {
@@ -1435,7 +1419,9 @@ var HxJSFS = HxStream.extend({
         }
 
         return acc.sort(function(a, b) {
-            var path1 = a.path.toLowerCase(), path2 = b.path.toLowerCase();
+            var path1 = a.path.toLowerCase(),
+                path2 = b.path.toLowerCase();
+
             if (path1 < path2) return -1;
             if (path1 > path2) return 1;
             return 0;
@@ -1443,8 +1429,8 @@ var HxJSFS = HxStream.extend({
     },
 
     /* @method readFile
-     * Read and return an HxFile's contents
-     * @param {String} path Filepath to node to be read
+     * Read and return an <a href="file.html">HxFile</a>'s contents
+     * @param {String} path Path to the file to read from
      * @returns {String} file contents
      */
 
@@ -1463,10 +1449,10 @@ var HxJSFS = HxStream.extend({
     },
 
     /* @method writeFile
-     * @param {String} path Filepath to node to be written to
+     * @param {String} path File path to node to be written to
      * @param {String} buf Contents to write to an HxFile
      * @param {Bool} append Append to file if true
-     * @returns {Bool} True on success
+     * @returns {Bool} true on success
      */
 
     writeFile: function(path, buf, append) {
@@ -1503,8 +1489,8 @@ var HxJSFS = HxStream.extend({
     },
 
     /* @method getFolder
-     * @param {String} path Filepath to desired folder
-     * @returns {HxJSFS} False if not found, otherwise a JSFS object (or subclass)
+     * @param {String} path Path to the desired folder
+     * @returns {HxJSFS} false if not found, otherwise an HxJSFS object (or subclass)
      */
 
     getFolder: function(path) {
@@ -1538,8 +1524,8 @@ var HxJSFS = HxStream.extend({
 
     /* @method mount
      * Attach an HxJSFS (or subclass) tree to a node
-     * @param {String} path Filepath to mount a filesystem onto
-     * @param {HxJSFS} fs An instantiated filesystem to mount
+     * @param {String} path Path to mount the file system on
+     * @param {HxJSFS} fs The HxJSFS file system to mount
      */
 
     mount: function(path, fs) {
@@ -1551,18 +1537,18 @@ var HxJSFS = HxStream.extend({
     /* @method addChildFolder
      * Creates a named subfolder
      * @param {String} name Name of subfolder
-     * @returns {Bool} True on success
+     * @returns {Mixed} subfolder on success, false on failure
      */
 
     addChildFolder: function(name) {
         this.tree[name] = new HxJSFS({});
-        return (this.tree[name] instanceof HxJSFS);
+        return (this.tree[name] instanceof HxJSFS) ? this.tree[name] : false;
     },
 
     /* @method removeChildFolder
      * Remove a named subfolder
      * @param {String} name Name of subfolder to delete
-     * @returns {Bool} True on success
+     * @returns {Bool} true on success
      */
 
     removeChildFolder: function(name) {
@@ -1575,20 +1561,23 @@ var HxJSFS = HxStream.extend({
     /* @method addFile
      * Create an empty HxFile
      * @param {String} name Name of file to create
-     * @returns {Bool} True on success
+     * @param {String} buf Initial contents of the file
+     * @returns {Mixed} file on success, false on failure
      */
 
-    addFile: function(name) {
+    addFile: function(name, buf) {
+        buf = buf || '';
         this.tree[name] = new HxFile({
-            name: name
+            name: name,
+            buffer: buf
         });
-        return (this.tree[name] instanceof HxFile);
+        return (this.tree[name] instanceof HxFile) ? this.tree[name] : false;
     },
 
     /* @method removeFile
      * Delete a named file
      * @param {String} name Name of file to delete
-     * @returns {Bool} True on success
+     * @returns {Bool} true on success
      */
 
     removeFile: function(name) {
@@ -1596,6 +1585,41 @@ var HxJSFS = HxStream.extend({
             delete(this.tree[name]);
             return (this.tree[name]) ? false : true;
         }
+    }
+});
+/* procfs.js
+ *
+ * ++[black[Atomic OS Class: HxPROCFS]++
+ *
+ * JavaScript tree structure to represent processes in a filesystem
+ *
+ * @author Scott Elcomb <psema4@gmail.com (http://www.psema4.com)
+ * @version 2.0.0
+ */
+
+var HxPROCFS = HxJSFS.extend({
+    /* @constructor
+     * @method init
+     * Extends <a href="jsfs.html">HxJSFS</a>
+     *
+     * @param {Object} opts Options dictionary
+     */
+
+    init: function(opts) {
+        this.tree = opts.tree || {};
+        this._super(opts);
+    },
+
+    /* @method addChildFolder
+     * **Superclass Override**
+     * Creates a named subfolder
+     * @param {String} name Name of subfolder
+     * @returns {Mixed} Folder on success, false on failure
+     */
+
+    addChildFolder: function(name) {
+        this.tree[name] = new HxPROCFS({});
+        return (this.tree[name] instanceof HxPROCFS) ? this.tree[name] : false;
     }
 });
 /* domfs.js
@@ -1672,11 +1696,14 @@ var HxProcess = HxClass.extend({
 
         this._super(opts);
 
+        // default file descriptors; TODO: processes should push file references or temporary files here
         this.fd = [
             new HxStream({}),
             new HxStream({}),
             new HxStream({})
         ];
+
+        system.lib.registerProcess(this);
     }
 });
 
@@ -1754,11 +1781,11 @@ var HxWash = HxProcess.extend({
 
         //FIXME: 'this' is an empty object
         //
-        //       How do we set the scope to wash instance
-        //       (We don't want to reference system.wash...)
+        //       How do we set the scope to the wash instance
+        //       (We don't want to reference system.proc.wash...)
 
-        var buf = system.wash.fd[0].read();
-        system.wash.exec(buf);
+        var buf = system.proc.wash.fd[0].read();
+        system.proc.wash.exec(buf);
     },
 
     /* @method onOutput
@@ -1770,7 +1797,7 @@ var HxWash = HxProcess.extend({
         //FIXME: How do we set the scope to *this* wash instance
         //       (...and want to route messages to linked processes)
 
-        var buf = system.wash.fd[1].read();
+        var buf = system.proc.wash.fd[1].read();
         console.log(buf);
     },
 
@@ -1782,7 +1809,7 @@ var HxWash = HxProcess.extend({
     onError: function(args) {
         //FIXME: How do we set the scope to *this* wash instance
 
-        var buf = system.wash.fd[2].read();
+        var buf = system.proc.wash.fd[2].read();
         console.warn(buf);
     }
 });
@@ -2086,8 +2113,8 @@ var HxCommandWindow = HxWindow.extend({
         input.val('');
 
         this.history.push(cmdString);               // push onto command history
-        system.wash.fd[1].write("\n" + system.env.cwd + "$ " + cmdString);  // echo to stdout
-        system.wash.fd[0].write(cmdString);         // write to stdin so global wash will execute it
+        system.proc.wash.fd[1].write("\n" + system.env.cwd + "$ " + cmdString);  // echo to stdout
+        system.proc.wash.fd[0].write(cmdString);         // write to stdin so global wash will execute it
 
         input[0].focus();
         this.historyPtr = this.history.length;
@@ -2288,3 +2315,114 @@ var HxDocWindow = HxWindow.extend({
     }
 });
 
+window.system = {
+    debug: true,
+
+    // wash commands
+    bin: system.bin || {},
+
+    // message bus
+    bus: (system.bus) ? system.bus : (HxBus) ? HxBus : {},
+
+    // wash environment
+    env: {},
+
+    // root file system
+    fs: new HxJSFS({
+        name: '/',
+        tree: {
+
+            bin: new HxJSFS({
+                name: '/bin',
+                tree: {}
+            }),
+
+            etc: new HxJSFS({
+                name: '/etc',
+                tree: {
+                    motd: new HxFile({
+                        name: '/etc/motd',
+                        buffer: 'Welcome to Atomic OS 2'
+                    })
+                }
+            }),
+
+            home: new HxJSFS({
+                name: '/home',
+                tree: {
+                    guest: new HxJSFS({
+                        name: '/home/guest',
+                        tree: {
+                            readme: new HxFile({
+                                name: '/home/guest/readme',
+                                buffer: 'Lorem ipsum and all that jazz.'
+                            }),
+
+                            data: new HxJSFS({
+                                name: '/home/guest/data',
+                                tree: {
+                                    readme: new HxFile({
+                                        name: '/home/guest/data/settings',
+                                        buffer: "# Sample config"
+                                    })
+                                }
+                            })
+                        }
+                    })
+                }
+            }),
+
+            lib: new HxJSFS({
+                name: '/lib',
+                tree: {}
+            }),
+
+            mnt: new HxJSFS({
+                name: '/mnt',
+                tree: {}
+            }),
+
+            proc: new HxPROCFS({
+                name: '/proc',
+                tree: {}
+            })
+        }
+    }),
+
+    // system library
+    lib: system.lib || {},
+
+    // process container
+    proc: {}
+};
+
+
+// copy shell commands into file system
+for (var cmd in system.bin) {
+    system.fs.tree.bin.tree[cmd] = new HxFile({
+        name: '/bin/' + cmd,
+        buffer: system.bin[cmd].exec.toString()
+    });
+}
+// system call library
+
+system = system || {};
+
+system.lib = {
+    registerProcess: function(process) {
+        console.warn("syslib: registering new process as " + process.name);
+
+        var procfs = system.fs.getFolder('/proc');
+        var folder = procfs.addChildFolder(process.name);
+
+        if (folder) {
+            folder.addFile('stdin', process.fd[0].name);
+
+        } else {
+            console.warn("process folder not found!");
+        }
+    },
+
+    log: function() {
+    }
+};
