@@ -10,6 +10,8 @@ system.lib = {
         var folder = procfs.addChildFolder(process.name);
 
         if (folder) {
+            folder.name = '/proc/' + process.name; // fix node name
+
             folder.addFile('stdin', process.fd[0].name);
             folder.addFile('stdout', process.fd[1].name);
             folder.addFile('stderr', process.fd[2].name);

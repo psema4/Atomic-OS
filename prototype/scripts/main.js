@@ -87,7 +87,7 @@ $(document).ready(function() {
 
 
     console.log('Creating UI');
-    // window test - this needs to break out into a webtty process which should contain it's on HxWASH interpreter
+    // window test - this needs to break out into a webtty process and have it's own HxWASH interpreter
     var left = '1%',
         width = '48%';
 

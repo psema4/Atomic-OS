@@ -1489,37 +1489,44 @@ var HxJSFS = HxStream.extend({
     },
 
     /* @method getFolder
-     * @param {String} path Path to the desired folder
+     * @param {String} path Absolute path to the desired folder
      * @returns {HxJSFS} false if not found, otherwise an HxJSFS object (or subclass)
      */
 
     getFolder: function(path) {
             if (path == '/') return system.fs;
+            path = path.replace(/\/$/, ''); // trim trailing slash if present
 
-            path = path.replace(/\/$/, ''); // trim trailing slash
-
-            var fspath = 'system.fs',
+            var folderObj,
+                fspath = 'system.fs', //FIXME: figure out path to 'this' for relatve paths
                 newpath = '',
                 pathParts = path.split('/');
 
-            // create a js path
+            // create string representation of the javascript object we're going to want
             if (pathParts.length > 1) {
                 pathParts.shift();
 
                 for (var i=0; i<pathParts.length; i++) {
-                    newpath += '.tree.' + pathParts[i];
+                    if (pathParts[i].match(/-/)) { // deal with GUID names
+                        newpath += '.tree["' + pathParts[i] + '"]';
+
+                    } else {
+                        newpath += '.tree.' + pathParts[i]; // natural names
+                    }
                 }
             }
             fspath += newpath;
 
+            // try to access and return it if successful
             try {
-                var o = eval(fspath);
-                return o ? o : false;
+                folderObj = eval(fspath);
 
             } catch(e) {
-                console.warn('fs exception: fs object does not exist');
+                console.warn('HxJSFS.getFolder: js exception: ' + e);
                 return false;
             }
+
+            return folderObj ? folderObj : false;
     },
 
     /* @method mount
@@ -2416,13 +2423,14 @@ system.lib = {
         var folder = procfs.addChildFolder(process.name);
 
         if (folder) {
+            folder.name = '/proc/' + process.name; // fix node name
+
             folder.addFile('stdin', process.fd[0].name);
+            folder.addFile('stdout', process.fd[1].name);
+            folder.addFile('stderr', process.fd[2].name);
 
         } else {
             console.warn("process folder not found!");
         }
-    },
-
-    log: function() {
     }
 };
