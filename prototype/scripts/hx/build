@@ -7,11 +7,13 @@ cat "class.js"           \
     "bus.js"             \
     "stream.js"          \
     "file.js"            \
+    "device.js"          \
     "jsfs.js"            \
     "procfs.js"          \
     "domfs.js"           \
     "process.js"         \
     "wash.js"            \
+    "tcl.js"             \
     "panel.js"           \
     "window.js"          \
     "commandwindow.js"   \

@@ -13,6 +13,7 @@ cat "cat.js"            \
     "pwd.js"            \
     "rm.js"             \
     "rmdir.js"          \
+    "tcl.js"            \
     "touch.js"          \
     "wallpaper.js"      \
   > "atomos-bin.js"

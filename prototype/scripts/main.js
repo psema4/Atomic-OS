@@ -177,6 +177,10 @@ $(document).ready(function() {
     $('#editwin-taskbtn')[0].click();
     $('#docwin-taskbtn')[0].click();
 
+    console.log('Starting tcl');
+    system.proc.tcl = new HxTcl();
+    window.tcl = function(args) { return system.proc.tcl.exec.call(system.proc.tcl, args); };
+
 
     console.log('Startup complete.');
     wash("cat /mnt/dom/motd");

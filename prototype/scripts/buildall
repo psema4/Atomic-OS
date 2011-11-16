@@ -11,6 +11,10 @@ echo "building kernel"
 cd ./hx; ./build
 
 echo ""
+echo "building device files"
+cd ../dev; ./build
+
+echo ""
 echo "building shell commands"
 cd ../bin; ./build
 
@@ -23,8 +27,10 @@ echo "building system"
 cat "vendor/zepto.min.js"   \
     "zepto.eof.txt"         \
     "vendor/ejohn-class.js" \
+    "vendor/tcl.04.aos.js"  \
     "bin/atomos-bin.js"     \
     "hx/atomos-hx.js"       \
+    "dev/atomos-dev.js"     \
     "system.js"             \
     "libsys.js"             \
   > "atomos.t.js"

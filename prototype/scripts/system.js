@@ -20,6 +20,19 @@ window.system = {
                 tree: {}
             }),
 
+            dev: new HxJSFS({
+                name: '/dev',
+                tree: {
+                    net: new HxNETDevice({
+                        name: '/dev/net'
+                    }),
+
+                    netfs: new HxNETFSDevice({
+                        name: '/dev/netfs'
+                    })
+                }
+            }),
+
             etc: new HxJSFS({
                 name: '/etc',
                 tree: {
