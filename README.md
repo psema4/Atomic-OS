@@ -9,7 +9,7 @@ Some Rights Reserved
 Legal
 =====
 
-Atomic OS is licensed under the LGPLv3 license.  For details, please see the LICENSE file.
+Version 2 of Atomic OS is licensed under the MIT license.  For details, please see the LICENSE file.
 
 Source files in the vendor directory may be distributed under another license.
 
