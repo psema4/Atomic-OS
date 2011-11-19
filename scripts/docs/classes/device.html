@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><title>process.js</title><script src="http://alexgorbatchev.com/pub/sh/current/scripts/shCore.js" type="text/javascript"></script><script src="http://alexgorbatchev.com/pub/sh/current/scripts/shBrushJScript.js" type="text/javascript"></script><link href="http://alexgorbatchev.com/pub/sh/current/styles/shCore.css" rel="stylesheet" type="text/css"><link href="http://alexgorbatchev.com/pub/sh/current/styles/shThemeDefault.css" rel="stylesheet" type="text/css"><script src="http://code.jquery.com/jquery-1.6.1.min.js" type="text/javascript"></script><script src="http://code.jquery.com/qunit/git/qunit.js" type="text/javascript"></script><link href="http://code.jquery.com/qunit/git/qunit.css" rel="stylesheet" type="text/css"><style type="text/css">#jsdog-logo                 { position: absolute; bottom: 10px; right: 20px; z-index: 1000 !important; opacity: 0.25; filter:alpha(opacity=25); }
+<!DOCTYPE html><html lang="en"><head><title>device.js</title><script src="http://alexgorbatchev.com/pub/sh/current/scripts/shCore.js" type="text/javascript"></script><script src="http://alexgorbatchev.com/pub/sh/current/scripts/shBrushJScript.js" type="text/javascript"></script><link href="http://alexgorbatchev.com/pub/sh/current/styles/shCore.css" rel="stylesheet" type="text/css"><link href="http://alexgorbatchev.com/pub/sh/current/styles/shThemeDefault.css" rel="stylesheet" type="text/css"><script src="http://code.jquery.com/jquery-1.6.1.min.js" type="text/javascript"></script><script src="http://code.jquery.com/qunit/git/qunit.js" type="text/javascript"></script><link href="http://code.jquery.com/qunit/git/qunit.css" rel="stylesheet" type="text/css"><style type="text/css">#jsdog-logo                 { position: absolute; bottom: 10px; right: 20px; z-index: 1000 !important; opacity: 0.25; filter:alpha(opacity=25); }
 #ctx-container              { position: absolute; top: 0px; left: 0px; right: 0px; height: 32px; background-color: #eee; border: 1px dotted #ddd; text-align: right; }
 #ctx-container button       { height: 30px; padding-top: 1px; padding-bottom: 1px; }
 #ctx-container a, a:active, a:visited { color: #00f; text-decoration: none; }
@@ -41,41 +41,27 @@ ol.throws li:last-child     { border-bottom: 0px solid #000; }
 .syntaxhighlighter          { position: absolute !important; top: 0px; left: 0px; right: 0px; bottom: 0px; }
 #footer                     { display: inline-block; margin-top: 0em; margin-left: 0em; border-top: 1px solid #ccc; min-width: 750px; font-style: italic; font-weight: bold; color: #fff; background-color: #aaa; padding: 0.5em; padding-left: 1.25em; }
 
-</style><script src="../../atomos.t.js"></script><script type="text/javascript">/* process.js
+</style><script src="../../atomos.t.js"></script><script type="text/javascript">/* device.js
  *
- * ++[black[Atomic OS Class: HxProcess]++
- *
- * A simple object to represent a "process"
+ * ++[black[Atomic OS Class: HxDevice]++
  *
  * @author Scott Elcomb <psema4@gmail.com (http://www.psema4.com)
  * @version 2.0.0
  */
 
-var HxProcess = HxClass.extend({
+var HxDevice = HxStream.extend({
     /* @constructor
      * @method init
-     * Extends <a href="class.html">HxClass</a>
+     * Extends <a href="stream.html">HxStream</a>
      *
-     * Creates three streams per process: STDIN, STDOUT, and STDERR
+     * Represents an input and/or output device in an Atomic OS system
      * @param {Object} opts Options dictionary
      */
+
     init: function(opts) {
-        opts = opts || {};
-        this.name = opts.name || HxGUID.next();
-
         this._super(opts);
-
-        // default file descriptors; TODO: processes should push file references or temporary files here
-        this.fd = [
-            new HxStream({}),
-            new HxStream({}),
-            new HxStream({})
-        ];
-
-        system.lib.registerProcess(this);
     }
 });
-
 
 
 
@@ -108,64 +94,48 @@ $(document).ready(function() {
   show('docs');  
   SyntaxHighlighter.all();  
   
-  module("HxProcess");
+  module("HxDevice");
 test("load", function() {
-    var myProcess = new HxProcess();
-    ok(myProcess instanceof HxProcess, "new HxProcess");
+    var myDevice = new HxDevice();
+    ok(myDevice instanceof HxDevice, "new HxDevice");
 });
 
 
 });
 
-</script></head><body><div id="ctx-container"><button onclick="show('docs');">Documentation</button><button onclick="show('tests');">Unit Tests</button><button onclick="show('codes');">Source Code</button></div><div id="doc-container" style="display: none;"><div id="block0" class="block"><p style="color: #777;">process.js<br />
+</script></head><body><div id="ctx-container"><button onclick="show('docs');">Documentation</button><button onclick="show('tests');">Unit Tests</button><button onclick="show('codes');">Source Code</button></div><div id="doc-container" style="display: none;"><div id="block0" class="block"><p style="color: #777;">device.js<br />
 <br />
-<span style="font-size: x-large;"><span style="color: black;">Atomic&nbsp;OS&nbsp;Class:&nbsp;HxProcess</span></span><br />
-<br />
-A simple object to represent a "process"<br />
+<span style="font-size: x-large;"><span style="color: black;">Atomic&nbsp;OS&nbsp;Class:&nbsp;HxDevice</span></span><br />
 <br />
 </p><p><b>Author: &nbsp;</b>Scott Elcomb &lt;psema4-at-gmail-dot-com (<a href="http://www.psema4.com)">http://www.psema4.com)</a>
 </p><p><b>Version: &nbsp;</b>2.0.0
-</p></div><div id="block1" class="block"><b style="font-size: 20pt;">init&nbsp;-&nbsp;</b><i>    init: function(opts) </i><b style="color: green; font-variant: small-caps;">Constructor</b><p style="color: #777;">Extends <a href="class.html">HxClass</a><br />
+</p></div><div id="block1" class="block"><b style="font-size: 20pt;">init&nbsp;-&nbsp;</b><i>    init: function(opts) </i><b style="color: green; font-variant: small-caps;">Constructor</b><p style="color: #777;">Extends <a href="stream.html">HxStream</a><br />
 <br />
-Creates three streams per process: STDIN, STDOUT, and STDERR<br />
+Represents an input and/or output device in an Atomic OS system<br />
 </p><br><span>Parameters:</span><ol class="params"><li><i>Object</i>&nbsp;
 <b>opts</b>&nbsp;
 Options dictionary
 </li></ol></div><div id="footer"><p>Generated by&nbsp;<a href="http://github.com/psema4/jsdog">JSDog</a>&nbsp;in about 0.003 seconds
-</p></div></div><div id="test-container" style="display: none;"><h1 id="qunit-header">process.js</h1><h2 id="qunit-banner"></h2><h2 id="qunit-userAgent"></h2><ol id="qunit-tests"></ol></div><div id="src-container" style="display: none;"><pre class="brush: js">/* process.js
+</p></div></div><div id="test-container" style="display: none;"><h1 id="qunit-header">device.js</h1><h2 id="qunit-banner"></h2><h2 id="qunit-userAgent"></h2><ol id="qunit-tests"></ol></div><div id="src-container" style="display: none;"><pre class="brush: js">/* device.js
  *
- * ++[black[Atomic OS Class: HxProcess]++
- *
- * A simple object to represent a &quot;process&quot;
+ * ++[black[Atomic OS Class: HxDevice]++
  *
  * @author Scott Elcomb &lt;psema4@gmail.com (http://www.psema4.com)
  * @version 2.0.0
  */
 
-var HxProcess = HxClass.extend({
+var HxDevice = HxStream.extend({
     /* @constructor
      * @method init
-     * Extends &lt;a href=&quot;class.html&quot;&gt;HxClass&lt;/a&gt;
+     * Extends &lt;a href=&quot;stream.html&quot;&gt;HxStream&lt;/a&gt;
      *
-     * Creates three streams per process: STDIN, STDOUT, and STDERR
+     * Represents an input and/or output device in an Atomic OS system
      * @param {Object} opts Options dictionary
      */
+
     init: function(opts) {
-        opts = opts || {};
-        this.name = opts.name || HxGUID.next();
-
         this._super(opts);
-
-        // default file descriptors; TODO: processes should push file references or temporary files here
-        this.fd = [
-            new HxStream({}),
-            new HxStream({}),
-            new HxStream({})
-        ];
-
-        system.lib.registerProcess(this);
     }
 });
-
 
 </pre></div><img id="jsdog-logo" src="data:image/gif;base64,R0lGODlhAQABAIAAAP///////yH+EUNyZWF0ZWQgd2l0aCBHSU1QACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="></body></html>
