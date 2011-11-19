@@ -35,6 +35,7 @@ then
     $DOCNGN $DOCTMPL -s bus.js     -t t/bus.js     > $DOCDIR/bus.html
     $DOCNGN $DOCTMPL -s stream.js  -t t/stream.js  > $DOCDIR/stream.html
     $DOCNGN $DOCTMPL -s file.js    -t t/file.js    > $DOCDIR/file.html
+    $DOCNGN $DOCTMPL -s device.js  -t t/device.js  > $DOCDIR/device.html
     $DOCNGN $DOCTMPL -s jsfs.js    -t t/jsfs.js    > $DOCDIR/jsfs.html
     $DOCNGN $DOCTMPL -s domfs.js   -t t/domfs.js   > $DOCDIR/domfs.html
     $DOCNGN $DOCTMPL -s process.js -t t/process.js > $DOCDIR/process.html

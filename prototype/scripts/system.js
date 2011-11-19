@@ -24,11 +24,10 @@ window.system = {
                 name: '/dev',
                 tree: {
                     net: new HxNETDevice({
-                        name: '/dev/net'
-                    }),
-
-                    netfs: new HxNETFSDevice({
-                        name: '/dev/netfs'
+                        name: '/dev/net',
+//                        url: 'http://localhost/cgi-bin/aos-2/netdevice.cgi',
+                        url: 'net-example/netdevice.php',
+                        pollRate: 60000
                     })
                 }
             }),

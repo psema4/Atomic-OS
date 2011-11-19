@@ -2,19 +2,35 @@
  *
  * ++[black[Atomic OS Class: Network Device]++
  *
- * Requires socket.io server
+ * See Atomic-OS/prototype/net-example/netdevice.* for basic API examples in perl &amp; php
+ * FIXME: Provide a PHP version, netdevice.php
+ *
+ * &nbsp; cmd: 'file'
+ * &nbsp; subcmd: one of 'read', 'write', 'append', 'create', 'delete'
+ *
+ * Example read:
+ * &nbsp; &nbsp; fileActionObj = {
+ * &nbsp; &nbsp; &nbsp; &nbsp; cmd: 'file',
+ * &nbsp; &nbsp; &nbsp; &nbsp; subcmd: 'read',
+ * &nbsp; &nbsp; &nbsp; &nbsp; path: '/test-file'
+ * &nbsp; &nbsp; };
+ *
+ * Example write:
+ * &nbsp; &nbsp; fileActionObj = {
+ * &nbsp; &nbsp; &nbsp; &nbsp; cmd: 'file',
+ * &nbsp; &nbsp; &nbsp; &nbsp; subcmd: 'read',
+ * &nbsp; &nbsp; &nbsp; &nbsp; path: '/test-file',
+ * &nbsp; &nbsp; &nbsp; &nbsp; buffer: 'Hello, World!'
+ * &nbsp; &nbsp; };
+ *
+ * &nbsp; &nbsp; system.fs.tree.dev.tree.net.send(fileActionObj, function(response) {
+ * &nbsp; &nbsp; &nbsp; &nbsp; // response is a json oject (text in .data)
+ * &nbsp; &nbsp; &nbsp; &nbsp; console.dir(response);
+ * &nbsp; &nbsp; });
  *
  * @author Scott Elcomb <psema4@gmail.com (http://www.psema4.com)
  * @version 2.0.0
  */
-
-if (! window.io) {
-    console.warn('socket.io loading failed. faking support for network device')
-
-    window.io = {
-        connect: function() {}
-    };
-}
 
 var HxNETDevice = HxDevice.extend({
     /* @constructor
@@ -27,34 +43,49 @@ var HxNETDevice = HxDevice.extend({
 
     init: function(opts) {
         this.url = opts.url || '';
+        this.pollRate = opts.pollRate || 0;
         this.buffer = '';
         this._super(opts);
-//        this.socket = io.connect('http://localhost:3734');
-//        this.socket.on('notify', this.write);
-    }//,
 
-//    send: function(method, data) {
-//      socket.emit(method, { data: data });
-//    }
-});
-/* dev/netfs.js
- *
- * ++[black[Atomic OS Class: Network Filesystem Device]++
- *
- * @author Scott Elcomb <psema4@gmail.com (http://www.psema4.com)
- * @version 2.0.0
- */
+        var self = this;
 
-var HxNETFSDevice = HxNETDevice.extend({
-    /* @constructor
-     * @method init
-     * Extends <a href="net.html">HxNETFSDevice</a>
-     *
-     * Represents a network device for access to a hosted filesystem in Atomic OS
-     * @param {Object} opts Options dictionary
-     */
+        if (this.url != '' && this.pollRate > 999) { // throttle minimum 1 second between checks
+            setTimeout(function(o) {
+                o.poll();
+            }, this.pollRate, this);
+        }
+    },
 
-    init: function(opts) {
-        this._super(opts);
+    send: function(data, fn) {
+        $.ajax({
+            url: this.url,
+            type: 'POST',
+            data: data,
+            success: fn,
+            error: this.error
+        });
+    },
+
+    poll: function() {
+        console.warn('HxNETDevice polling');
+
+        var pollCommand = {
+            cmd: 'time',
+            data: ''
+        };
+
+        this.send(pollCommand, function(data) {
+            console.warn('HxNETDevice received: ' + data);
+        });
+
+        if (this.url != '' && this.pollRate > 999) { // throttle minimum 1 second between checks
+            setTimeout(function(o) {
+                o.poll();
+            }, this.pollRate, this);
+        }
+    },
+
+    error: function(xhr) {
+        console.warn('HxNETDevice: Error: ' + xhr.statusText + ' [' + xhr.status + ']');
     }
 });

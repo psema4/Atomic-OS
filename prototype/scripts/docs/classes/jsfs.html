@@ -233,37 +233,44 @@ var HxJSFS = HxStream.extend({
     },
 
     /* @method getFolder
-     * @param {String} path Path to the desired folder
+     * @param {String} path Absolute path to the desired folder
      * @returns {HxJSFS} false if not found, otherwise an HxJSFS object (or subclass)
      */
 
     getFolder: function(path) {
             if (path == '/') return system.fs;
+            path = path.replace(/\/$/, ''); // trim trailing slash if present
 
-            path = path.replace(/\/$/, ''); // trim trailing slash
-
-            var fspath = 'system.fs',
+            var folderObj,
+                fspath = 'system.fs', //FIXME: figure out path to 'this' for relatve paths
                 newpath = '',
                 pathParts = path.split('/');
 
-            // create a js path
+            // create string representation of the javascript object we're going to want
             if (pathParts.length > 1) {
                 pathParts.shift();
 
                 for (var i=0; i<pathParts.length; i++) {
-                    newpath += '.tree.' + pathParts[i];
+                    if (pathParts[i].match(/-/)) { // deal with GUID names
+                        newpath += '.tree["' + pathParts[i] + '"]';
+
+                    } else {
+                        newpath += '.tree.' + pathParts[i]; // natural names
+                    }
                 }
             }
             fspath += newpath;
 
+            // try to access and return it if successful
             try {
-                var o = eval(fspath);
-                return o ? o : false;
+                folderObj = eval(fspath);
 
             } catch(e) {
-                console.warn('fs exception: fs object does not exist');
+                console.warn('HxJSFS.getFolder: js exception: ' + e);
                 return false;
             }
+
+            return folderObj ? folderObj : false;
     },
 
     /* @method mount
@@ -281,12 +288,12 @@ var HxJSFS = HxStream.extend({
     /* @method addChildFolder
      * Creates a named subfolder
      * @param {String} name Name of subfolder
-     * @returns {Bool} true on success
+     * @returns {Mixed} subfolder on success, false on failure
      */
 
     addChildFolder: function(name) {
         this.tree[name] = new HxJSFS({});
-        return (this.tree[name] instanceof HxJSFS);
+        return (this.tree[name] instanceof HxJSFS) ? this.tree[name] : false;
     },
 
     /* @method removeChildFolder
@@ -305,14 +312,17 @@ var HxJSFS = HxStream.extend({
     /* @method addFile
      * Create an empty HxFile
      * @param {String} name Name of file to create
-     * @returns {Bool} true on success
+     * @param {String} buf Initial contents of the file
+     * @returns {Mixed} file on success, false on failure
      */
 
-    addFile: function(name) {
+    addFile: function(name, buf) {
+        buf = buf || '';
         this.tree[name] = new HxFile({
-            name: name
+            name: name,
+            buffer: buf
         });
-        return (this.tree[name] instanceof HxFile);
+        return (this.tree[name] instanceof HxFile) ? this.tree[name] : false;
     },
 
     /* @method removeFile
@@ -441,7 +451,7 @@ Append to file if true
 true on success
 </li></ol></div><div id="block10" class="block"><b style="font-size: 20pt;">getFolder&nbsp;-&nbsp;</b><i>    getFolder: function(path) </i><p style="color: #777;"></p><br><span>Parameters:</span><ol class="params"><li><i>String</i>&nbsp;
 <b>path</b>&nbsp;
-Path to the desired folder
+Absolute path to the desired folder
 </li></ol><br><span>Returns:</span><ol class="returns"><li><i>HxJSFS</i>&nbsp;
 false if not found, otherwise an HxJSFS object (or subclass)
 </li></ol></div><div id="block11" class="block"><b style="font-size: 20pt;">mount&nbsp;-&nbsp;</b><i>    mount: function(path, fs) </i><p style="color: #777;">Attach an HxJSFS (or subclass) tree to a node<br />
@@ -455,27 +465,30 @@ The HxJSFS file system to mount
 </p><br><span>Parameters:</span><ol class="params"><li><i>String</i>&nbsp;
 <b>name</b>&nbsp;
 Name of subfolder
-</li></ol><br><span>Returns:</span><ol class="returns"><li><i>Bool</i>&nbsp;
-true on success
+</li></ol><br><span>Returns:</span><ol class="returns"><li><i>Mixed</i>&nbsp;
+subfolder on success, false on failure
 </li></ol></div><div id="block13" class="block"><b style="font-size: 20pt;">removeChildFolder&nbsp;-&nbsp;</b><i>    removeChildFolder: function(name) </i><p style="color: #777;">Remove a named subfolder<br />
 </p><br><span>Parameters:</span><ol class="params"><li><i>String</i>&nbsp;
 <b>name</b>&nbsp;
 Name of subfolder to delete
 </li></ol><br><span>Returns:</span><ol class="returns"><li><i>Bool</i>&nbsp;
 true on success
-</li></ol></div><div id="block14" class="block"><b style="font-size: 20pt;">addFile&nbsp;-&nbsp;</b><i>    addFile: function(name) </i><p style="color: #777;">Create an empty HxFile<br />
+</li></ol></div><div id="block14" class="block"><b style="font-size: 20pt;">addFile&nbsp;-&nbsp;</b><i>    addFile: function(name, buf) </i><p style="color: #777;">Create an empty HxFile<br />
 </p><br><span>Parameters:</span><ol class="params"><li><i>String</i>&nbsp;
 <b>name</b>&nbsp;
 Name of file to create
-</li></ol><br><span>Returns:</span><ol class="returns"><li><i>Bool</i>&nbsp;
-true on success
+</li><li><i>String</i>&nbsp;
+<b>buf</b>&nbsp;
+Initial contents of the file
+</li></ol><br><span>Returns:</span><ol class="returns"><li><i>Mixed</i>&nbsp;
+file on success, false on failure
 </li></ol></div><div id="block15" class="block"><b style="font-size: 20pt;">removeFile&nbsp;-&nbsp;</b><i>    removeFile: function(name) </i><p style="color: #777;">Delete a named file<br />
 </p><br><span>Parameters:</span><ol class="params"><li><i>String</i>&nbsp;
 <b>name</b>&nbsp;
 Name of file to delete
 </li></ol><br><span>Returns:</span><ol class="returns"><li><i>Bool</i>&nbsp;
 true on success
-</li></ol></div><div id="footer"><p>Generated by&nbsp;<a href="http://github.com/psema4/jsdog">JSDog</a>&nbsp;in about 0.004 seconds
+</li></ol></div><div id="footer"><p>Generated by&nbsp;<a href="http://github.com/psema4/jsdog">JSDog</a>&nbsp;in about 0.005 seconds
 </p></div></div><div id="test-container" style="display: none;"><h1 id="qunit-header">jsfs.js</h1><h2 id="qunit-banner"></h2><h2 id="qunit-userAgent"></h2><ol id="qunit-tests"></ol></div><div id="src-container" style="display: none;"><pre class="brush: js">/* jsfs.js
  *
  * ++[black[Atomic OS Class: HxJSFS]++
@@ -668,37 +681,44 @@ var HxJSFS = HxStream.extend({
     },
 
     /* @method getFolder
-     * @param {String} path Path to the desired folder
+     * @param {String} path Absolute path to the desired folder
      * @returns {HxJSFS} false if not found, otherwise an HxJSFS object (or subclass)
      */
 
     getFolder: function(path) {
             if (path == '/') return system.fs;
+            path = path.replace(/\/$/, ''); // trim trailing slash if present
 
-            path = path.replace(/\/$/, ''); // trim trailing slash
-
-            var fspath = 'system.fs',
+            var folderObj,
+                fspath = 'system.fs', //FIXME: figure out path to 'this' for relatve paths
                 newpath = '',
                 pathParts = path.split('/');
 
-            // create a js path
+            // create string representation of the javascript object we're going to want
             if (pathParts.length &gt; 1) {
                 pathParts.shift();
 
                 for (var i=0; i&lt;pathParts.length; i++) {
-                    newpath += '.tree.' + pathParts[i];
+                    if (pathParts[i].match(/-/)) { // deal with GUID names
+                        newpath += '.tree[&quot;' + pathParts[i] + '&quot;]';
+
+                    } else {
+                        newpath += '.tree.' + pathParts[i]; // natural names
+                    }
                 }
             }
             fspath += newpath;
 
+            // try to access and return it if successful
             try {
-                var o = eval(fspath);
-                return o ? o : false;
+                folderObj = eval(fspath);
 
             } catch(e) {
-                console.warn('fs exception: fs object does not exist');
+                console.warn('HxJSFS.getFolder: js exception: ' + e);
                 return false;
             }
+
+            return folderObj ? folderObj : false;
     },
 
     /* @method mount
@@ -716,12 +736,12 @@ var HxJSFS = HxStream.extend({
     /* @method addChildFolder
      * Creates a named subfolder
      * @param {String} name Name of subfolder
-     * @returns {Bool} true on success
+     * @returns {Mixed} subfolder on success, false on failure
      */
 
     addChildFolder: function(name) {
         this.tree[name] = new HxJSFS({});
-        return (this.tree[name] instanceof HxJSFS);
+        return (this.tree[name] instanceof HxJSFS) ? this.tree[name] : false;
     },
 
     /* @method removeChildFolder
@@ -740,14 +760,17 @@ var HxJSFS = HxStream.extend({
     /* @method addFile
      * Create an empty HxFile
      * @param {String} name Name of file to create
-     * @returns {Bool} true on success
+     * @param {String} buf Initial contents of the file
+     * @returns {Mixed} file on success, false on failure
      */
 
-    addFile: function(name) {
+    addFile: function(name, buf) {
+        buf = buf || '';
         this.tree[name] = new HxFile({
-            name: name
+            name: name,
+            buffer: buf
         });
-        return (this.tree[name] instanceof HxFile);
+        return (this.tree[name] instanceof HxFile) ? this.tree[name] : false;
     },
 
     /* @method removeFile

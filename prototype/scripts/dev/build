@@ -2,7 +2,6 @@
 
 echo "- merging device files"
 cat "net.js"              \
-    "netfs.js"            \
   > "atomos-dev.js"
 
 #docs
@@ -16,7 +15,6 @@ then
     DOCTMPL="-m ../docs/jsdog.jade"
 
     $DOCNGN $DOCTMPL -s net.js         -t t/net.js         > $DOCDIR/net.html
-    $DOCNGN $DOCTMPL -s netfs.js       -t t/netfs.js       > $DOCDIR/netfs.html
 
 else
     echo "  - skipping documentation and unit tests"
