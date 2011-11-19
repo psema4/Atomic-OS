@@ -3844,7 +3844,6 @@ var HxDocWindow = HxWindow.extend({
  * ++[black[Atomic OS Class: Network Device]++
  *
  * See Atomic-OS/prototype/net-example/netdevice.* for basic API examples in perl &amp; php
- * FIXME: Provide a PHP version, netdevice.php
  *
  * &nbsp; cmd: 'file'
  * &nbsp; subcmd: one of 'read', 'write', 'append', 'create', 'delete'
@@ -3859,7 +3858,7 @@ var HxDocWindow = HxWindow.extend({
  * Example write:
  * &nbsp; &nbsp; fileActionObj = {
  * &nbsp; &nbsp; &nbsp; &nbsp; cmd: 'file',
- * &nbsp; &nbsp; &nbsp; &nbsp; subcmd: 'read',
+ * &nbsp; &nbsp; &nbsp; &nbsp; subcmd: 'write',
  * &nbsp; &nbsp; &nbsp; &nbsp; path: '/test-file',
  * &nbsp; &nbsp; &nbsp; &nbsp; buffer: 'Hello, World!'
  * &nbsp; &nbsp; };
@@ -3897,6 +3896,13 @@ var HxNETDevice = HxDevice.extend({
         }
     },
 
+    /* @method send
+     *
+     * Send a request to the server-side component of netdevice
+     *
+     * @param {Object} data An action to run, including at least cmd.  File operations also require at least subcmd &amp; path properties (writes also require a buffer property)
+     */
+
     send: function(data, fn) {
         $.ajax({
             url: this.url,
@@ -3907,12 +3913,14 @@ var HxNETDevice = HxDevice.extend({
         });
     },
 
+    /* @method poll
+     * Periodically send a command to the server
+     */
     poll: function() {
         console.warn('HxNETDevice polling');
 
         var pollCommand = {
-            cmd: 'time',
-            data: ''
+            cmd: 'time'
         };
 
         this.send(pollCommand, function(data) {
@@ -3926,6 +3934,12 @@ var HxNETDevice = HxDevice.extend({
         }
     },
 
+    /* @method error
+     *
+     * Handle server errors
+     *
+     * @param {XhrObj} the originating XML HTTP Request object
+     */
     error: function(xhr) {
         console.warn('HxNETDevice: Error: ' + xhr.statusText + ' [' + xhr.status + ']');
     }
