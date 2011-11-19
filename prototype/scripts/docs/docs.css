@@ -7,6 +7,7 @@
 
 body {
     background-color: #fff;
+    padding: 10px;
 }
 
 h1 {
@@ -83,4 +84,12 @@ h1 a:hover {
 
 .fail {
     color: #a00;
+}
+
+pre {
+    margin: 5px;
+    padding: 0.25em;
+    background-color: #eee;
+    font-family: Courier;
+    overflow: auto;
 }

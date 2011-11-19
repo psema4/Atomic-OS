@@ -40,6 +40,7 @@ then
     $DOCNGN $DOCTMPL -s pwd.js       -t t/pwd.js       > $DOCDIR/pwd.html
     $DOCNGN $DOCTMPL -s rmdir.js     -t t/rmdir.js     > $DOCDIR/rmdir.html
     $DOCNGN $DOCTMPL -s rm.js        -t t/rm.js        > $DOCDIR/rm.html
+    $DOCNGN $DOCTMPL -s tcl.js       -t t/tcl.js       > $DOCDIR/tcl.html
     $DOCNGN $DOCTMPL -s touch.js     -t t/touch.js     > $DOCDIR/touch.html
     $DOCNGN $DOCTMPL -s wallpaper.js -t t/wallpaper.js > $DOCDIR/wallpaper.html
 

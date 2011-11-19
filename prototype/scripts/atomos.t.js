@@ -1,3 +1,126 @@
+// firebug-compatible dummy console for browsers without one
+// api derived from http://getfirebug.com/wiki/index.php/Console_API
+if (typeof window.console == 'undefined') {
+    window.console = {
+        _buf: [],
+        _max: 1000,
+
+        //non-standard, renders internal buffer to specified dom element
+        render: function(domTarget, newline) { // domTarget should be an ID (not selector)
+            var buf = '';
+            newline = newline || "\n";
+
+            for (var i=0; i<this._buf.length; i++) {
+                buf += this._buf[i] + newline;
+            }
+
+            var elTarget = document.getElementById(domTarget);
+            var elTagName = elTarget.tagName;
+            var method;
+
+            switch (elTagName.toLowerCase()) {
+                case 'textarea':
+                case 'input':
+                    method = 'value';
+                    break;
+
+                case 'div':
+                case 'p':
+                default:
+                    method = 'innerHTML';
+            }
+
+            elTarget[method] = buf;
+        },
+
+        log: function() {
+            var objects = arguments;
+
+            for (var i=0; i<objects.length; i++) {
+                this._buf.push(objects[i].toString());
+            }
+
+            if (this._buf.length > this._max) this._buf.shift();
+        },
+
+        debug: function() {
+            var objects = arguments;
+            this.log(objects);
+        },
+
+        info: function() {
+            var objects = arguments;
+            this.log(objects);
+        },
+
+        warn: function() {
+            var objects = arguments;
+            this.log(objects);
+        },
+
+        error: function() {
+            var objects = arguments;
+            this.log(objects);
+        },
+
+        assert: function() {
+            var expression = arguments.shift();
+            var objects = arguments;
+        },
+
+        clear: function() {
+            this._buf = [];
+        },
+
+        dir: function(obj) {
+            this.log(typeof obj);
+
+            for (var p in obj) {
+                this.log(p + ': ' + obj[p]);
+            }
+        },
+
+        dirxml: function(node) {
+        },
+
+        trace: function() {
+        },
+
+        group: function() {
+            var objects = arguments;
+        },
+
+        groupCollapsed: function() {
+            var objects = arguments;
+        },
+
+        groupEnd: function() {
+        },
+
+        time: function(name) {
+        },
+
+        timeEnd: function(name) {
+        },
+
+        profile: function(title) { // title optional
+        },
+
+        profileEnd: function() {
+        },
+
+        count: function(title) { // title optional
+        },
+
+        exception: function() {
+            var errobj = arguments.shift();
+            var objects = arguments;
+        },
+
+        table: function(data, columns) { // columns optional
+        } 
+    };
+}
 //     Zepto.js
 //     (c) 2010, 2011 Thomas Fuchs
 //     Zepto.js may be freely distributed under the MIT license.
@@ -1398,1061 +1521,6 @@ function TclParser(text) {
         this.cur = this.text.charAt(this.index);
     }
 } //END TclParser()
-/* cat.js
- *
- * Atomic OS WASH command
- *
- * Echo file contents to stdout
- *
- * @author Scott Elcomb <psema4@gmail.com (http://www.psema4.com)
- * @version 2.0.0
- */
-
-window.system = window.system || {};
-system.bin = system.bin || {};
-
-/* Dummy constructor
- *
- * Access programmatically via system.bin.cat.!!methodName!!
- * @constructor
- */
-
-system.bin.cat = {
-    /* @method help
-     * @returns {string} Returns a simple string synopsis for this command
-     *
-     * Simple synopsis on this command, used by the <a href="help.html">help command</a>
-     */
-
-    help: function() {
-        return "Echo file contents to stdout\n\n  Usage: cat [filepath]";
-    },
-
-    /* @method exec
-     * @param {Array} args A list of arguments the command was called with
-     * Executes command with args. The calling HxProcess is available as **this** and it's first 3 file descriptors are stdin, stdout, and stderr respectively.
-     * For example, to echo text to stdout: **this.fd[1].write('foobar');**
-     */
-
-    exec: function(args) {
-        var stdin  = (this.fd && this.fd.length > 0) ? this.fd[0] : false;
-        var stdout = (this.fd && this.fd.length > 1) ? this.fd[1] : false;
-        var stderr = (this.fd && this.fd.length > 2) ? this.fd[2] : false;
-
-        try {
-            var path = (args instanceof Array) ? args.shift() : args;
-            path = (path.match(/^\//)) ? path : system.env.cwd + '/' + path;
-
-            var buf = system.fs.readFile(path);
-
-            if (buf) {
-                if (stdout) stdout.write(buf);
-
-            } else {
-                if (stdout) stdout.write('file "' +  path + '" not found');
-            }
-
-        } catch(e) {
-            console.log('command exception:');
-            console.dir(e);
-        }
-    }
-};
-/* cd.js
- *
- * Atomic OS WASH command
- *
- * Change Directory. Supports:
- *   ~ (home folder)
- *   - (last folder)
- *  .. (parent folder)
- * @author Scott Elcomb <psema4@gmail.com (http://www.psema4.com)
- * @version 2.0.0
- */
-
-window.system = window.system || {};
-system.bin = system.bin || {};
-
-/* Dummy constructor
- *
- * Access programmatically via system.bin.cd.!!methodName!!
- * @constructor
- */
-
-system.bin.cd = {
-    /* @method help
-     * @returns {string} Returns a simple string synopsis for this command
-     *
-     * Simple synopsis on this command, used by the <a href="help.html">help command</a>
-     */
-
-    help: function() {
-        return "Change Directory\n\n  Usage: cd [path]\n\nNOTE: Supports  ~ (home folder), - (last folder), and .. (parent folder)";
-    },
-
-    /* @method exec
-     * @param {Array} args A list of arguments the command was called with
-     * Executes command with args. The calling HxProcess is available as **this** and it's first 3 file descriptors are stdin, stdout, and stderr respectively.
-     * For example, to echo text to stdout: **this.fd[1].write('foobar');**
-     */
-
-    exec: function(args) {
-        var stdin  = (this.fd && this.fd.length > 0) ? this.fd[0] : false;
-        var stdout = (this.fd && this.fd.length > 1) ? this.fd[1] : false;
-        var stderr = (this.fd && this.fd.length > 2) ? this.fd[2] : false;
-
-        try {
-            var path = (args instanceof Array) ? args.shift() : args;
-            var handled = false;
-
-            // preprocess path, handle 
-            if (path == '-') {               // swap current working directory with previous working directory
-                var tmp = system.env.pwd;
-                system.env.pwd = system.env.cwd;
-                system.env.cwd = tmp;
-                handled = true;
-
-            } else if (path == '~') {
-                system.env.pwd = system.env.cwd;
-                system.env.cwd = system.env.home;
-                handled = true;
-
-            } else if (path.match(/\.\./)) { // path references parent container
-
-                if (system.debug) console.warn('..: original path: ' + path);
-
-                // start at the current working directory
-                var tmppath = system.env.cwd;
-                if (system.debug) console.warn('..: cwd: ' + tmppath);
-
-                // while path references a parent directory transform the path to it's parent
-                while (path.match(/\.\./)) {
-                    path = path.replace(/\.\./, '');
-                    var parts = tmppath.split('/');
-                    parts.pop(); //FIXME: .. may not always be at beginning of path
-                    tmppath = parts.join('/');
-                }
-
-                path = path.replace(/\/\//g, '/'); // if original path ends with a slash the transformed version may contain two in a row (eg ../../ => //)
-
-                if (system.debug) {
-                    console.warn('..: result: ' + tmppath);
-                    console.warn('..: transformed path: ' + path);
-                }
-
-                path = (tmppath) ? (path == '/')                                        // if there was a result and path is the root
-                                        ? tmppath                                       //    use the result
-                                        : (path.match(/^\//)) ? tmppath + path          //    else if the path is absolute add it to our result
-                                                              : tmppath + '/' + path    //                                 else use our result and make path absolute
-                                 : '/';                                                 // else use the root folder
-                ;
-
-                path = path.replace(/\/$/, ''); // to be sure
-                if (system.debug) console.warn('..: final path: ' + path);
-            }
-
-            // if preprocessing hasn't handled the request
-            if (! handled) {
-                if (! path.match(/^\//)) {              // convert relative paths to absolute
-                    path = (system.env.cwd == '/') ? '/' + path : system.env.cwd + '/' + path;
-                }
-
-                if (system.fs.getFolder(path)) {        // confirm folder exists
-                    system.env.pwd = system.env.cwd || '/';
-                    system.env.cwd = path;
-
-                    handled = true;
-                }
-            }
-
-            // write result message to stdout
-            var message = (handled) ? system.env.cwd : 'folder "' + path + '" not found';
-            if (stdout) stdout.write(message);
-
-        } catch(e) {
-            console.log('command exception:');
-            console.dir(e);
-        }
-
-        return system.env.pwd;
-    }
-};
-/* clear.js
- *
- * Atomic OS WASH command
- *
- * Clear command console's output window
- *
- * The clear command is currently broken.  After running this command, the global wash stdout stream will no longer echo to the console window
- *
- * @author Scott Elcomb <psema4@gmail.com (http://www.psema4.com)
- * @version 2.0.0
- */
-
-window.system = window.system || {};
-system.bin = system.bin || {};
-
-/* Dummy constructor
- *
- * Access programmatically via system.bin.clear.!!methodName!!
- * @constructor
- */
-
-system.bin.clear = {
-    help: function() {
-        return "Clear command console's output window\n\n  Usage: clear\n\nNote: the clear command is currently broken.  After running this command, the global wash stdout stream will no longer echo to the console window";
-    },
-
-    /* @method exec
-     * @param {Array} args A list of arguments the command was called with
-     * Executes command with args. The calling HxProcess is available as **this** and it's first 3 file descriptors are stdin, stdout, and stderr respectively.
-     * For example, to echo text to stdout: **this.fd[1].write('foobar');**
-     */
-
-    exec: function(args) {
-        var stdin  = (this.fd && this.fd.length > 0) ? this.fd[0] : false;
-        var stdout = (this.fd && this.fd.length > 1) ? this.fd[1] : false;
-        var stderr = (this.fd && this.fd.length > 2) ? this.fd[2] : false;
-
-        try {
-            // specific to the global test console cmdWindow, see main.js
-            // FIXME: the cls() method is broken, see commandwindow.js
-            if (cmdWindow && cmdWindow.cls) cmdWindow.cls();
-
-        } catch(e) {
-            console.log('command exception:');
-            console.dir(e);
-        }
-    }
-};
-/* commands.js
- *
- * Atomic OS WASH command
- *
- * List available commands from /bin to stdout
- *
- * @author Scott Elcomb <psema4@gmail.com (http://www.psema4.com)
- * @version 2.0.0
- */
-
-window.system = window.system || {};
-system.bin = system.bin || {};
-
-/* Dummy constructor
- *
- * Access programmatically via system.bin.commands.!!methodName!!
- * @constructor
- */
-
-system.bin.commands = {
-    /* @method help
-     * @returns {string} Returns a simple string synopsis for this command
-     *
-     * Simple synopsis on this command, used by the <a href="help.html">help command</a>
-     */
-
-    help: function() {
-        return "List available commands from /bin to stdout\n\n  Usage: commands";
-    },
-
-    /* @method exec
-     * @param {Array} args A list of arguments the command was called with
-     * Executes command with args. The calling HxProcess is available as **this** and it's first 3 file descriptors are stdin, stdout, and stderr respectively.
-     * For example, to echo text to stdout: **this.fd[1].write('foobar');**
-     */
-
-    exec: function(args) {
-        // 'this' is the calling process
-
-        var stdin  = (this.fd && this.fd.length > 0) ? this.fd[0] : false;
-        var stdout = (this.fd && this.fd.length > 1) ? this.fd[1] : false;
-        var stderr = (this.fd && this.fd.length > 2) ? this.fd[2] : false;
-
-        try {
-
-            wash("ls /bin");
-
-        } catch(e) {
-            if (stderr) {
-                stderr.write('command exception: ' + e);
-
-            } else {
-                console.log('command exception:');
-                console.dir(e);
-            }
-        }
-    }
-};
-/* echo.js
- *
- * Atomic OS WASH command
- *
- * Echo string to stdout
- *
- * @author Scott Elcomb <psema4@gmail.com (http://www.psema4.com)
- * @version 2.0.0
- */
-
-window.system = window.system || {};
-system.bin = system.bin || {};
-
-/* Dummy constructor
- *
- * Access programmatically via system.bin.echo.!!methodName!!
- * @constructor
- */
-system.bin.echo = {
-    /* @method help
-     * @returns {string} Returns a simple string synopsis for this command
-     *
-     * Simple synopsis on this command, used by the <a href="help.html">help command</a>
-     */
-    help: function() {
-        return "Echo string to stdout\n\n  Usage: echo [string]";
-    },
-
-    /* @method exec
-     * @param {Array} args A list of arguments the command was called with
-     * Executes command with args. The calling HxProcess is available as **this** and it's first 3 file descriptors are stdin, stdout, and stderr respectively.
-     * For example, to echo text to stdout: **this.fd[1].write('foobar');**
-     */
-    exec: function(args) {
-        var debug = false;
-        // 'this' is the calling process
-
-        var stdin  = (this.fd && this.fd.length > 0) ? this.fd[0] : false;
-        var stdout = (this.fd && this.fd.length > 1) ? this.fd[1] : false;
-        var stderr = (this.fd && this.fd.length > 2) ? this.fd[2] : false;
-
-        try {
-            var message = (args instanceof Array) ? message = args.join(' ') : args;
-
-            if (stdout) {
-                stdout.write(message);
-            } else {
-                console.log(message);
-            }
-
-            // test stderr
-            if (debug && stderr) throw new Error('fake error');
-
-        } catch(e) {
-            if (stderr) {
-                stderr.write('command exception: ' + e);
-
-            } else {
-                console.log('command exception:');
-                console.dir(e);
-            }
-        }
-    }
-};
-/* edit.js
- *
- * Atomic OS WASH command
- *
- * Edit file in File Editor
- *
- * This command is currently tied to the temporary File Editor window
- *
- * @author Scott Elcomb <psema4@gmail.com (http://www.psema4.com)
- * @version 2.0.0
- */
-
-window.system = window.system || {};
-system.bin = system.bin || {};
-
-/* Dummy constructor
- *
- * Access programmatically via system.bin.edit.!!methodName!!
- * @constructor
- */
-
-system.bin.edit = {
-    /* @method help
-     * @returns {string} Returns a simple string synopsis for this command
-     *
-     * Simple synopsis on this command, used by the <a href="help.html">help command</a>
-     */
-
-    help: function() {
-        return "Edit file in File Editor\n\n  Usage: edit [filepath]\n\nNOTE: This command is currently tied to the temporary File Editor window.";
-    },
-
-    /* @method exec
-     * @param {Array} args A list of arguments the command was called with
-     * Executes command with args. The calling HxProcess is available as **this** and it's first 3 file descriptors are stdin, stdout, and stderr respectively.
-     * For example, to echo text to stdout: **this.fd[1].write('foobar');**
-     */
-
-    exec: function(args) {
-        // 'this' is the calling process
-
-        var stdin  = (this.fd && this.fd.length > 0) ? this.fd[0] : false;
-        var stdout = (this.fd && this.fd.length > 1) ? this.fd[1] : false;
-        var stderr = (this.fd && this.fd.length > 2) ? this.fd[2] : false;
-
-        try {
-            var filepath = args[0];
-            if (editWindow) {
-                $('#' + editWindow.name + '-filename').val(filepath);
-                editWindow.load(filepath);
-            }
-
-        } catch(e) {
-            if (stderr) {
-                stderr.write('command exception: ' + e);
-
-            } else {
-                console.log('command exception:');
-                console.dir(e);
-            }
-        }
-    }
-};
-/* help.js
- *
- * Atomic OS WASH command
- *
- * Simple help utility
- *
- * @author Scott Elcomb <psema4@gmail.com (http://www.psema4.com)
- * @version 2.0.0
- */
-
-window.system = window.system || {};
-system.bin = system.bin || {};
-
-/* Dummy constructor
- *
- * Access programmatically via system.bin.help.!!methodName!!
- * @constructor
- */
-
-system.bin.help = {
-    /* @method help
-     * @returns {string} Returns a simple string synopsis for this command
-     *
-     * Simple synopsis on this command, used by the <a href="help.html">help command</a>
-     */
-
-    help: function() {
-        return "Simple help utility\n\n  Usage: help [command name]";
-    },
-
-    /* @method exec
-     * @param {Array} args A list of arguments the command was called with
-     * Executes command with args. The calling HxProcess is available as **this** and it's first 3 file descriptors are stdin, stdout, and stderr respectively.
-     * For example, to echo text to stdout: **this.fd[1].write('foobar');**
-     */
-
-    exec: function(args) {
-        // 'this' is the calling process
-
-        var stdin  = (this.fd && this.fd.length > 0) ? this.fd[0] : false;
-        var stdout = (this.fd && this.fd.length > 1) ? this.fd[1] : false;
-        var stderr = (this.fd && this.fd.length > 2) ? this.fd[2] : false;
-
-        try {
-            var cmd = args instanceof Array ? args[0] : 'help';
-
-            if (system.bin[cmd]) {
-                var message = 'Help not available for command "' + cmd + '"';
-
-                if (system.bin[cmd].help) message = system.bin[cmd].help();
-                if (stdout) stdout.write(message);
-            }
-
-        } catch(e) {
-            if (stderr) {
-                stderr.write('command exception: ' + e);
-
-            } else {
-                console.log('command exception:');
-                console.dir(e);
-            }
-        }
-    }
-};
-/* ls.js
- *
- * Atomic OS WASH command
- *
- * List files
- *
- * Without a path, lists the current working directory
- * With -l, lists files in a single column
- *
- * @author Scott Elcomb <psema4@gmail.com (http://www.psema4.com)
- * @version 2.0.0
- */
-
-window.system = window.system || {};
-system.bin = system.bin || {};
-
-/* Dummy constructor
- *
- * Access programmatically via system.bin.ls.!!methodName!!
- * @constructor
- */
-
-system.bin.ls = {
-    /* @method help
-     * @returns {string} Returns a simple string synopsis for this command
-     *
-     * Simple synopsis on this command, used by the <a href="help.html">help command</a>
-     */
-
-    help: function() {
-        return "List files\n\n  Usage: ls [-l] [path]\n\nWithout a path, lists the current working directory.\nWith -l, lists files in a single column.";
-    },
-
-    /* @method exec
-     * @param {Array} args A list of arguments the command was called with
-     * Executes command with args. The calling HxProcess is available as **this** and it's first 3 file descriptors are stdin, stdout, and stderr respectively.
-     * For example, to echo text to stdout: **this.fd[1].write('foobar');**
-     */
-
-    exec: function(args) {
-        // 'this' is the calling process
-
-        var stdin  = (this.fd && this.fd.length > 0) ? this.fd[0] : false;
-        var stdout = (this.fd && this.fd.length > 1) ? this.fd[1] : false;
-        var stderr = (this.fd && this.fd.length > 2) ? this.fd[2] : false;
-
-        var formatStr = function(str, len) {
-            var result = str;
-            while (result.length < len) {
-                result += " ";
-            }
-            return result;
-        };
-
-        try {
-
-            var displayType = 'wide',
-                path = system.env.cwd;
-
-            if (args instanceof Array) {
-                path = args.shift();
-
-                if (path.match(/^-l/)) {
-                    displayType = 'single';
-                    path = args.shift();
-                    if (! path) path = system.env.cwd;
-                }
-            }
-
-            var output = path + ':' + "\n";
-            if (displayType == 'wide') output += "\n";
-
-            var fspath = system.fs.getFolder(path);
-            if (fspath) {
-                var results = fspath.listFiles(); // pre-sorted by listFiles()
-
-                // figure out the longest entry
-                var len = 0;
-                for (var i=0; i<results.length; i++) {
-                    if (results[i].path.length > len) len = results[i].path.length;
-                };
-
-                var lineLength = 0;
-                for (var i=0; i<results.length; i++) {
-                    var result = results[i].path;
-                    var file = results[i].file;
-
-                    var postfix = (file && file.tree) ? '/' : '';
-
-                    switch(displayType) {
-                        case 'single':
-                            output += '  ' + result + postfix + "\n";
-                            break;
-
-                        case 'wide':
-                        default:
-                            var segment = formatStr(result + postfix, len+1) + "  ";
-                            if (lineLength > 60) {
-                                output += "\n";
-                                lineLength = 0;
-                            }
-                            lineLength += segment.length;
-                            output += segment;
-                    }
-                }
-
-                output = output.replace(/\n$/, ''); // remove trailing newline
-
-            } else {
-                output = "folder not found";
-            }
-
-            if (stdout) {
-                stdout.write(output);
-            } else {
-                console.log(output);
-            }
-
-        } catch(e) {
-            console.log('command exception:');
-            console.dir(e);
-        }
-    }
-};
-/* mkdir.js
- *
- * Atomic OS WASH command
- *
- * Make directory
- *
- * This command is currently limited to creating folders in the current directory
- *
- * @author Scott Elcomb <psema4@gmail.com (http://www.psema4.com)
- * @version 2.0.0
- */
-
-window.system = window.system || {};
-system.bin = system.bin || {};
-
-/* Dummy constructor
- *
- * Access programmatically via system.bin.mkdir.!!methodName!!
- * @constructor
- */
-system.bin.mkdir = {
-    /* @method help
-     * @returns {string} Returns a simple string synopsis for this command
-     *
-     * Simple synopsis on this command, used by the <a href="help.html">help command</a>
-     */
-    help: function() {
-        return "Make directory\n\n  Usage: mkdir [folder name]\n\nNOTE: This command is currently limited to creating folders in the current directory";
-    },
-
-    /* @method exec
-     * @param {Array} args A list of arguments the command was called with
-     * Executes command with args. The calling HxProcess is available as **this** and it's first 3 file descriptors are stdin, stdout, and stderr respectively.
-     * For example, to echo text to stdout: **this.fd[1].write('foobar');**
-     */
-    exec: function(args) {
-        // 'this' is the calling process
-
-        var stdin  = (this.fd && this.fd.length > 0) ? this.fd[0] : false;
-        var stdout = (this.fd && this.fd.length > 1) ? this.fd[1] : false;
-        var stderr = (this.fd && this.fd.length > 2) ? this.fd[2] : false;
-
-        try {
-            var result = false;
-            var folder = (args instanceof Array) ? args.shift() : args;
-            var currentFolder = system.fs.getFolder(system.env.cwd);
-
-            if (currentFolder) result = currentFolder.addChildFolder(folder);
-
-            var message = (result) ? "ok, created " : "failed to create ";
-            if (stdout) stdout.write(message + folder);
-
-        } catch(e) {
-            if (stderr) {
-                stderr.write('command exception: ' + e);
-
-            } else {
-                console.log('command exception:');
-                console.dir(e);
-            }
-        }
-    }
-};
-/* pwd.js
- *
- * Atomic OS WASH command
- *
- * Echo current working directory to stdout
- *
- * @author Scott Elcomb <psema4@gmail.com (http://www.psema4.com)
- * @version 2.0.0
- */
-
-window.system = window.system || {};
-system.bin = system.bin || {};
-
-/* Dummy constructor
- *
- * Access programmatically via system.bin.pwd.!!methodName!!
- * @constructor
- */
-
-system.bin.pwd = {
-    /* @method help
-     * @returns {string} Returns a simple string synopsis for this command
-     *
-     * Simple synopsis on this command, used by the <a href="help.html">help command</a>
-     */
-
-    help: function() {
-        return "Echo current working directory to stdout\n\n  Usage: pwd";
-    },
-
-    /* @method exec
-     * @param {Array} args A list of arguments the command was called with
-     * Executes command with args. The calling HxProcess is available as **this** and it's first 3 file descriptors are stdin, stdout, and stderr respectively.
-     * For example, to echo text to stdout: **this.fd[1].write('foobar');**
-     */
-
-    exec: function(args) {
-        var stdin  = (this.fd && this.fd.length > 0) ? this.fd[0] : false;
-        var stdout = (this.fd && this.fd.length > 1) ? this.fd[1] : false;
-        var stderr = (this.fd && this.fd.length > 2) ? this.fd[2] : false;
-
-        try {
-            if (stdout) {
-                stdout.write(system.env.cwd);
-            } else {
-                console.log(system.env.cwd);
-            }
-
-        } catch(e) {
-            console.log('command exception:');
-            console.dir(e);
-        }
-    }
-};
-/* rm.js
- *
- * Atomic OS WASH command
- *
- * Remove a file
- * 
- * This command is currently limited to removing files in the current directory
- *
- * @author Scott Elcomb <psema4@gmail.com (http://www.psema4.com)
- * @version 2.0.0
- */
-
-window.system = window.system || {};
-system.bin = system.bin || {};
-
-/* Dummy constructor
- *
- * Access programmatically via system.bin.rm.!!methodName!!
- * @constructor
- */
-
-system.bin.rm = {
-    /* @method help
-     * @returns {string} Returns a simple string synopsis for this command
-     *
-     * Simple synopsis on this command, used by the <a href="help.html">help command</a>
-     */
-
-    help: function() {
-        return "Remove a file\n\n  Usage: rm [filename]\n\nNOTE: This command is currently limited to removing files in the current directory";
-    },
-
-    /* @method exec
-     * @param {Array} args A list of arguments the command was called with
-     * Executes command with args. The calling HxProcess is available as **this** and it's first 3 file descriptors are stdin, stdout, and stderr respectively.
-     * For example, to echo text to stdout: **this.fd[1].write('foobar');**
-     */
-
-    exec: function(args) {
-        // 'this' is the calling process
-
-        var stdin  = (this.fd && this.fd.length > 0) ? this.fd[0] : false;
-        var stdout = (this.fd && this.fd.length > 1) ? this.fd[1] : false;
-        var stderr = (this.fd && this.fd.length > 2) ? this.fd[2] : false;
-
-        try {
-            var result = false;
-            var filename = (args instanceof Array) ? args.shift() : args;
-            var currentFolder = system.fs.getFolder(system.env.cwd);
-
-            if (currentFolder) result = currentFolder.removeFile(filename);
-
-            var message = (result) ? "ok, removed " : "failed to remove ";
-            if (stdout) stdout.write(message + filename);
-
-        } catch(e) {
-            if (stderr) {
-                stderr.write('command exception: ' + e);
-
-            } else {
-                console.log('command exception:');
-                console.dir(e);
-            }
-        }
-    }
-};
-/* rmdir.js
- *
- * Remove a directory
- *
- * This command is currently limited to removing folders in the current directory
- *
- * Atomic OS WASH command
- *
- * @author Scott Elcomb <psema4@gmail.com (http://www.psema4.com)
- * @version 2.0.0
- */
-
-window.system = window.system || {};
-system.bin = system.bin || {};
-
-/* Dummy constructor
- *
- * Access programmatically via system.bin.rmdir.!!methodName!!
- * @constructor
- */
-
-system.bin.rmdir = {
-    /* @method help
-     * @returns {string} Returns a simple string synopsis for this command
-     *
-     * Simple synopsis on this command, used by the <a href="help.html">help command</a>
-     */
-
-    help: function() {
-        return "Remove a directory\n\n  Usage: rmdir [folder name]\n\nNOTE: This command is currently limited to removing folders in the current directory";
-    },
-
-    /* @method exec
-     * @param {Array} args A list of arguments the command was called with
-     * Executes command with args. The calling HxProcess is available as **this** and it's first 3 file descriptors are stdin, stdout, and stderr respectively.
-     * For example, to echo text to stdout: **this.fd[1].write('foobar');**
-     */
-
-    exec: function(args) {
-        // 'this' is the calling process
-
-        var stdin  = (this.fd && this.fd.length > 0) ? this.fd[0] : false;
-        var stdout = (this.fd && this.fd.length > 1) ? this.fd[1] : false;
-        var stderr = (this.fd && this.fd.length > 2) ? this.fd[2] : false;
-
-        try {
-            var result = false;
-            var folder = (args instanceof Array) ? args.shift() : args;
-            var currentFolder = system.fs.getFolder(system.env.cwd);
-
-            if (currentFolder) result = currentFolder.removeChildFolder(folder);
-
-            var message = (result) ? "ok, removed " : "failed to remove ";
-            if (stdout) stdout.write(message + folder);
-
-        } catch(e) {
-            if (stderr) {
-                stderr.write('command exception: ' + e);
-
-            } else {
-                console.log('command exception:');
-                console.dir(e);
-            }
-        }
-    }
-};
-/* tcl.js
- *
- * Atomic OS WASH command
- *
- * Run a tcl command
- *
- * @author Scott Elcomb <psema4@gmail.com (http://www.psema4.com)
- * @version 2.0.0
- */
-
-window.system = window.system || {};
-system.bin = system.bin || {};
-
-/* Dummy constructor
- *
- * Access programmatically via system.bin.tcl.!!methodName!!
- * @constructor
- */
-system.bin.tcl = {
-    /* @method help
-     * @returns {string} Returns a simple string synopsis for this command
-     *
-     * Simple synopsis on this command, used by the <a href="help.html">help command</a>
-     */
-    help: function() {
-        return "Run a tcl command and print the result \n\n  Usage: tcl [string]";
-    },
-
-    /* @method exec
-     * @param {Array} args A list of arguments the command was called with
-     * Executes command with args. The calling HxProcess is available as **this** and it's first 3 file descriptors are stdin, stdout, and stderr respectively.
-     * For example, to tcl text to stdout: **this.fd[1].write('foobar');**
-     */
-    exec: function(args) {
-        var debug = false;
-        // 'this' is the calling process
-
-        var stdin  = (this.fd && this.fd.length > 0) ? this.fd[0] : false;
-        var stdout = (this.fd && this.fd.length > 1) ? this.fd[1] : false;
-        var stderr = (this.fd && this.fd.length > 2) ? this.fd[2] : false;
-
-        try {
-            var message = (args instanceof Array) ? message = args.join(' ') : args;
-            var filename = '', result;
-
-            if (message.match(/^< /)) {
-                filename = message.replace(/^< /, '');
-                var buf = system.fs.readFile(filename);
-                result = tcl(buf);
-
-            } else {
-                result = tcl(message);
-            }
-
-            if (result && result.content) stdout.write(result.content);
-
-        } catch(e) {
-            if (stderr) {
-                stderr.write('command exception: ' + e);
-
-            } else {
-                console.log('command exception:');
-                console.dir(e);
-            }
-        }
-
-    }
-};
-/* touch.js
- *
- * Atomic OS WASH command
- *
- * Create empty file
- *
- * This command is currently limited to creating files in the current directory
- *
- * @author Scott Elcomb <psema4@gmail.com (http://www.psema4.com)
- * @version 2.0.0
- */
-
-window.system = window.system || {};
-system.bin = system.bin || {};
-
-/* Dummy constructor
- *
- * Access programmatically via system.bin.touch.!!methodName!!
- * @constructor
- */
-
-system.bin.touch = {
-    /* @method help
-     * @returns {string} Returns a simple string synopsis for this command
-     *
-     * Simple synopsis on this command, used by the <a href="help.html">help command</a>
-     */
-
-    help: function() {
-        return "Create empty file\n\n  Usage: touch [file name]\n\nNOTE: This command is currently limited to creating files in the current directory";
-    },
-
-    /* @method exec
-     * @param {Array} args A list of arguments the command was called with
-     * Executes command with args. The calling HxProcess is available as **this** and it's first 3 file descriptors are stdin, stdout, and stderr respectively.
-     * For example, to echo text to stdout: **this.fd[1].write('foobar');**
-     */
-
-    exec: function(args) {
-        // 'this' is the calling process
-
-        var stdin  = (this.fd && this.fd.length > 0) ? this.fd[0] : false;
-        var stdout = (this.fd && this.fd.length > 1) ? this.fd[1] : false;
-        var stderr = (this.fd && this.fd.length > 2) ? this.fd[2] : false;
-
-        try {
-            var result = false;
-            var filename = (args instanceof Array) ? args.shift() : args;
-            var folder = system.env.cwd;
-
-            if (filename.match(/^\//)) {
-                folder = filename;
-                filename = system.fs.basename(folder);
-            }
-
-            var currentFolder = system.fs.getFolder(folder);
-            if (currentFolder) result = currentFolder.addFile(filename);
-
-            var message = (result) ? "ok, created " : "failed to create ";
-            if (stdout) stdout.write(message + 'file "' + filename + '"');
-
-        } catch(e) {
-            if (stderr) {
-                stderr.write('command exception: ' + e);
-
-            } else {
-                console.log('command exception:');
-                console.dir(e);
-            }
-        }
-    }
-};
-/* wallpaper.js
- *
- * Atomic OS WASH command
- *
- * Sets the desktop wallpaper
- *
- * This command can currently only add/remove one graphic [css class="bg-tile"]
- *
- * @author Scott Elcomb <psema4@gmail.com (http://www.psema4.com)
- * @version 2.0.0
- */
-
-window.system = window.system || {};
-system.bin = system.bin || {};
-
-/* Dummy constructor
- *
- * Access programmatically via system.bin.wallpaper.!!methodName!!
- * @constructor
- */
-
-system.bin.wallpaper = {
-    /* @method help
-     * @returns {string} Returns a simple string synopsis for this command
-     *
-     * Simple synopsis on this command, used by the <a href="help.html">help command</a>
-     */
-
-    help: function() {
-        return "Sets the desktop wallpaper\n\n  Usage: wallpaper\n\nThis command can currently only add/remove one graphic [css class=\"bg-tile\"]";
-    },
-
-    /* @method exec
-     * @param {Array} args A list of arguments the command was called with
-     * Executes command with args. The calling HxProcess is available as **this** and it's first 3 file descriptors are stdin, stdout, and stderr respectively.
-     * For example, to echo text to stdout: **this.fd[1].write('foobar');**
-     */
-
-    exec: function(args) {
-        // 'this' is the calling process
-
-        var stdin  = (this.fd && this.fd.length > 0) ? this.fd[0] : false;
-        var stdout = (this.fd && this.fd.length > 1) ? this.fd[1] : false;
-        var stderr = (this.fd && this.fd.length > 2) ? this.fd[2] : false;
-
-        try {
-            dObj   = system.fs.tree.mnt.tree.desktop;
-            dName  = dObj.name;
-            dEl = $('#' + dName);
-            if (dEl.hasClass('bg-tile')) {
-                dEl.removeClass('bg-tile');
-            } else {
-                dEl.addClass('bg-tile');
-            }
-
-        } catch(e) {
-            if (stderr) {
-                stderr.write('command exception: ' + e);
-
-            } else {
-                console.log('command exception:');
-                console.dir(e);
-            }
-        }
-    }
-};
 /* class.js
  *
  * ++[black[Atomic OS Class: HxClass]++
@@ -3839,6 +2907,1061 @@ var HxDocWindow = HxWindow.extend({
     }
 });
 
+/* cat.js
+ *
+ * Atomic OS WASH command
+ *
+ * Echo file contents to stdout
+ *
+ * @author Scott Elcomb <psema4@gmail.com (http://www.psema4.com)
+ * @version 2.0.0
+ */
+
+window.system = window.system || {};
+system.bin = system.bin || {};
+
+/* Dummy constructor
+ *
+ * Access programmatically via system.bin.cat.!!methodName!!
+ * @constructor
+ */
+
+system.bin.cat = {
+    /* @method help
+     * @returns {string} Returns a simple string synopsis for this command
+     *
+     * Simple synopsis on this command, used by the <a href="help.html">help command</a>
+     */
+
+    help: function() {
+        return "Echo file contents to stdout\n\n  Usage: cat [filepath]";
+    },
+
+    /* @method exec
+     * @param {Array} args A list of arguments the command was called with
+     * Executes command with args. The calling HxProcess is available as **this** and it's first 3 file descriptors are stdin, stdout, and stderr respectively.
+     * For example, to echo text to stdout: **this.fd[1].write('foobar');**
+     */
+
+    exec: function(args) {
+        var stdin  = (this.fd && this.fd.length > 0) ? this.fd[0] : false;
+        var stdout = (this.fd && this.fd.length > 1) ? this.fd[1] : false;
+        var stderr = (this.fd && this.fd.length > 2) ? this.fd[2] : false;
+
+        try {
+            var path = (args instanceof Array) ? args.shift() : args;
+            path = (path.match(/^\//)) ? path : system.env.cwd + '/' + path;
+
+            var buf = system.fs.readFile(path);
+
+            if (buf) {
+                if (stdout) stdout.write(buf);
+
+            } else {
+                if (stdout) stdout.write('file "' +  path + '" not found');
+            }
+
+        } catch(e) {
+            console.log('command exception:');
+            console.dir(e);
+        }
+    }
+};
+/* cd.js
+ *
+ * Atomic OS WASH command
+ *
+ * Change Directory. Supports:
+ *   ~ (home folder)
+ *   - (last folder)
+ *  .. (parent folder)
+ * @author Scott Elcomb <psema4@gmail.com (http://www.psema4.com)
+ * @version 2.0.0
+ */
+
+window.system = window.system || {};
+system.bin = system.bin || {};
+
+/* Dummy constructor
+ *
+ * Access programmatically via system.bin.cd.!!methodName!!
+ * @constructor
+ */
+
+system.bin.cd = {
+    /* @method help
+     * @returns {string} Returns a simple string synopsis for this command
+     *
+     * Simple synopsis on this command, used by the <a href="help.html">help command</a>
+     */
+
+    help: function() {
+        return "Change Directory\n\n  Usage: cd [path]\n\nNOTE: Supports  ~ (home folder), - (last folder), and .. (parent folder)";
+    },
+
+    /* @method exec
+     * @param {Array} args A list of arguments the command was called with
+     * Executes command with args. The calling HxProcess is available as **this** and it's first 3 file descriptors are stdin, stdout, and stderr respectively.
+     * For example, to echo text to stdout: **this.fd[1].write('foobar');**
+     */
+
+    exec: function(args) {
+        var stdin  = (this.fd && this.fd.length > 0) ? this.fd[0] : false;
+        var stdout = (this.fd && this.fd.length > 1) ? this.fd[1] : false;
+        var stderr = (this.fd && this.fd.length > 2) ? this.fd[2] : false;
+
+        try {
+            var path = (args instanceof Array) ? args.shift() : args;
+            var handled = false;
+
+            // preprocess path, handle 
+            if (path == '-') {               // swap current working directory with previous working directory
+                var tmp = system.env.pwd;
+                system.env.pwd = system.env.cwd;
+                system.env.cwd = tmp;
+                handled = true;
+
+            } else if (path == '~') {
+                system.env.pwd = system.env.cwd;
+                system.env.cwd = system.env.home;
+                handled = true;
+
+            } else if (path.match(/\.\./)) { // path references parent container
+
+                if (system.debug) console.warn('..: original path: ' + path);
+
+                // start at the current working directory
+                var tmppath = system.env.cwd;
+                if (system.debug) console.warn('..: cwd: ' + tmppath);
+
+                // while path references a parent directory transform the path to it's parent
+                while (path.match(/\.\./)) {
+                    path = path.replace(/\.\./, '');
+                    var parts = tmppath.split('/');
+                    parts.pop(); //FIXME: .. may not always be at beginning of path
+                    tmppath = parts.join('/');
+                }
+
+                path = path.replace(/\/\//g, '/'); // if original path ends with a slash the transformed version may contain two in a row (eg ../../ => //)
+
+                if (system.debug) {
+                    console.warn('..: result: ' + tmppath);
+                    console.warn('..: transformed path: ' + path);
+                }
+
+                path = (tmppath) ? (path == '/')                                        // if there was a result and path is the root
+                                        ? tmppath                                       //    use the result
+                                        : (path.match(/^\//)) ? tmppath + path          //    else if the path is absolute add it to our result
+                                                              : tmppath + '/' + path    //                                 else use our result and make path absolute
+                                 : '/';                                                 // else use the root folder
+                ;
+
+                path = path.replace(/\/$/, ''); // to be sure
+                if (system.debug) console.warn('..: final path: ' + path);
+            }
+
+            // if preprocessing hasn't handled the request
+            if (! handled) {
+                if (! path.match(/^\//)) {              // convert relative paths to absolute
+                    path = (system.env.cwd == '/') ? '/' + path : system.env.cwd + '/' + path;
+                }
+
+                if (system.fs.getFolder(path)) {        // confirm folder exists
+                    system.env.pwd = system.env.cwd || '/';
+                    system.env.cwd = path;
+
+                    handled = true;
+                }
+            }
+
+            // write result message to stdout
+            var message = (handled) ? system.env.cwd : 'folder "' + path + '" not found';
+            if (stdout) stdout.write(message);
+
+        } catch(e) {
+            console.log('command exception:');
+            console.dir(e);
+        }
+
+        return system.env.pwd;
+    }
+};
+/* clear.js
+ *
+ * Atomic OS WASH command
+ *
+ * Clear command console's output window
+ *
+ * The clear command is currently broken.  After running this command, the global wash stdout stream will no longer echo to the console window
+ *
+ * @author Scott Elcomb <psema4@gmail.com (http://www.psema4.com)
+ * @version 2.0.0
+ */
+
+window.system = window.system || {};
+system.bin = system.bin || {};
+
+/* Dummy constructor
+ *
+ * Access programmatically via system.bin.clear.!!methodName!!
+ * @constructor
+ */
+
+system.bin.clear = {
+    help: function() {
+        return "Clear command console's output window\n\n  Usage: clear\n\nNote: the clear command is currently broken.  After running this command, the global wash stdout stream will no longer echo to the console window";
+    },
+
+    /* @method exec
+     * @param {Array} args A list of arguments the command was called with
+     * Executes command with args. The calling HxProcess is available as **this** and it's first 3 file descriptors are stdin, stdout, and stderr respectively.
+     * For example, to echo text to stdout: **this.fd[1].write('foobar');**
+     */
+
+    exec: function(args) {
+        var stdin  = (this.fd && this.fd.length > 0) ? this.fd[0] : false;
+        var stdout = (this.fd && this.fd.length > 1) ? this.fd[1] : false;
+        var stderr = (this.fd && this.fd.length > 2) ? this.fd[2] : false;
+
+        try {
+            // specific to the global test console cmdWindow, see main.js
+            // FIXME: the cls() method is broken, see commandwindow.js
+            if (cmdWindow && cmdWindow.cls) cmdWindow.cls();
+
+        } catch(e) {
+            console.log('command exception:');
+            console.dir(e);
+        }
+    }
+};
+/* commands.js
+ *
+ * Atomic OS WASH command
+ *
+ * List available commands from /bin to stdout
+ *
+ * @author Scott Elcomb <psema4@gmail.com (http://www.psema4.com)
+ * @version 2.0.0
+ */
+
+window.system = window.system || {};
+system.bin = system.bin || {};
+
+/* Dummy constructor
+ *
+ * Access programmatically via system.bin.commands.!!methodName!!
+ * @constructor
+ */
+
+system.bin.commands = {
+    /* @method help
+     * @returns {string} Returns a simple string synopsis for this command
+     *
+     * Simple synopsis on this command, used by the <a href="help.html">help command</a>
+     */
+
+    help: function() {
+        return "List available commands from /bin to stdout\n\n  Usage: commands";
+    },
+
+    /* @method exec
+     * @param {Array} args A list of arguments the command was called with
+     * Executes command with args. The calling HxProcess is available as **this** and it's first 3 file descriptors are stdin, stdout, and stderr respectively.
+     * For example, to echo text to stdout: **this.fd[1].write('foobar');**
+     */
+
+    exec: function(args) {
+        // 'this' is the calling process
+
+        var stdin  = (this.fd && this.fd.length > 0) ? this.fd[0] : false;
+        var stdout = (this.fd && this.fd.length > 1) ? this.fd[1] : false;
+        var stderr = (this.fd && this.fd.length > 2) ? this.fd[2] : false;
+
+        try {
+
+            wash("ls /bin");
+
+        } catch(e) {
+            if (stderr) {
+                stderr.write('command exception: ' + e);
+
+            } else {
+                console.log('command exception:');
+                console.dir(e);
+            }
+        }
+    }
+};
+/* echo.js
+ *
+ * Atomic OS WASH command
+ *
+ * Echo string to stdout
+ *
+ * @author Scott Elcomb <psema4@gmail.com (http://www.psema4.com)
+ * @version 2.0.0
+ */
+
+window.system = window.system || {};
+system.bin = system.bin || {};
+
+/* Dummy constructor
+ *
+ * Access programmatically via system.bin.echo.!!methodName!!
+ * @constructor
+ */
+system.bin.echo = {
+    /* @method help
+     * @returns {string} Returns a simple string synopsis for this command
+     *
+     * Simple synopsis on this command, used by the <a href="help.html">help command</a>
+     */
+    help: function() {
+        return "Echo string to stdout\n\n  Usage: echo [string]";
+    },
+
+    /* @method exec
+     * @param {Array} args A list of arguments the command was called with
+     * Executes command with args. The calling HxProcess is available as **this** and it's first 3 file descriptors are stdin, stdout, and stderr respectively.
+     * For example, to echo text to stdout: **this.fd[1].write('foobar');**
+     */
+    exec: function(args) {
+        var debug = false;
+        // 'this' is the calling process
+
+        var stdin  = (this.fd && this.fd.length > 0) ? this.fd[0] : false;
+        var stdout = (this.fd && this.fd.length > 1) ? this.fd[1] : false;
+        var stderr = (this.fd && this.fd.length > 2) ? this.fd[2] : false;
+
+        try {
+            var message = (args instanceof Array) ? message = args.join(' ') : args;
+
+            if (stdout) {
+                stdout.write(message);
+            } else {
+                console.log(message);
+            }
+
+            // test stderr
+            if (debug && stderr) throw new Error('fake error');
+
+        } catch(e) {
+            if (stderr) {
+                stderr.write('command exception: ' + e);
+
+            } else {
+                console.log('command exception:');
+                console.dir(e);
+            }
+        }
+    }
+};
+/* edit.js
+ *
+ * Atomic OS WASH command
+ *
+ * Edit file in File Editor
+ *
+ * This command is currently tied to the temporary File Editor window
+ *
+ * @author Scott Elcomb <psema4@gmail.com (http://www.psema4.com)
+ * @version 2.0.0
+ */
+
+window.system = window.system || {};
+system.bin = system.bin || {};
+
+/* Dummy constructor
+ *
+ * Access programmatically via system.bin.edit.!!methodName!!
+ * @constructor
+ */
+
+system.bin.edit = {
+    /* @method help
+     * @returns {string} Returns a simple string synopsis for this command
+     *
+     * Simple synopsis on this command, used by the <a href="help.html">help command</a>
+     */
+
+    help: function() {
+        return "Edit file in File Editor\n\n  Usage: edit [filepath]\n\nNOTE: This command is currently tied to the temporary File Editor window.";
+    },
+
+    /* @method exec
+     * @param {Array} args A list of arguments the command was called with
+     * Executes command with args. The calling HxProcess is available as **this** and it's first 3 file descriptors are stdin, stdout, and stderr respectively.
+     * For example, to echo text to stdout: **this.fd[1].write('foobar');**
+     */
+
+    exec: function(args) {
+        // 'this' is the calling process
+
+        var stdin  = (this.fd && this.fd.length > 0) ? this.fd[0] : false;
+        var stdout = (this.fd && this.fd.length > 1) ? this.fd[1] : false;
+        var stderr = (this.fd && this.fd.length > 2) ? this.fd[2] : false;
+
+        try {
+            var filepath = args[0];
+            if (editWindow) {
+                $('#' + editWindow.name + '-filename').val(filepath);
+                editWindow.load(filepath);
+            }
+
+        } catch(e) {
+            if (stderr) {
+                stderr.write('command exception: ' + e);
+
+            } else {
+                console.log('command exception:');
+                console.dir(e);
+            }
+        }
+    }
+};
+/* help.js
+ *
+ * Atomic OS WASH command
+ *
+ * Simple help utility
+ *
+ * @author Scott Elcomb <psema4@gmail.com (http://www.psema4.com)
+ * @version 2.0.0
+ */
+
+window.system = window.system || {};
+system.bin = system.bin || {};
+
+/* Dummy constructor
+ *
+ * Access programmatically via system.bin.help.!!methodName!!
+ * @constructor
+ */
+
+system.bin.help = {
+    /* @method help
+     * @returns {string} Returns a simple string synopsis for this command
+     *
+     * Simple synopsis on this command, used by the <a href="help.html">help command</a>
+     */
+
+    help: function() {
+        return "Simple help utility\n\n  Usage: help [command name]";
+    },
+
+    /* @method exec
+     * @param {Array} args A list of arguments the command was called with
+     * Executes command with args. The calling HxProcess is available as **this** and it's first 3 file descriptors are stdin, stdout, and stderr respectively.
+     * For example, to echo text to stdout: **this.fd[1].write('foobar');**
+     */
+
+    exec: function(args) {
+        // 'this' is the calling process
+
+        var stdin  = (this.fd && this.fd.length > 0) ? this.fd[0] : false;
+        var stdout = (this.fd && this.fd.length > 1) ? this.fd[1] : false;
+        var stderr = (this.fd && this.fd.length > 2) ? this.fd[2] : false;
+
+        try {
+            var cmd = args instanceof Array ? args[0] : 'help';
+
+            if (system.bin[cmd]) {
+                var message = 'Help not available for command "' + cmd + '"';
+
+                if (system.bin[cmd].help) message = system.bin[cmd].help();
+                if (stdout) stdout.write(message);
+            }
+
+        } catch(e) {
+            if (stderr) {
+                stderr.write('command exception: ' + e);
+
+            } else {
+                console.log('command exception:');
+                console.dir(e);
+            }
+        }
+    }
+};
+/* ls.js
+ *
+ * Atomic OS WASH command
+ *
+ * List files
+ *
+ * Without a path, lists the current working directory
+ * With -l, lists files in a single column
+ *
+ * @author Scott Elcomb <psema4@gmail.com (http://www.psema4.com)
+ * @version 2.0.0
+ */
+
+window.system = window.system || {};
+system.bin = system.bin || {};
+
+/* Dummy constructor
+ *
+ * Access programmatically via system.bin.ls.!!methodName!!
+ * @constructor
+ */
+
+system.bin.ls = {
+    /* @method help
+     * @returns {string} Returns a simple string synopsis for this command
+     *
+     * Simple synopsis on this command, used by the <a href="help.html">help command</a>
+     */
+
+    help: function() {
+        return "List files\n\n  Usage: ls [-l] [path]\n\nWithout a path, lists the current working directory.\nWith -l, lists files in a single column.";
+    },
+
+    /* @method exec
+     * @param {Array} args A list of arguments the command was called with
+     * Executes command with args. The calling HxProcess is available as **this** and it's first 3 file descriptors are stdin, stdout, and stderr respectively.
+     * For example, to echo text to stdout: **this.fd[1].write('foobar');**
+     */
+
+    exec: function(args) {
+        // 'this' is the calling process
+
+        var stdin  = (this.fd && this.fd.length > 0) ? this.fd[0] : false;
+        var stdout = (this.fd && this.fd.length > 1) ? this.fd[1] : false;
+        var stderr = (this.fd && this.fd.length > 2) ? this.fd[2] : false;
+
+        var formatStr = function(str, len) {
+            var result = str;
+            while (result.length < len) {
+                result += " ";
+            }
+            return result;
+        };
+
+        try {
+
+            var displayType = 'wide',
+                path = system.env.cwd;
+
+            if (args instanceof Array) {
+                path = args.shift();
+
+                if (path.match(/^-l/)) {
+                    displayType = 'single';
+                    path = args.shift();
+                    if (! path) path = system.env.cwd;
+                }
+            }
+
+            var output = path + ':' + "\n";
+            if (displayType == 'wide') output += "\n";
+
+            var fspath = system.fs.getFolder(path);
+            if (fspath) {
+                var results = fspath.listFiles(); // pre-sorted by listFiles()
+
+                // figure out the longest entry
+                var len = 0;
+                for (var i=0; i<results.length; i++) {
+                    if (results[i].path.length > len) len = results[i].path.length;
+                };
+
+                var lineLength = 0;
+                for (var i=0; i<results.length; i++) {
+                    var result = results[i].path;
+                    var file = results[i].file;
+
+                    var postfix = (file && file.tree) ? '/' : '';
+
+                    switch(displayType) {
+                        case 'single':
+                            output += '  ' + result + postfix + "\n";
+                            break;
+
+                        case 'wide':
+                        default:
+                            var segment = formatStr(result + postfix, len+1) + "  ";
+                            if (lineLength > 60) {
+                                output += "\n";
+                                lineLength = 0;
+                            }
+                            lineLength += segment.length;
+                            output += segment;
+                    }
+                }
+
+                output = output.replace(/\n$/, ''); // remove trailing newline
+
+            } else {
+                output = "folder not found";
+            }
+
+            if (stdout) {
+                stdout.write(output);
+            } else {
+                console.log(output);
+            }
+
+        } catch(e) {
+            console.log('command exception:');
+            console.dir(e);
+        }
+    }
+};
+/* mkdir.js
+ *
+ * Atomic OS WASH command
+ *
+ * Make directory
+ *
+ * This command is currently limited to creating folders in the current directory
+ *
+ * @author Scott Elcomb <psema4@gmail.com (http://www.psema4.com)
+ * @version 2.0.0
+ */
+
+window.system = window.system || {};
+system.bin = system.bin || {};
+
+/* Dummy constructor
+ *
+ * Access programmatically via system.bin.mkdir.!!methodName!!
+ * @constructor
+ */
+system.bin.mkdir = {
+    /* @method help
+     * @returns {string} Returns a simple string synopsis for this command
+     *
+     * Simple synopsis on this command, used by the <a href="help.html">help command</a>
+     */
+    help: function() {
+        return "Make directory\n\n  Usage: mkdir [folder name]\n\nNOTE: This command is currently limited to creating folders in the current directory";
+    },
+
+    /* @method exec
+     * @param {Array} args A list of arguments the command was called with
+     * Executes command with args. The calling HxProcess is available as **this** and it's first 3 file descriptors are stdin, stdout, and stderr respectively.
+     * For example, to echo text to stdout: **this.fd[1].write('foobar');**
+     */
+    exec: function(args) {
+        // 'this' is the calling process
+
+        var stdin  = (this.fd && this.fd.length > 0) ? this.fd[0] : false;
+        var stdout = (this.fd && this.fd.length > 1) ? this.fd[1] : false;
+        var stderr = (this.fd && this.fd.length > 2) ? this.fd[2] : false;
+
+        try {
+            var result = false;
+            var folder = (args instanceof Array) ? args.shift() : args;
+            var currentFolder = system.fs.getFolder(system.env.cwd);
+
+            if (currentFolder) result = currentFolder.addChildFolder(folder);
+
+            var message = (result) ? "ok, created " : "failed to create ";
+            if (stdout) stdout.write(message + folder);
+
+        } catch(e) {
+            if (stderr) {
+                stderr.write('command exception: ' + e);
+
+            } else {
+                console.log('command exception:');
+                console.dir(e);
+            }
+        }
+    }
+};
+/* pwd.js
+ *
+ * Atomic OS WASH command
+ *
+ * Echo current working directory to stdout
+ *
+ * @author Scott Elcomb <psema4@gmail.com (http://www.psema4.com)
+ * @version 2.0.0
+ */
+
+window.system = window.system || {};
+system.bin = system.bin || {};
+
+/* Dummy constructor
+ *
+ * Access programmatically via system.bin.pwd.!!methodName!!
+ * @constructor
+ */
+
+system.bin.pwd = {
+    /* @method help
+     * @returns {string} Returns a simple string synopsis for this command
+     *
+     * Simple synopsis on this command, used by the <a href="help.html">help command</a>
+     */
+
+    help: function() {
+        return "Echo current working directory to stdout\n\n  Usage: pwd";
+    },
+
+    /* @method exec
+     * @param {Array} args A list of arguments the command was called with
+     * Executes command with args. The calling HxProcess is available as **this** and it's first 3 file descriptors are stdin, stdout, and stderr respectively.
+     * For example, to echo text to stdout: **this.fd[1].write('foobar');**
+     */
+
+    exec: function(args) {
+        var stdin  = (this.fd && this.fd.length > 0) ? this.fd[0] : false;
+        var stdout = (this.fd && this.fd.length > 1) ? this.fd[1] : false;
+        var stderr = (this.fd && this.fd.length > 2) ? this.fd[2] : false;
+
+        try {
+            if (stdout) {
+                stdout.write(system.env.cwd);
+            } else {
+                console.log(system.env.cwd);
+            }
+
+        } catch(e) {
+            console.log('command exception:');
+            console.dir(e);
+        }
+    }
+};
+/* rm.js
+ *
+ * Atomic OS WASH command
+ *
+ * Remove a file
+ * 
+ * This command is currently limited to removing files in the current directory
+ *
+ * @author Scott Elcomb <psema4@gmail.com (http://www.psema4.com)
+ * @version 2.0.0
+ */
+
+window.system = window.system || {};
+system.bin = system.bin || {};
+
+/* Dummy constructor
+ *
+ * Access programmatically via system.bin.rm.!!methodName!!
+ * @constructor
+ */
+
+system.bin.rm = {
+    /* @method help
+     * @returns {string} Returns a simple string synopsis for this command
+     *
+     * Simple synopsis on this command, used by the <a href="help.html">help command</a>
+     */
+
+    help: function() {
+        return "Remove a file\n\n  Usage: rm [filename]\n\nNOTE: This command is currently limited to removing files in the current directory";
+    },
+
+    /* @method exec
+     * @param {Array} args A list of arguments the command was called with
+     * Executes command with args. The calling HxProcess is available as **this** and it's first 3 file descriptors are stdin, stdout, and stderr respectively.
+     * For example, to echo text to stdout: **this.fd[1].write('foobar');**
+     */
+
+    exec: function(args) {
+        // 'this' is the calling process
+
+        var stdin  = (this.fd && this.fd.length > 0) ? this.fd[0] : false;
+        var stdout = (this.fd && this.fd.length > 1) ? this.fd[1] : false;
+        var stderr = (this.fd && this.fd.length > 2) ? this.fd[2] : false;
+
+        try {
+            var result = false;
+            var filename = (args instanceof Array) ? args.shift() : args;
+            var currentFolder = system.fs.getFolder(system.env.cwd);
+
+            if (currentFolder) result = currentFolder.removeFile(filename);
+
+            var message = (result) ? "ok, removed " : "failed to remove ";
+            if (stdout) stdout.write(message + filename);
+
+        } catch(e) {
+            if (stderr) {
+                stderr.write('command exception: ' + e);
+
+            } else {
+                console.log('command exception:');
+                console.dir(e);
+            }
+        }
+    }
+};
+/* rmdir.js
+ *
+ * Remove a directory
+ *
+ * This command is currently limited to removing folders in the current directory
+ *
+ * Atomic OS WASH command
+ *
+ * @author Scott Elcomb <psema4@gmail.com (http://www.psema4.com)
+ * @version 2.0.0
+ */
+
+window.system = window.system || {};
+system.bin = system.bin || {};
+
+/* Dummy constructor
+ *
+ * Access programmatically via system.bin.rmdir.!!methodName!!
+ * @constructor
+ */
+
+system.bin.rmdir = {
+    /* @method help
+     * @returns {string} Returns a simple string synopsis for this command
+     *
+     * Simple synopsis on this command, used by the <a href="help.html">help command</a>
+     */
+
+    help: function() {
+        return "Remove a directory\n\n  Usage: rmdir [folder name]\n\nNOTE: This command is currently limited to removing folders in the current directory";
+    },
+
+    /* @method exec
+     * @param {Array} args A list of arguments the command was called with
+     * Executes command with args. The calling HxProcess is available as **this** and it's first 3 file descriptors are stdin, stdout, and stderr respectively.
+     * For example, to echo text to stdout: **this.fd[1].write('foobar');**
+     */
+
+    exec: function(args) {
+        // 'this' is the calling process
+
+        var stdin  = (this.fd && this.fd.length > 0) ? this.fd[0] : false;
+        var stdout = (this.fd && this.fd.length > 1) ? this.fd[1] : false;
+        var stderr = (this.fd && this.fd.length > 2) ? this.fd[2] : false;
+
+        try {
+            var result = false;
+            var folder = (args instanceof Array) ? args.shift() : args;
+            var currentFolder = system.fs.getFolder(system.env.cwd);
+
+            if (currentFolder) result = currentFolder.removeChildFolder(folder);
+
+            var message = (result) ? "ok, removed " : "failed to remove ";
+            if (stdout) stdout.write(message + folder);
+
+        } catch(e) {
+            if (stderr) {
+                stderr.write('command exception: ' + e);
+
+            } else {
+                console.log('command exception:');
+                console.dir(e);
+            }
+        }
+    }
+};
+/* tcl.js
+ *
+ * Atomic OS WASH command
+ *
+ * Run a tcl command
+ *
+ * @author Scott Elcomb <psema4@gmail.com (http://www.psema4.com)
+ * @version 2.0.0
+ */
+
+window.system = window.system || {};
+system.bin = system.bin || {};
+
+/* Dummy constructor
+ *
+ * Access programmatically via system.bin.tcl.!!methodName!!
+ * @constructor
+ */
+system.bin.tcl = {
+    /* @method help
+     * @returns {string} Returns a simple string synopsis for this command
+     *
+     * Simple synopsis on this command, used by the <a href="help.html">help command</a>
+     */
+    help: function() {
+        return "Run a tcl command and print the result \n\n  Usage: tcl [string]";
+    },
+
+    /* @method exec
+     * @param {Array} args A list of arguments the command was called with
+     * Executes command with args. The calling HxProcess is available as **this** and it's first 3 file descriptors are stdin, stdout, and stderr respectively.
+     * For example, to tcl text to stdout: **this.fd[1].write('foobar');**
+     */
+    exec: function(args) {
+        var debug = false;
+        // 'this' is the calling process
+
+        var stdin  = (this.fd && this.fd.length > 0) ? this.fd[0] : false;
+        var stdout = (this.fd && this.fd.length > 1) ? this.fd[1] : false;
+        var stderr = (this.fd && this.fd.length > 2) ? this.fd[2] : false;
+
+        try {
+            var message = (args instanceof Array) ? message = args.join(' ') : args;
+            var filename = '', result;
+
+            if (message.match(/^< /)) {
+                filename = message.replace(/^< /, '');
+                var buf = system.fs.readFile(filename);
+                result = tcl(buf);
+
+            } else {
+                result = tcl(message);
+            }
+
+            if (result && result.content) stdout.write(result.content);
+
+        } catch(e) {
+            if (stderr) {
+                stderr.write('command exception: ' + e);
+
+            } else {
+                console.log('command exception:');
+                console.dir(e);
+            }
+        }
+
+    }
+};
+/* touch.js
+ *
+ * Atomic OS WASH command
+ *
+ * Create empty file
+ *
+ * This command is currently limited to creating files in the current directory
+ *
+ * @author Scott Elcomb <psema4@gmail.com (http://www.psema4.com)
+ * @version 2.0.0
+ */
+
+window.system = window.system || {};
+system.bin = system.bin || {};
+
+/* Dummy constructor
+ *
+ * Access programmatically via system.bin.touch.!!methodName!!
+ * @constructor
+ */
+
+system.bin.touch = {
+    /* @method help
+     * @returns {string} Returns a simple string synopsis for this command
+     *
+     * Simple synopsis on this command, used by the <a href="help.html">help command</a>
+     */
+
+    help: function() {
+        return "Create empty file\n\n  Usage: touch [file name]\n\nNOTE: This command is currently limited to creating files in the current directory";
+    },
+
+    /* @method exec
+     * @param {Array} args A list of arguments the command was called with
+     * Executes command with args. The calling HxProcess is available as **this** and it's first 3 file descriptors are stdin, stdout, and stderr respectively.
+     * For example, to echo text to stdout: **this.fd[1].write('foobar');**
+     */
+
+    exec: function(args) {
+        // 'this' is the calling process
+
+        var stdin  = (this.fd && this.fd.length > 0) ? this.fd[0] : false;
+        var stdout = (this.fd && this.fd.length > 1) ? this.fd[1] : false;
+        var stderr = (this.fd && this.fd.length > 2) ? this.fd[2] : false;
+
+        try {
+            var result = false;
+            var filename = (args instanceof Array) ? args.shift() : args;
+            var folder = system.env.cwd;
+
+            if (filename.match(/^\//)) {
+                folder = filename;
+                filename = system.fs.basename(folder);
+            }
+
+            var currentFolder = system.fs.getFolder(folder);
+            if (currentFolder) result = currentFolder.addFile(filename);
+
+            var message = (result) ? "ok, created " : "failed to create ";
+            if (stdout) stdout.write(message + 'file "' + filename + '"');
+
+        } catch(e) {
+            if (stderr) {
+                stderr.write('command exception: ' + e);
+
+            } else {
+                console.log('command exception:');
+                console.dir(e);
+            }
+        }
+    }
+};
+/* wallpaper.js
+ *
+ * Atomic OS WASH command
+ *
+ * Sets the desktop wallpaper
+ *
+ * This command can currently only add/remove one graphic [css class="bg-tile"]
+ *
+ * @author Scott Elcomb <psema4@gmail.com (http://www.psema4.com)
+ * @version 2.0.0
+ */
+
+window.system = window.system || {};
+system.bin = system.bin || {};
+
+/* Dummy constructor
+ *
+ * Access programmatically via system.bin.wallpaper.!!methodName!!
+ * @constructor
+ */
+
+system.bin.wallpaper = {
+    /* @method help
+     * @returns {string} Returns a simple string synopsis for this command
+     *
+     * Simple synopsis on this command, used by the <a href="help.html">help command</a>
+     */
+
+    help: function() {
+        return "Sets the desktop wallpaper\n\n  Usage: wallpaper\n\nThis command can currently only add/remove one graphic [css class=\"bg-tile\"]";
+    },
+
+    /* @method exec
+     * @param {Array} args A list of arguments the command was called with
+     * Executes command with args. The calling HxProcess is available as **this** and it's first 3 file descriptors are stdin, stdout, and stderr respectively.
+     * For example, to echo text to stdout: **this.fd[1].write('foobar');**
+     */
+
+    exec: function(args) {
+        // 'this' is the calling process
+
+        var stdin  = (this.fd && this.fd.length > 0) ? this.fd[0] : false;
+        var stdout = (this.fd && this.fd.length > 1) ? this.fd[1] : false;
+        var stderr = (this.fd && this.fd.length > 2) ? this.fd[2] : false;
+
+        try {
+            dObj   = system.fs.tree.mnt.tree.desktop;
+            dName  = dObj.name;
+            dEl = $('#' + dName);
+            if (dEl.hasClass('bg-tile')) {
+                dEl.removeClass('bg-tile');
+            } else {
+                dEl.addClass('bg-tile');
+            }
+
+        } catch(e) {
+            if (stderr) {
+                stderr.write('command exception: ' + e);
+
+            } else {
+                console.log('command exception:');
+                console.dir(e);
+            }
+        }
+    }
+};
 /* dev/net.js
  *
  * ++[black[Atomic OS Class: Network Device]++
