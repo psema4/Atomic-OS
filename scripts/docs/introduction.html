@@ -9,9 +9,237 @@
 
         <h2>Introduction</h2>
 
-        <p>Atomic OS Version 2</p>
+        <p>Atomic OS Version 2<br>&copy; 2005-2011 Scott Elcomb, <a href="../../LICENSE">MIT License</a></p>
 
-        <h3>Browser Compatability</h3>
+        <h2>Contents:</h2>
+        <ol class="toc">
+            <li><a href="#prep" class="toc">Preparation</a><ol>
+                <li><a href="#requirements" class="toc">Development Environment</a></li>
+                <li><a href="#install" class="toc">Downloading &amp; Installing</a></li>
+            </ol></li>
+            <li><a href="#usage" class="toc">Usage</a><ol>
+                <li><a href="#index" class="toc">Framework Loader</a></li>
+                <li><a href="#main" class="toc">Main: Setting Up</a></li>
+                <li><a href="#events" class="toc">System Events</a></li>
+            </ol></li>
+            <li><a href="#building" class="toc">Building Atomic OS</a><ol>
+                <li><a href="#compile" class="toc">Compiling</a></li>
+                <li><a href="#docs" class="toc">Documentation &amp; Unit Tests</a></li>
+            </ol></li>
+            <li><a href="#other" class="toc">Other</a><ol>
+                <li><a href="#browsers" class="toc">Browser Compatibility</a></li>
+                <li><a href="#misc" class="toc">Miscellaneous Notes</a></li>
+            </ol></li>
+        </ol>
+
+        <p>&nbsp;</p>
+
+        <a name="prep"></a>
+        <h2>Preparation</h2>
+
+        <a name="requirements"></a>
+        <h3>Development Environment</h3>
+
+        <p>To serve Atomic OS-based websites/applications (frameworks) you'll need a webserver such as Apache.</p>
+
+        <p>The following commands are expected to exist on systems building atomos.js:
+            <ul>
+                <li>bash, env, which: build tools</li>
+            </ul>
+        </p>
+
+        <p>In addition, the following resources are highly recommended:
+            <ul>
+                <li><a href="http://nodejs.org/" target="_blank">node.js</a> - autobuild.js, documentation &amp; unit tests</li>
+                <li><a href="http://npmjs.org" target="_blank">node package manager</a> - install/manage uglifyjs &amp; jsdog tools</li>
+                <li><a href="http://marijnhaverbeke.nl/uglifyjs" target="_blank">uglify.js</a> - minification tool</li>
+                <li><a href="http://psema4.github.com/JSDog/" target="_blank">jsdog</a> - generate documentation from <a href="http://en.wikipedia.org/wiki/JSDoc">JSDoc-style</a> comments &amp; <a href="http://docs.jquery.com/QUnit">QUnit</a> test runners</li>
+            </ul>
+        </p>
+
+        <a name="install"></a>
+        <h3>Downloading &amp; Installing</h3>
+
+        <p>Assuming a standard LAMP host, installation should look like the following.</p>
+
+        <p>To download and install from a git repository:</p>
+
+        <tt><pre>cd /var/www/html/
+git clone git://github.com/psema4/Atomic-OS.git
+cd Atomic-OS/prototype</tt></pre>
+
+        <p>To download the latest distribution package: (not currently available)</p>
+        <tt><pre>cd /var/www/html/
+wget &lt;<i>http-downloads-url</i>&gt;
+tar -zxf atomos-&lt;<i>version</i>&gt;.tar.gz
+cd Atomic-OS/prototype</pre></tt>
+
+        <p>In both cases, you'll end up in <i>/var/www/html/Atomic-OS/prototype/</i>.  In the event you install to a different path, the rest of this document will refer to this location as the root Atomic OS folder or <i>/path/to/atomos/</i>
+
+        <a name="usage"></a>
+        <h2>Using Atomic OS</h2>
+
+        <a name="index"></a>
+        <h3>Framework Loader</h3>
+
+        <p>A simple HTML5 example with basic mobile support:</p>
+
+        <tt><pre>&lt;!DOCTYPE html&gt;
+    &lt;head&gt;
+        &lt;meta charset="utf-8"&gt;
+        &lt;meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0"&gt;
+
+        &lt;title&gt;Atomic OS&lt;/title&gt;
+
+        &lt;link rel="stylesheet" href="style.css"&gt;
+        &lt;script src="scripts/atomos.js"&gt;&lt;/script&gt;
+    &lt;/head&gt;
+
+    &lt;body&gt;
+    &lt;/body&gt;
+&lt;/html&gt;</pre></tt>
+
+        <p><b>Note:</b> Atomic OS appears to work fine on tested mobile devices (only android and iphone so far); until UI widgets are available, particular care should be taken when designing user interfaces.</p>
+
+        <p>The only two files required to be linked-to are the <i>scripts/atomos.js</i> runtime and <i>style.css</i>. Additional JS source files can be added here if necessary.</p>
+
+        <p>For development purposes and/or bug-hunting, link to the unminified <i>scripts/atomos.js</i></p>
+        <p>For production, use <i>scripts/atomos.min.js</i> to reduce bandwidth and improve load times</p>
+        <p>For running unit tests (ie. Atomic OS without starting any processes), use <i>scripts/atomos.t.js</i></p>
+
+        <p>Include your CSS style rules in <i>style.css</i></p>
+
+        <p>Once you've set your framework up (see below), open the framework loader in a browser to run it. Using the root Atomic OS folder from <a href="#install">Downloading &amp; Installing</a> (and assuming your server is localhost) you can launch your Atomic OS by visiting <i>http://localhost/Atomic-OS/prototype/index.html</i></p>
+
+        <a name="main"></a>
+        <h3>Main: Setting Up</h3>
+
+        <p>
+            In order to produce an Atomic OS-powered "site," you'll need to outline a system in <i>scripts/system.js</i> and provide startup code in<i>scripts/main.js</i>.
+            Your startup code should be wrapped in a call to $(document).ready() to ensure that the DOM is configured and ready to use.
+        </p>
+
+        <p>A typical example might be:</p>
+
+        <tt><pre>$(document).ready(function() {
+    //FIXME: provide example
+    //       for now, see system.js and main.js in /path/to/atomos/scripts/ for reference
+});
+</pre></tt>
+
+        <p>&nbsp;</p>
+
+        <p>After updating <i>scripts/system.js</i> and/or <i>scripts/main.js</i> you will need to rebuild Atomic OS.  See <a href="#compile">Compiling</a> for details.
+
+        <a name="events"></a>
+        <h3>System Events</h3>
+
+        <center>
+        <p><b>Pre-defined events:</b></p>
+        <table border="0" width="90%">
+            <tr style="background-color: #eee;">
+                <th width="300">Message</th>
+                <th width="200">Source</th>
+                <th>Args</th>
+                <th width="50%">Description</th>
+            </tr>
+            <tr>
+                <td class="right-align">{guid}:ondata</td>
+                <td>HxStream</td>
+                <td class="left-align">int:bytecount</td>
+                <td class="left-align">Emitted by streams &amp; files when written to</td>
+            </tr>
+        </table>
+        </center>
+
+        <p>&nbsp;</p>
+
+        <a name="building"></a>
+        <h2>Building Atomic OS</h2>
+
+        <h3>Compiling</h3>
+
+        <p>Use buildall to "compile" atomos.js:</p>
+
+        <tt><pre>cd /path/to/atomos/scripts
+./buildall</pre></tt>
+
+        <p>The buildall script drives the following process:
+            <ul>
+                <li>build kernel (class heirarchy) [<i>scripts/hx/atomos-hx.js</i>]<ul>
+                    <li>change to hx sources folder</li>
+                    <li>run build script<ul>
+                        <li>concatenate files in dependancy list</li>
+                        <li>optionally build documentation &amp; test runners if jsdog is available</li>
+                    </ul></li>
+                    <li>change back to scripts folder</li>
+                </ul></li>
+
+                <li>build "device" support [<i>scripts/dev/atomos-dev.js</i>]<ul>
+                    <li>change to /dev sources folder</li>
+                    <li>run build script<ul>
+                        <li>concatenate files in dependancy list</li>
+                        <li>optionally build documentation &amp; test runners if jsdog is available</li>
+                    </ul></li>
+                    <li>change back to scripts folder</li>
+                </ul></li>
+
+                <li>build wash commands [<i>scripts/bin/atomos-bin.js</i>]<ul>
+                    <li>change to /bin sources folder</li>
+                    <li>run build script<ul>
+                        <li>concatenate files in dependancy list</li>
+                        <li>optionally build documentation &amp; test runners if jsdog is available</li>
+                    </ul></li>
+                    <li>change back to scripts folder</li>
+                </ul></li>
+
+                <li>build base library [<i>scripts/atomos.t.js</i>]<ul>
+                    <li>add a window.console shim for browsers that don't provide one</li>
+                    <li>add a lightweight jQuery compatible engine (Zepto)</li>
+                    <li>add classical inheritance support (John Resig)</li>
+                    <li>add the kernel (class heirarchy)</li>
+                    <li>add wash commands</li>
+                    <li>add device files</li>
+                    <li>add a system namespace</li>
+                    <li>add a "system call" library / API</li>
+                </ul></li>
+
+                <li>build runtime library [<i>scripts/atomos.js</i>]<ul>
+                    <li>append <i>scripts/main.js</i> to base system</li>
+                </ul></li>
+
+                <li>build minified runtime [<i>scripts/atomos.min.js</i>]<ul>
+                    <li>process runtime with uglify.js if it's available</li>
+                </ul></li>
+            </ul>
+        </p>
+
+        <p>To summarize: after running buildall, you'll have 3 versions of the atomos.js library:
+            <ul>
+                <li>atomos.js - the unminified runtime</li>
+                <li>atomos.min.js - the minified runtime (only if node.js and uglify.js are available)</li>
+                <li>atomos.t.js - an unminified library (Atomic OS without a "main" routine), used for running unit tests</li>
+            </ul>
+        </p>
+
+        <p>See <a href="#usage">Usage</a> for more information on using the library.</p>
+
+
+        <a name="docs"></a>
+        <h3>Documentation &amp; Unit Tests</h3>
+
+        <p>If the environment variable DOCS is set before calling buildall, documentation and unit testing pages will be generated during the build:</p>
+
+        <tt><pre>DOCS=1 ./buildall
+# or DOCS=1 ./autobuild.js</pre></tt>
+
+        <p>For this feature to work, <a href="http://nodejs.org/" target="_blank">node.js</a>, the <a href="http://npmjs.org" target="_blank">node package manager</a> and <a href="http://psema4.github.com/JSDog/" target="_blank">jsdog</a> are required.</p>
+
+        <a name="#other"></a>
+        <h2>Other</h2>
+
+        <a name="#browsers"></a>
+        <h3>Browser Compatibility</h3>
         <table width="100%">
             <tr>
                 <th>Chrome</th>
@@ -46,6 +274,7 @@
             <li><sup>2</sup> Mobile devices reqiure special consideration of UI needs</li>
         </ul>
 
+        <a name="#misc"></a>
         <h3>Miscellaneous Notes</h3>
         <ol>
             <li>HxProcess should extend HxJSFS so it can be mounted under /proc</li>
@@ -53,5 +282,6 @@
             <li>HxWidget should be implemented, extended by proper UI widgets</li>
             <li>Remove temporary windows/classes from default main.js; these should be processes</li>
         </ol>
+
     </body>
 </html>
