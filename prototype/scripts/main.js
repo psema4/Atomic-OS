@@ -20,6 +20,17 @@ $(document).ready(function() {
     //-- application code should be loaded by init into process; the following
     //-- are leftovers from early testing and act as proof of concept
 
+    // mount netfs test
+    console.log('Creating netfs');
+    var netfs = new HxNETFS({
+        name: '/mnt/remote',
+        tree: {}
+    });
+
+    system.fs.mount("/mnt", netfs);
+    var msg = (system.fs.tree.mnt.tree.remote instanceof HxNETFS) ? '[ OK ]' : '[FAIL]';
+    console.log('Mount netfs ' + msg);
+
     // mount dom test (convert to HxProcess)
 
     console.log('Creating domfs');
@@ -28,6 +39,7 @@ $(document).ready(function() {
         tree: {}
     });
 
+    // populate from existing divs
     var divList = $('.domfile');
     
     for (var div=0; div < divList.length; div++) {

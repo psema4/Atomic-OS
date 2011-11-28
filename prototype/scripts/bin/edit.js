@@ -45,9 +45,11 @@ system.bin.edit = {
 
         try {
             var filepath = args[0];
+            if (! filepath.match(/^\//)) filepath = system.env.cwd + '/' + filepath;
             if (editWindow) {
                 $('#' + editWindow.name + '-filename').val(filepath);
                 editWindow.load(filepath);
+                $('#' + editWindow.name).show();
             }
 
         } catch(e) {

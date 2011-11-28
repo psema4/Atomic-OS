@@ -65,6 +65,7 @@ var HxNETDevice = HxDevice.extend({
     send: function(data, fn) {
         $.ajax({
             url: this.url,
+            async: false,
             type: 'POST',
             data: data,
             success: fn,
