@@ -74,3 +74,5 @@ Support
 
   - Discussion:     https://lists.sourceforge.net/lists/listinfo/atomos-discuss
   - Developers:     https://lists.sourceforge.net/lists/listinfo/atomos-devel
+
+<a href="https://flattr.com/submit/auto?user_id=psema4&url=https://github.com/psema4/Atomic-OS&title=Atomic%20OS&description=Self%20contained%20microsystem&language=en_GB&tags=javascript,programming&category=software"><img src="https://api.flattr.com/button/flattr-badge-large.png" alt="Flattr Atomic OS" /></a>
